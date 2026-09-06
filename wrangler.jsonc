@@ -1,0 +1,10 @@
+{
+  "name": "pdf-studio-site",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist"
+  },
+  "routes": [
+    { "pattern": "navigatorslab.com", "custom_domain": true }
+  ]
+}
