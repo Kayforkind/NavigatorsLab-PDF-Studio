@@ -295,7 +295,7 @@ export function ExportDialog({
 
 export function HelpModal({ onClose }: { onClose: () => void }) {
   return (
-    <Dialog title="How NavigatorsLab PDF Studio works" onClose={onClose} wide>
+    <Dialog title="How PDF Studio works" onClose={onClose} wide>
       <div className="help-grid">
         <section>
           <h3>Editing</h3>

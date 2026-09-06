@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon.svg', 'maskable-icon.svg'],
       manifest: {
-        name: 'NavigatorsLab PDF Studio — Private PDF Editor',
-        short_name: 'NL PDF Studio',
+        name: 'PDF Studio — by NavigatorsLab',
+        short_name: 'PDF Studio',
         description:
           'Edit PDF text in place, annotate, sign, redact, organize pages, merge and split — all locally in your browser. No uploads, no watermark, no limits.',
         theme_color: '#0b0f17',

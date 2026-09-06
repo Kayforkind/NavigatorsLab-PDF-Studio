@@ -21,9 +21,9 @@ export function Landing({
     <div className="landing">
       <div className="landing-hero">
         <h1>
-          A real PDF editor.
+          PDF Studio.
           <br />
-          <span>Private, free, unlimited.</span>
+          <span>Private, free, open source.</span>
         </h1>
         <p className="landing-sub">
           Edit the text that is already in your PDF, mark it up, sign it, organize the pages, merge and split — all inside your
@@ -38,7 +38,7 @@ export function Landing({
           <span><Icon.split /> Merge &amp; split</span>
         </div>
         <p className="landing-brand">
-          <a href="https://navigatorslab.com" target="_blank" rel="noreferrer">NavigatorsLab</a> · open source · MIT
+          Free &amp; open source (MIT) · <a href="https://navigatorslab.com" target="_blank" rel="noreferrer">by NavigatorsLab</a>
         </p>
       </div>
 
