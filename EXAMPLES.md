@@ -1,118 +1,112 @@
-# NavigatorsLab PDF Studio — Feature Walkthroughs
+# PDF Studio — hands-on walkthroughs
 
-Hands-on guides for every feature, with the exact steps to reproduce each result.
-All examples work in the [live app](https://kayforkind.github.io/pdf-studio/) or a local build
-(`npm install && npm run dev`) — everything happens in *your* browser, no file ever leaves the device.
+Step-by-step guides for every feature, each with a real screenshot captured from the running app.
+Try everything yourself in the [live app](https://navigatorslab.com) — it's free, open source, and
+nothing you open ever leaves your device.
 
 ---
 
-## 1 · Edit text that's already in the PDF
+## 1 · Edit the text that is already in the PDF
 
-The flagship feature. Most "editors" only add text on top; PDF Studio rewrites the original text in place.
+The flagship. Most editors only stamp new text on top; PDF Studio rewrites the original.
 
 1. Open any digital PDF (one with selectable text — not a scan).
 2. Pick the **Edit text** tool in the left rail.
-3. Hover the page: every line of the original text glows with a clickable hint.
-4. Click a line → retype it → press Enter or click away.
+3. Every line of the original text glows as a clickable target:
 
-What happens under the hood: the app samples the page background around the line, paints that
-rectangle over the old glyphs (so it blends invisibly even on textured scans), and stamps your
-replacement text at the same baseline. On export it's burned into real vector content —
-not a screenshot-style overlay.
+![Editable lines highlighted on hover](docs/shots/02-edit-hints.png)
 
-> Scanned page with no text layer? Use **Edit text → OCR this page** (or the status-bar shortcut).
-> Tesseract runs locally in WASM; each recognized line becomes an editable text box.
+4. Click a line, retype it, press Enter. The old glyphs are painted over with a **background
+   color sampled from the page**, and your text is stamped at the same position and size:
 
----
+![A line retyped in place](docs/shots/03-edit-inline.png)
 
-## 2 · Fix flipped / rotated content
+On export the replacement is real vector text — searchable, selectable, print-crisp.
 
-Camera scans and broken generators sometimes store pages upside-down or mirrored.
+> Scanned page with no text layer? Skip to walkthrough 9 (OCR).
 
-- **Upside-down (90°/180°/270° rotation metadata):** on open, a banner offers
-  **"Turn upright"** — one undoable bulk step.
-- **Mirrored artwork:** each thumbnail has **Mirror page horizontally / vertically** buttons.
-  The canvas mirrors instantly and the export mirrors the real page content while your marks
-  stay put — verified by pixel-diffing the canvas against its own mirror.
-- **Individual image/signature wrong way round:** select it → Inspector → Flip H / Flip V.
+## 2 · Fill PDF forms (AcroForms)
 
----
+1. Open a fillable PDF → press **Forms** in the top bar.
+2. Every field is listed — text, checkbox, radio group, dropdown — with jump-to-page buttons.
 
-## 3 · Fill PDF forms (AcroForm)
+![The Forms dialog](docs/shots/07-forms.png)
 
-1. Open a fillable PDF and press **Forms** in the top bar.
-2. Every field is listed — text, checkboxes, radio groups, dropdowns — with a jump-to-page button.
-3. Type values right in the dialog.
-4. Toggle **"Show fields on pages"**: the widgets are drawn on the page itself; clicking one
-   scrolls the dialog to it and focuses that field.
-5. On **Save PDF**, values are written into the real form fields. Choose **Flatten** to burn them
-   into page content so nobody can change them.
+3. Toggle **"show fields on pages"** to draw the widgets on the page itself; clicking one scrolls
+   the dialog to it and focuses that field:
 
-> The pipeline flattens each source file *before* copying pages, because pdf-lib's `copyPages`
-> silently drops the AcroForm — a real bug this project caught and documented.
+![Form widgets on the page canvas](docs/shots/08-forms-on-canvas.png)
 
----
+4. **Save** writes values into the real fields; **flatten** burns them into page content so they
+   can't be changed downstream.
 
-## 4 · Stamp page numbers, watermarks, headers & footers
+## 3 · Sign, stamp, annotate
 
-In the **Export** dialog:
+- **Signature**: pick the Signature tool, click where it should go, draw on the pad
+  (exported as a transparent PNG), confirm:
 
-- **Page numbers** — position, format (`1`, `Page 1`, `1 / N`), first number, skip-cover toggle.
-- **Watermark** — diagonal text with size/opacity/color (e.g. `CONFIDENTIAL`).
-- **Header/footer** — tokens `{page}`, `{pages}`, `{date}`, `{title}`.
+![Signature pad](docs/shots/05-signature-pad.png)
 
-All stamps render during export at true PDF coordinates, so they're crisp at any zoom.
+- **Highlight / underline / strikethrough / pen / sticky notes / image stamps** — every mark
+  lives in true PDF coordinates and exports as real content:
 
----
+![Highlights, pen strokes, and a sticky note](docs/shots/04-annotate.png)
 
-## 5 · Compare two PDFs
+## 4 · Organize pages
 
-1. Press **Compare** in the top bar.
-2. Drop a second file (or pick the same one edited in another tab).
-3. The dialog diffs the extracted text line-by-line (LCS): **green = added**, **red = removed**,
-   with per-page counts.
+Drag thumbnails to reorder; rotate, duplicate, delete, or insert blanks from each thumbnail's
+controls; **Merge** another PDF at any position (or drop a file on the canvas); **Save** can
+extract any range (`1-3,5`) or emit one file per page.
 
-Great for contract revisions: "did the payment terms change between v1 and v2?"
+![The thumbnail rail](docs/shots/06-pages-thumbs.png)
 
----
+Sideways scans get a one-click, undoable **"Turn upright"** banner — for 90°, 180°, and 270°
+camera-rotation metadata alike. Mirrored artwork (a generator bug that shows in *every* viewer)
+is fixed with per-page horizontal/vertical flip — the export mirrors the real content while your
+marks stay put.
 
-## 6 · Organize pages
+## 5 · Stamp page numbers, watermarks, headers & footers
 
-- **Reorder** by dragging thumbnails.
-- **Rotate** (honors intrinsic `/Rotate`), **duplicate**, **delete**, **insert blanks**
-  — per page or in bulk.
-- **Merge** another PDF after the current page, or drop a file straight onto the canvas.
-- **Split/extract** any range (`1-3,5`) or export one file per page.
+In the **Save** dialog: page numbers (position, `1` / `Page 1` / `1 of N`, custom first number,
+skip-cover), a diagonal watermark with size/opacity/color, and header/footer lines with
+`{page}` `{pages}` `{date}` `{title}` tokens — all rendered at true PDF coordinates.
 
----
+![The export + stamping panel](docs/shots/09-export-stamps.png)
 
-## 7 · Search the whole document
+## 6 · Search everything
 
-Type in the top-bar search box: matches are highlighted on every page;
-**Enter / Shift+Enter** cycles through them with a live `n / total` counter.
+Type in the top-bar search box. Matches are highlighted on every page; Enter / Shift+Enter cycle
+through them with a live counter.
 
----
+![Search in action](docs/shots/12-search.png)
 
-## 8 · Ask AI about the document — privately
+## 7 · Compare two PDFs
 
-The **✦ AI assistant** runs a small LLM (Qwen2.5 0.5B / Llama 3.2 1B) fully in your browser
-via WebLLM/WebAssembly. Ask questions or summarize; the PDF itself never leaves the device.
-Model weights download once (~0.6 GB) and are cached. **Extract text** works with no download at all.
+Press **Compare**, drop two files, read the diff — additions green, removals red, with per-page
+counts. Built for "did the contract terms change between versions?"
 
----
+![The compare diff](docs/shots/10-compare.png)
 
-## 9 · OCR a scanned page into editable text
+## 8 · Ask an AI — privately
 
-Edit-text tool → **OCR this page**. Each recognized line becomes a real text annotation whose
-background is sampled from the page, so exported output is clean vector text over the original scan.
-Needs a one-time ~15 MB language-data download, cached afterwards.
+The ✦ assistant runs Qwen2.5 0.5B / Llama 3.2 1B **in your browser** (WebLLM/WebAssembly).
+Summarize, ask questions, extract text. The document never leaves the device; weights download
+once and work offline afterwards. **Extract text** needs no download at all.
 
----
+![The AI assistant](docs/shots/11-ai.png)
 
-## 10 · Session restore
+## 9 · OCR a scanned page
 
-Everything (files, page ops, marks, form values) autosaves to on-device storage. After a refresh
-or crash, the start screen offers **Resume session** — pick up exactly where you left off.
+Edit-text tool → **OCR this page**. Tesseract runs locally in WASM; each recognized line becomes
+a real editable text box (background sampled from the page), so exports turn flat scans into clean
+vector text. One-time ~15 MB language download, cached after.
+
+## 10 · Resume where you left off
+
+Everything autosaves on-device. After a refresh or crash, the start screen offers to restore the
+whole session — files, page ops, marks, and form values:
+
+![Landing with session resume](docs/shots/01-landing.png)
 
 ---
 
@@ -121,12 +115,17 @@ or crash, the start screen offers **Resume session** — pick up exactly where y
 ```bash
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 24 unit tests (doc model, viewport parity, export, diff)
+npm test           # 24 tests
 npm run typecheck
 npm run build      # → dist/ (PWA service worker included)
 ```
 
+The screenshots in this folder are regenerated with `node scripts/capture.cjs` (expects the app
+serving on `:5198` — used by `scripts/subpath-server.cjs`).
+
 Geometry invariant: **all marks live in the page's PDF user space**; the overlay and the exporter
-share the same CropBox-aware transform math (`src/lib/viewport.ts`), which is pinned against
-pdf.js's own `PageViewport` in tests — including offset MediaBox/CropBox origins that break
-most home-grown editors.
+share the same CropBox-aware transform (`src/lib/viewport.ts`), pinned against pdf.js's own
+`PageViewport` in tests — including offset MediaBox/CropBox origins that displace clicks in most
+home-grown editors.
+
+Free & open source under MIT — fork it, self-host it, ship it.

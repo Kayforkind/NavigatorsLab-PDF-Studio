@@ -767,8 +767,8 @@ export default function App() {
             <Icon.logo />
           </span>
           <span className="brand-name">
-            NavigatorsLab PDF Studio
-            <small>by navigatorslab.com</small>
+            PDF Studio
+            <small>by NavigatorsLab</small>
           </span>
         </div>
 

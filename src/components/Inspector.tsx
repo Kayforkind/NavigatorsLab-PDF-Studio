@@ -6,7 +6,7 @@ const COLORS = ['#ffd400', '#7cf29c', '#69c4ff', '#ff8fd0', '#ff7a5c', '#c4b5fd'
 
 const TOOL_BLURBS: Record<ToolId, string> = {
   select: 'Click an item to select it. Drag to move; drag the blue corner to resize. Delete removes it.',
-  edit: 'Click a line of the original text — NavigatorsLab PDF Studio detects it and lets you retype it. The old glyphs are painted over with the page background, then your new text is stamped on top.',
+  edit: 'Click a line of the original text — PDF Studio detects it and lets you retype it. The old glyphs are painted over with the page background, then your new text is stamped on top.',
   text: 'Click anywhere and type. Press Enter to place, Esc to cancel.',
   highlight: 'Drag across text to highlight it. Adjust color and opacity below.',
   underline: 'Drag across text to underline it.',

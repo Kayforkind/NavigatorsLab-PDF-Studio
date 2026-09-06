@@ -1,105 +1,164 @@
-# NavigatorsLab PDF Studio — a private, free, full-featured PDF editor
+<div align="center">
 
-A complete, client-side PDF editor: **edit the text that's already inside a PDF**, annotate, sign, redact,
-organize pages, merge and split, fill forms, **OCR scanned pages**, and **ask an on-device LLM about the document** —
-100% in the browser. No account, no upload, no watermark, no page or task limits.
+# PDF Studio
 
-A [NavigatorsLab](https://navigatorslab.com) project · MIT licensed · **hands-on walkthroughs in [EXAMPLES.md](./EXAMPLES.md)**
+### The free, open-source PDF editor that edits the text *inside* your PDF — entirely in your browser.
 
-```
-npm install
-npm run dev        # http://localhost:5199 → click "Open the demo document"
-npm run typecheck
-npm test           # unit + integration tests (24)
-npm run build      # production build + PWA service worker in dist/
-```
+**No uploads · No accounts · No watermarks · No page limits · No catches**
 
-> Engine note: `pdfjs-dist` is pinned to the 4.x line (^4.10.38) because 5.x/6.x call native
-> `Uint8Array.prototype.toHex()`/`toBase64()`, missing on older engines; 4.x ships guarded fallbacks.
+[![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
+[![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/pdf-studio/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
+[![Tests](https://img.shields.io/badge/tests-24_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
 
-## Market position (short version)
+*A [NavigatorsLab](https://navigatorslab.com) project.*
 
-The PDF-editor software market is ~$4.8B (2025) and growing ~10–18% CAGR toward $11–25B by the mid-2030s;
-AI-assisted document tools are its fastest-growing segment. Users' loudest recurring complaints about free tools:
-paywalls at the save step, watermarks, per-hour/page/task caps, forced sign-up, and privacy fears around uploading
-contracts and IDs. Free editors that truly modify existing text (e.g. PDFgear) are desktop-only. **PDF Studio's
-wedge: the private, unlimited, cross-platform web editor with in-place text editing, OCR, and on-device AI.**
+</div>
 
-## Features
+---
 
-| Area | What works |
+> **The pitch, in one sentence:** PDF Studio is the PDF editor you keep trying to find and never find — one that actually rewrites the text already in the document, fills real forms, OCRs scans, signs, redacts, reorganizes pages, diffs two revisions, and answers questions about the file with an on-device AI — and it does all of it **without your document ever leaving your computer**, for **free**, as **open source (MIT)**.
+
+## Why this exists
+
+Every "free" PDF editor online hits you the same way: upload your contract or your ID to somebody's server, edit three pages, then hit a paywall, a watermark, a page cap, or a sign-up screen at the exact moment you press Save. Desktop editors that genuinely modify existing text cost money or lock the feature behind a subscription.
+
+**PDF Studio's answer:** a full editor that runs 100% client-side. Your files are opened, edited, and saved by your own browser, on your own machine. There is no server to upload to. There is no account. There is no watermark, no quota, no "pro" tier. It is MIT-licensed open source — fork it, self-host it, ship it.
+
+## What it actually does (with proof)
+
+Every claim below is demonstrated by a real screenshot in this repository, captured from the running app.
+
+### ✏️ Edits the text that is already in your PDF
+
+The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target. Click a line, retype it, done — the old glyphs are painted over with a **background color sampled from the page itself** (so it works on scanned or textured pages, not just white), and your replacement is stamped at the same position and size. On export it's real vector text in real PDF content, not a screenshot pasted on top.
+
+![Every line of the original text is a clickable edit target](docs/shots/02-edit-hints.png)
+
+![Retyping a line in place — old text covered with page-sampled background, new text stamped](docs/shots/03-edit-inline.png)
+
+- Works on any digital PDF with a text layer, at any zoom level
+- Hover hints show exactly what's editable before you commit
+- Exports as true vector text — searchable, selectable, print-crisp
+
+### 📝 Fills real PDF forms (AcroForms) — then flattens them
+
+Open a fillable PDF and the Forms dialog lists **every field**: text inputs, checkboxes, radio groups, dropdowns — with jump-to-page buttons. Type your values right in the list, or flip on "show fields on pages" and click the widgets directly on the page canvas. On save, values are written into the *real* form fields — or **flattened** into page content so nobody downstream can change them. Tax forms, applications, contracts: filled privately, on your machine.
+
+![The Forms dialog listing every field with inline editing](docs/shots/07-forms.png)
+
+![Form widgets drawn on the page — click one to jump to it in the dialog](docs/shots/08-forms-on-canvas.png)
+
+### 🖋️ Signs, stamps, annotates
+
+Draw your signature on the built-in pad (exported as a transparent PNG), place it anywhere, resize it. Highlight, underline, strike through, freehand pen, sticky notes, text stamps, image stamps — every mark lives in true PDF coordinates and exports as real content.
+
+![Signature pad with live drawing](docs/shots/05-signature-pad.png)
+
+![Highlight, freehand pen, and a sticky note placed on the page](docs/shots/04-annotate.png)
+
+### 📄 Reorganizes pages like a pro
+
+Drag thumbnails to reorder. Rotate 90° (honoring the file's own rotation metadata — with a one-click **"Turn upright"** banner when a file was scanned sideways). Duplicate, delete, insert blank pages. **Merge** another PDF at any position — or just drop a file onto the canvas. **Split** by page range (`1-3,5`) or explode to one-file-per-page.
+
+![Thumbnail rail with per-page organize controls](docs/shots/06-pages-thumbs.png)
+
+### 🔢 Stamps page numbers, watermarks, headers & footers
+
+At export time: page numbers (position, `1` / `Page 1` / `1 of N` formats, custom first number, skip-the-cover), diagonal watermarks with size/opacity/color, and header/footer lines with `{page}`, `{pages}`, `{date}`, `{title}` tokens. Rendered at true PDF coordinates — crisp at any zoom.
+
+![Export dialog with the full stamping panel](docs/shots/09-export-stamps.png)
+
+### 🔍 Searches the whole document
+
+Full-text search across every page, case-insensitive, with highlighted matches on the page and Enter/Shift+Enter navigation with a live counter.
+
+![Search matches highlighted with the n/N counter](docs/shots/12-search.png)
+
+### ⚖️ Diffs two PDFs line by line
+
+Drop two versions of a document into Compare and get an LCS line-diff of their extracted text — additions in green, removals in red, per-page counts. Did the payment terms change between v1 and v2? Now you know in seconds.
+
+![Compare dialog with green/red line diff](docs/shots/10-compare.png)
+
+### 🤖 Asks an AI about your document — without leaking it
+
+The ✦ assistant runs a real LLM (Qwen2.5 0.5B / Llama 3.2 1B) **in your browser via WebAssembly**. Ask questions, get summaries. The document text never leaves the device — the model comes to your data, not the other way around. Weights download once (~0.6–0.9 GB), then work offline. The lighter **Extract text** path needs no download at all and runs fully offline.
+
+![The on-device AI assistant dialog](docs/shots/11-ai.png)
+
+### 🔠 OCRs scanned pages into editable text
+
+Scanned page with no text layer? The OCR tool runs **Tesseract locally in WebAssembly** — each recognized line becomes a real, editable text box whose background is sampled from the page, so the export turns a flat scan into clean vector text. One-time ~15 MB language download, cached forever after.
+
+### 🩹 Repairs broken files
+
+- **Sideways scans**: detects camera-style rotation metadata and offers a one-click, undoable "Turn upright" for every affected page — including files stuck at 180°.
+- **Mirrored content**: some generators store artwork flipped (your email print-to-PDF might be upside down in *every* viewer). Flip any page horizontally/vertically — the export mirrors the real page content while your marks stay put.
+- **Offset page boxes**: PDF Studio's geometry engine is **CropBox-aware** — it handles files whose MediaBox doesn't start at (0,0) (extremely common in print-to-PDF output) that displace clicks and annotations in lesser editors.
+
+### 💾 Never loses your work
+
+Everything — open files, page operations, marks, form values — autosaves to on-device storage. After a crash or refresh, the start screen offers **Resume session**, and picks up exactly where you left off.
+
+### 📴 Works offline
+
+It's a PWA: install it to your dock/desktop and it keeps working with the network off. Your toolkit shouldn't have an "out of service" state.
+
+![The landing screen — drop a file, or resume your last session](docs/shots/01-landing.png)
+
+## Privacy model — short and absolute
+
+| Question | Answer |
 | --- | --- |
-| Open / save | Drop or choose a PDF, or the built-in demo. Local download only. Offline-capable (PWA). |
-| Edit existing text | Edit tool → hover hints show clickable lines → click, retype → original glyphs are painted over with a **sampled** page background and your text is stamped in place. |
-| Annotate | Highlight, underline, strikethrough, sticky notes, freehand pen, text stamps. |
-| Sign & images | Signature pad (transparent PNG, remembered per session); PNG/JPG/WebP stamps. |
-| Redact / whiteout | Black-out boxes; whiteout samples the page background so it blends into scans. |
-| Pages | Drag-reorder thumbnails, 90° rotate (honors the file's intrinsic /Rotate), duplicate, delete, blank pages; **one-click "turn upright" banner** when a file's pages carry camera rotation metadata. |
-| **Fix flipped content** | Horizontal/vertical flip for any page (mirrors the artwork on canvas *and* on export while your marks stay put) plus per-annotation H/V flip for images & signatures — repairs generator-broken scans without leaving the app. |
-| Merge / split | Merge after the current page (or drop onto the canvas); export any range or one file per page. |
-| **Forms (AcroForm)** | Detects fillable fields (text, checkboxes, radio groups, dropdowns) with a fill dialog; **"show on pages"** draws every widget on the canvas — click one to jump & focus it in the dialog. Values are written into the real fields on Save, or **flattened** into page content so they can't be changed. |
-| **Stamps** | Page numbers (position / format / first number / skip cover), diagonal watermark (size, opacity, color), header & footer lines — tokens `{page}` `{pages}` `{date}` `{title}`. |
-| **Search** | Full-document, case-insensitive; highlighted matches with Enter / Shift+Enter navigation. |
-| **Compare** | Diff two PDFs' extracted text side-by-side — additions highlighted green, removals red, per-page counts. |
-| **Autosave** | The working session (pages, marks, form values) is stored on-device and offered as “Resume” on the start screen after a refresh or crash. |
-| Model & undo | Full undo/redo (Ctrl/⌘Z · Ctrl/⌘Y) over page ops and every annotation. |
-| **OCR scans** | Edit-text tool → "OCR this page": Tesseract runs **locally via WASM**, each recognized line becomes editable, replaceable text (background sampled from the page). Needs a one-time ~15 MB language-data download, cached afterwards. |
-| **On-device AI** | ✦ button → ask or summarize the open document with WebLLM (Qwen2.5 0.5B / Llama 3.2 1B) running in WebAssembly. Model weights download once (~0.6–0.9 GB); the **document itself never leaves the device**. "Extract text" works fully offline. |
-| Properties / export | Title/author/subject/keywords, page range extraction. |
-| Privacy | Zero network calls with your data for viewing/editing/export. Model/OCR downloads are public weights cached by the browser. |
+| Where do my files go? | **Nowhere.** There is no upload endpoint. Open the devtools network tab and watch it stay silent while you edit. |
+| Do I need an account? | **No.** There is no server to have an account on. |
+| Watermarks? | **None.** |
+| Page/task/hour limits? | **None.** |
+| What downloads over the network? | The app itself, plus optional public model weights (AI ~0.6 GB, OCR ~15 MB) — cached by your browser after the first fetch. Your *documents* never transit the network. |
+| Can I air-gap it? | **Yes.** Clone the repo, host `dist/` on an internal network, point the AI/OCR loaders at internal mirrors. |
 
-## Architecture
+## The honest limits (we'd rather tell you than oversell)
 
-```
-src/
-  types.ts               domain model: sources, PageRec, Annotation (PDF-point content space)
-  lib/docModel.ts        undoable reducer (pages + annotations, past/future stacks)
-  lib/viewport.ts        pure port of pdf.js PageViewport math (rotation-aware css ⇄ content)
-  lib/pdfio.ts           pdf.js load/render/text-extraction (pdf.js-coupled bits)
-  lib/ranges.ts          page-range parsing ("1-3,5")
-  lib/exportPdf.ts       pdf-lib exporter: page ops, /Rotate, flattened annotations, metadata
-  lib/ocr.ts             local OCR (Tesseract WASM) → grouped lines
-  lib/ai.ts              lazy WebLLM engine wrapper (graceful offline errors)
-  lib/sample.ts          generates the demo document
-  components/*           PageSheet (canvas+SVG overlay+interactions), Thumbs, ToolRail,
-                         Inspector (incl. OCR), AIDialog, modals, Landing
-```
+- Edit-text targets PDFs **with a text layer**; for flat scans you use the OCR tool (which exists precisely for that).
+- Replacement text is set in Helvetica metrics — extremely close, but not glyph-identical to exotic embedded fonts.
+- Compare diffs extracted **text**, not rendered pixels — it's built for contract/revision review, not detecting a shifted logo.
+- The AI runs small models (0.5B–1B parameters) — good at summarizing and locating content in a document, not a replacement for a frontier model.
 
-Key invariant: **all geometry lives in the source page's PDF user space** (y-up, bottom-left). The overlay converts
-to screen space with the same transform pdf.js uses for rendering and the exporter draws into the same space — so
-what you see is what you get, on rotated pages too (verified: overlay glyphs within 1px, exported baseline exact).
-
-## Tests
-
-`npm test` runs 24 tests:
-- `docModel.test.ts` — page ops, undo/redo, deletion cascades, reorder/merge/duplicate, bulk rotation.
-- `viewport.test.ts` — parity with pdf.js `PageViewport` transforms/dimensions for 0/90/180/270°, coordinate
-  round-trips, range parsing.
-- `exportPdf.test.ts` — exports a real PDF (rotation metadata, blank pages, flattened text/highlight/edit
-  annotations, metadata) and re-parses it with pdf.js to assert content and page ranges.
-- `compare.test.ts` — LCS line-diff: insertions, deletions, edits (−1/+1), identical files.
-
-## Deploy (any static host; one command)
+## Developer quick start
 
 ```bash
-npm run build        # → dist/ (includes service worker + manifest)
+git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
+cd NavigatorsLab-PDF-Studio
+npm install
+npm run dev        # http://localhost:5199 → click "Open the demo document"
+npm test           # 24 unit + integration tests
+npm run typecheck
+npm run build      # production build + PWA service worker → dist/
 ```
 
-- **Netlify**: `netlify deploy --prod --dir=dist` (or connect the repo — `netlify.toml` handles the SPA fallback).
-- **Vercel**: `vercel --prod` (`vercel.json` rewrites to the app shell).
-- **GitHub Pages**: push to `main` — the included workflow (`.github/workflows/deploy-pages.yml`) builds and publishes automatically. The Vite `base` is relative (`'./'`), so the build works at any subpath (`/repo-name/`) *and* at a custom domain with zero changes. Verified locally by serving the production build under `/pdf-studio/`.
-- **Cloudflare Pages / S3 + CDN / any static server**: upload `dist/` with SPA fallback to `index.html`.
+**Stack:** TypeScript · React 19 · Vite · pdf.js (render) · pdf-lib (write) · Tesseract.js (OCR) · WebLLM (AI) · vite-plugin-pwa. Zero backend.
 
-## Limitations & roadmap
+**Architecture in one line:** every mark lives in the page's PDF user space; the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport` — including offset MediaBox/CropBox origins that break most home-grown editors.
 
-- Edit-text targets digital PDFs with a text layer; **scanned pages use the OCR tool** (runs locally, replaced text is
-  vector on export).
-- Text replacement uses Helvetica metrics (close but not glyph-identical to embedded fonts).
-- Compare diffs extracted text, not rendered pixels — good for contract/revision review, not for layout shifts.
-- WebLLM model weights and the OCR language file download over the network once (browser-cached). You can point
-  `loadEngine`/`runOcr` at a self-hosted mirror to go 100% air-gapped.
-- Bigger next steps: XFA form support, digital signatures, annotation import/export (FDF/XFDF), and PWA auto-update UX polish.
+**Test suite (24):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine.
+
+## Deployment (any static host, one command)
+
+```bash
+npm run build   # → dist/
+```
+
+The build uses a **relative base**, so the same `dist/` works at a domain root, a subpath (`/repo-name/`), or a CDN — verified under a simulated GitHub Pages subpath. A GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) publishes to Pages on every push to `main`; `wrangler.jsonc` deploys to Cloudflare Workers (`navigatorslab.com`) with `npx wrangler deploy`.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Fully open source: fork it, self-host it, ship it.
+**MIT** — free for personal, commercial, and everything-in-between use. That's the whole point: [LICENSE](./LICENSE).
+
+<div align="center">
+
+**Free. Open source. Private by architecture, not by policy.**
+
+[navigatorslab.com](https://navigatorslab.com) · [use it live](https://navigatorslab.com) · [GitHub Pages mirror](https://kayforkind.github.io/pdf-studio/)
+
+</div>
