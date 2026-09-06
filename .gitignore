@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dev-assets/
+*.local
+.DS_Store
+dev.log
+tsconfig.tsbuildinfo
+subpath.log
+public/form-test.pdf
