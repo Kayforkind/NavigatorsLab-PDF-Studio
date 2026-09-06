@@ -7,7 +7,7 @@
 **No uploads · No accounts · No watermarks · No page limits · No catches**
 
 [![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
-[![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/pdf-studio/)
+[![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-24_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
 
@@ -159,6 +159,6 @@ The build uses a **relative base**, so the same `dist/` works at a domain root, 
 
 **Free. Open source. Private by architecture, not by policy.**
 
-[navigatorslab.com](https://navigatorslab.com) · [use it live](https://navigatorslab.com) · [GitHub Pages mirror](https://kayforkind.github.io/pdf-studio/)
+[navigatorslab.com](https://navigatorslab.com) · [use it live](https://navigatorslab.com) · [GitHub Pages mirror](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
 
 </div>
