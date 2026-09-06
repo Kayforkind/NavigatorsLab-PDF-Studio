@@ -26,8 +26,8 @@ export async function makeSamplePdf(): Promise<Uint8Array> {
   font = await doc.embedFont(StandardFonts.Helvetica);
   bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  doc.setTitle('PDF Studio — Demo Document');
-  doc.setAuthor('PDF Studio');
+  doc.setTitle('NavigatorsLab PDF Studio — Demo Document');
+  doc.setAuthor('NavigatorsLab PDF Studio');
   doc.setSubject('Feature tour');
   doc.setKeywords(['demo', 'pdf', 'editor']);
 
@@ -62,7 +62,7 @@ export async function makeSamplePdf(): Promise<Uint8Array> {
     font: font,
     color: GRAY,
   });
-  p1.drawText('PDF Studio · demo file, generated in your browser', { x: M, y: 44, size: 9, font, color: GRAY });
+  p1.drawText('NavigatorsLab PDF Studio · demo file, generated in your browser', { x: M, y: 44, size: 9, font, color: GRAY });
 
   /* ---------------- Page 2: agreement (editable paragraphs) ---------------- */
   const p2 = doc.addPage([W, H]);
