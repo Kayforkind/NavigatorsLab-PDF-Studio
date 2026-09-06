@@ -14,7 +14,10 @@ export type ToolId =
   | 'sign'
   | 'image'
   | 'redact'
-  | 'whiteout';
+  | 'whiteout'
+  | 'arrow'
+  | 'rect'
+  | 'ellipse';
 
 export interface Point {
   x: number;
@@ -135,13 +138,41 @@ export interface ImageAnn extends AnnCommon {
   flipV?: boolean;
 }
 
+/** Straight pointer arrow from (x1,y1) to (x2,y2) with an arrowhead at the end. */
+export interface ArrowAnn extends AnnCommon {
+  type: 'arrow';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  color: string;
+  width: number;
+  opacity: number;
+}
+
+/** Outlined shape: rectangle or ellipse (stroke = color, optional translucent fill). */
+export interface ShapeAnn extends AnnCommon {
+  type: 'rect' | 'ellipse';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color: string;
+  width: number;
+  opacity: number;
+  /** optional fill color hex; null = outline only */
+  fill?: string | null;
+}
+
 export type Annotation =
   | RectAnn
   | InkAnn
   | TextAnn
   | EditAnn
   | NoteAnn
-  | ImageAnn;
+  | ImageAnn
+  | ArrowAnn
+  | ShapeAnn;
 
 /* ------------------------------------------------------------------ */
 /* Document model                                                      */

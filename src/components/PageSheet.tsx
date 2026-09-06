@@ -60,6 +60,14 @@ function annRect(a: Annotation): ContentRect | null {
       return { x: a.x, y: a.y - a.size * 0.25, w: 0, h: a.size };
     case 'note':
       return { x: a.x, y: a.y, w: NOTE_SIZE, h: NOTE_SIZE };
+    case 'arrow': {
+      const x0 = Math.min(a.x1, a.x2);
+      const y0 = Math.min(a.y1, a.y2);
+      return { x: x0, y: y0, w: Math.abs(a.x2 - a.x1), h: Math.abs(a.y2 - a.y1) };
+    }
+    case 'rect':
+    case 'ellipse':
+      return a;
     case 'ink': {
       if (a.pts.length < 2) return null;
       let x0 = Infinity;
@@ -80,6 +88,10 @@ function annRect(a: Annotation): ContentRect | null {
 
 function isLineTool(t: ToolId) {
   return t === 'underline' || t === 'strike';
+}
+
+function isArrowTool(t: ToolId) {
+  return t === 'arrow';
 }
 
 /** average rgb sampled along a horizontal scan inside the rendered canvas (css coords) */
@@ -109,7 +121,7 @@ function sampleBackground(canvas: HTMLCanvasElement, cssX: number, cssY: number,
   }
 }
 
-const RECT_TOOLS = new Set<ToolId>(['highlight', 'underline', 'strike', 'redact', 'whiteout']);
+const RECT_TOOLS = new Set<ToolId>(['highlight', 'underline', 'strike', 'redact', 'whiteout', 'rect', 'ellipse']);
 
 interface GestureState {
   kind: 'rect' | 'ink' | 'move' | 'resize';
@@ -339,6 +351,10 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         setGesture({ kind: 'rect', a: pt, b: pt, tool });
         return;
       }
+      if (tool === 'arrow') {
+        setGesture({ kind: 'rect', a: pt, b: pt, tool });
+        return;
+      }
       if (tool === 'ink') {
         setGesture({ kind: 'ink', pts: [pt], tool });
         return;
@@ -426,15 +442,24 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
     setGesture(null);
     if (!g) return;
     if (g.kind === 'rect' && g.a && g.b) {
+      const t = (g.tool ?? props.tool) as ToolId;
+      if (t === 'arrow') {
+        // an arrow is a segment, not an area: commit even for tiny drags
+        const dist = Math.hypot(g.b.x - g.a.x, g.b.y - g.a.y);
+        if (dist < 3) return;
+        props.onAdd({ id: uid(), pageId: page.id, type: 'arrow', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, color: settings.color, width: settings.width, opacity: Math.min(1, 0.45 + settings.opacity) } as Annotation);
+        return;
+      }
       const r = rectOf(g.a, g.b);
       if (r.w < 1.5 || r.h < 1.5) return;
-      const t = (g.tool ?? props.tool) as ToolId;
       if (t === 'highlight') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, opacity: settings.opacity } as Annotation);
       } else if (t === 'underline' || t === 'strike') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, opacity: settings.opacity } as Annotation);
       } else if (t === 'redact') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: '#101014', opacity: 1 } as Annotation);
+      } else if (t === 'rect' || t === 'ellipse') {
+        props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, width: settings.width, opacity: Math.min(1, 0.35 + settings.opacity), fill: null } as Annotation);
       } else if (t === 'whiteout') {
         // paint with the page background sampled from inside the drawn box
         const canvas = canvasRef.current;
@@ -466,6 +491,8 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       if (!ann) return;
       if (ann.type === 'ink' && ann.pts) {
         props.onUpd(g.annId, { pts: ann.pts.map((p) => ({ x: p.x + dx, y: p.y + dy })) } as Partial<Annotation>);
+      } else if (ann.type === 'arrow') {
+        props.onUpd(g.annId, { x1: ann.x1 + dx, y1: ann.y1 + dy, x2: ann.x2 + dx, y2: ann.y2 + dy } as Partial<Annotation>);
       } else if ('x' in ann) {
         props.onUpd(g.annId, { x: (ann.x as number) + dx, y: (ann.y as number) + dy } as Partial<Annotation>);
       }
@@ -478,7 +505,15 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       const b = g.base;
       const w = Math.max(2, b.w + dx);
       const h = Math.max(2, b.h + dy);
-      props.onUpd(g.annId, { x: b.x, y: b.y, w, h } as Partial<Annotation>);
+      const ann = props.anns.find((a) => a.id === g.annId);
+      if (ann?.type === 'arrow') {
+        // scale the free endpoint inside the resized bounding box
+        const nx = b.w > 0.001 ? b.x + ((ann.x2 - b.x) / b.w) * w : b.x;
+        const ny = b.h > 0.001 ? b.y + ((ann.y2 - b.y) / b.h) * h : b.y;
+        props.onUpd(g.annId, { x2: nx, y2: ny } as Partial<Annotation>);
+      } else {
+        props.onUpd(g.annId, { x: b.x, y: b.y, w, h } as Partial<Annotation>);
+      }
     }
   }, [gesture, props, settings, toCss]);
 
@@ -579,7 +614,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
     return null;
   }, [gesture, toCss, scale]);
 
-  const toolType = props.tool as RectAnn['type'];
+  const toolType = props.tool as RectAnn['type'] | 'rect' | 'ellipse' | 'arrow';
   const rectPreview = useMemo(() => {
     if (!gesture || gesture.kind !== 'rect' || !gesture.a || !gesture.b) return null;
     const a = toCss(gesture.a);
@@ -595,7 +630,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       const c = cssHexToRgb(settings.color);
       fill = `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)},${settings.opacity})`;
     }
-    return { x, y, w, h, fill, line: isLineTool(toolType), isRect: toolType === 'highlight' || toolType === 'redact' || toolType === 'whiteout' };
+    return { x, y, w, h, fill, line: isLineTool(toolType), isRect: toolType === 'highlight' || toolType === 'redact' || toolType === 'whiteout', arrow: isArrowTool(toolType), ax: a.x, ay: a.y, bx: b.x, by: b.y };
   }, [gesture, toCss, toolType, settings]);
 
   const inkPts = gesture?.kind === 'ink' ? gesture.pts ?? [] : null;
@@ -667,6 +702,17 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         )}
 
         <svg className="sheet-overlay" width={cssDims.w} height={cssDims.h}>
+          <defs>
+            <marker id="arrow-preview-head" markerWidth="9" markerHeight="8" refX="7.5" refY="4" orient="auto">
+              <path d="M0.5,0.5 L8,4 L0.5,7.5" fill="none" stroke={settings.color} strokeWidth={Math.max(1.4, settings.width * scale)} strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+            <marker id="arrow-head" markerWidth="9" markerHeight="8" refX="7.5" refY="4" orient="auto">
+              <path d="M0.5,0.5 L8,4 L0.5,7.5" fill="none" stroke={settings.color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+            <marker id="arrow-head-sel" markerWidth="9" markerHeight="8" refX="7.5" refY="4" orient="auto">
+              <path d="M0.5,0.5 L8,4 L0.5,7.5" fill="none" stroke="#2563eb" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+          </defs>
           {props.tool === 'edit' &&
             hits &&
             hits.map((h, i) => {
@@ -746,6 +792,54 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                 return <rect key={ann.id} x={css.x} y={css.y} width={css.w} height={css.h} fill="#111114" />;
               case 'whiteout':
                 return <rect key={ann.id} x={css.x} y={css.y} width={css.w} height={css.h} fill={ann.color} />;
+              case 'arrow': {
+                const p1 = toCss({ x: ann.x1, y: ann.y1 });
+                const p2 = toCss({ x: ann.x2, y: ann.y2 });
+                return (
+                  <line
+                    key={ann.id}
+                    x1={p1.x}
+                    y1={p1.y}
+                    x2={p2.x}
+                    y2={p2.y}
+                    stroke={ann.color}
+                    strokeWidth={Math.max(1.4, ann.width * scale)}
+                    strokeOpacity={ann.opacity}
+                    strokeLinecap="round"
+                    markerEnd={props.selectedId === ann.id ? 'url(#arrow-head-sel)' : 'url(#arrow-head)'}
+                  />
+                );
+              }
+              case 'rect':
+                return (
+                  <rect
+                    key={ann.id}
+                    x={css.x}
+                    y={css.y}
+                    width={css.w}
+                    height={css.h}
+                    fill={ann.fill ?? 'none'}
+                    fillOpacity={ann.fill ? ann.opacity * 0.35 : 0}
+                    stroke={ann.color}
+                    strokeWidth={Math.max(1.2, ann.width * scale)}
+                    strokeOpacity={ann.opacity}
+                  />
+                );
+              case 'ellipse':
+                return (
+                  <ellipse
+                    key={ann.id}
+                    cx={css.x + css.w / 2}
+                    cy={css.y + css.h / 2}
+                    rx={Math.max(1, css.w / 2)}
+                    ry={Math.max(1, css.h / 2)}
+                    fill={ann.fill ?? 'none'}
+                    fillOpacity={ann.fill ? ann.opacity * 0.35 : 0}
+                    stroke={ann.color}
+                    strokeWidth={Math.max(1.2, ann.width * scale)}
+                    strokeOpacity={ann.opacity}
+                  />
+                );
               case 'edit':
                 return (
                   <g key={ann.id}>
@@ -818,7 +912,19 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           )}
 
           {rectPreview &&
-            (rectPreview.line ? (
+            (rectPreview.arrow ? (
+              <line
+                x1={rectPreview.ax}
+                y1={rectPreview.ay}
+                x2={rectPreview.bx}
+                y2={rectPreview.by}
+                stroke={settings.color}
+                strokeWidth={Math.max(1.5, settings.width * scale)}
+                strokeOpacity={settings.opacity}
+                strokeLinecap="round"
+                markerEnd="url(#arrow-preview-head)"
+              />
+            ) : rectPreview.line ? (
               <g>
                 <rect x={rectPreview.x} y={rectPreview.y} width={rectPreview.w} height={rectPreview.h} fill="none" stroke={settings.color} strokeOpacity={0.5} strokeDasharray="4 3" />
                 <line
@@ -832,6 +938,10 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                   strokeLinecap="round"
                 />
               </g>
+            ) : toolType === 'ellipse' ? (
+              <ellipse cx={rectPreview.x + rectPreview.w / 2} cy={rectPreview.y + rectPreview.h / 2} rx={Math.max(1, rectPreview.w / 2)} ry={Math.max(1, rectPreview.h / 2)} fill="none" stroke={settings.color} strokeWidth={Math.max(1.5, settings.width * scale)} strokeOpacity={Math.min(1, 0.35 + settings.opacity)} strokeDasharray="5 3" />
+            ) : toolType === 'rect' ? (
+              <rect x={rectPreview.x} y={rectPreview.y} width={rectPreview.w} height={rectPreview.h} fill="none" stroke={settings.color} strokeWidth={Math.max(1.5, settings.width * scale)} strokeOpacity={Math.min(1, 0.35 + settings.opacity)} strokeDasharray="5 3" />
             ) : (
               <rect x={rectPreview.x} y={rectPreview.y} width={rectPreview.w} height={rectPreview.h} fill={rectPreview.fill} stroke="rgba(60,80,120,0.6)" strokeDasharray="4 3" />
             ))}

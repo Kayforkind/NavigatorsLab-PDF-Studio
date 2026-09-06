@@ -23,6 +23,9 @@ const GROUPS: ToolDef[][] = [
   ],
   [
     { id: 'ink', label: 'Pen / draw', hint: 'Freehand drawing', icon: Icon.ink },
+    { id: 'arrow', label: 'Arrow / pointer', hint: 'Drag to point at something — arrowhead at the far end', icon: Icon.arrow },
+    { id: 'rect', label: 'Rectangle', hint: 'Outlined box — great for circling regions of interest', icon: Icon.rect },
+    { id: 'ellipse', label: 'Ellipse', hint: 'Outlined ellipse — circle content in style', icon: Icon.ellipse },
     { id: 'sign', label: 'Signature', hint: 'Draw a signature and stamp it on the page', icon: Icon.sign },
     { id: 'image', label: 'Image stamp', hint: 'Place a PNG / JPG / logo on the page', icon: Icon.image },
   ],

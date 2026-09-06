@@ -525,6 +525,9 @@ button {
 .canvas-area[data-tool='strike'] .sheet-inner,
 .canvas-area[data-tool='redact'] .sheet-inner,
 .canvas-area[data-tool='whiteout'] .sheet-inner,
+.canvas-area[data-tool='arrow'] .sheet-inner,
+.canvas-area[data-tool='rect'] .sheet-inner,
+.canvas-area[data-tool='ellipse'] .sheet-inner,
 .canvas-area[data-tool='sign'] .sheet-inner,
 .canvas-area[data-tool='image'] .sheet-inner {
   cursor: crosshair;
@@ -1312,6 +1315,13 @@ button {
   }
 }
 
+@media (max-width: 900px) {
+  .landing {
+    grid-template-columns: 1fr;
+    padding: 4vh 5vw;
+  }
+}
+
 @media (max-width: 860px) {
   .thumb-strip {
     display: none;
@@ -1335,18 +1345,137 @@ button {
   }
 }
 
-@media (max-width: 900px) {
-  .landing {
-    grid-template-columns: 1fr;
-    padding: 4vh 5vw;
+/* ---------------- mobile & touch ---------------- */
+@media (max-width: 720px) {
+  .app-body {
+    flex-direction: column-reverse;
   }
-}
 
-@media (max-width: 480px) {
+  /* tool rail becomes a bottom bar */
+  .tool-rail {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    z-index: 60;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-right: none;
+    border-top: 1px solid var(--line);
+    background: var(--panel2);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tool-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tool-group {
+    flex-direction: row;
+    padding: 0;
+    gap: 2px;
+  }
+  .tool-group + .tool-group {
+    border-top: none;
+    margin-top: 0;
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid var(--line);
+  }
+
+  .tool-btn {
+    min-width: 46px;
+    padding: 7px 6px 5px;
+  }
+  .tool-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .tool-name {
+    display: block;
+    font-size: 8.5px;
+  }
+
+  .canvas-area {
+    padding-bottom: 76px; /* room for the bottom tool bar */
+  }
+
+  .page-column {
+    padding: 14px 10px 60px;
+  }
+
+  .topbar {
+    height: 48px;
+    padding: 0 8px;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .topbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .brand-name small {
+    display: none;
+  }
+
   .docname {
     display: none;
   }
 
+  .search-box {
+    width: 90px;
+  }
+
+  .sheet-meta {
+    font-size: 10.5px;
+  }
+
+  /* bigger hit targets for touch */
+  .thumb-strip {
+    display: none;
+  }
+
+  .sheet-overlay {
+    touch-action: none;
+  }
+
+  .modal {
+    width: 96vw;
+    max-height: 92vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-backdrop {
+    padding: 10px;
+  }
+
+  .inline-input {
+    font-size: 16px !important; /* prevent iOS zoom-on-focus */
+  }
+
+  .normalize-banner {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .landing-features span {
+    font-size: 11.5px;
+    padding: 4px 9px;
+  }
+
+  .landing-hero h1 {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 480px) {
   .topbar .tb-btn span,
   .topbar .tb-btn:not(.icon) {
     font-size: 0;
@@ -1355,6 +1484,10 @@ button {
   .save-cta {
     font-size: 13px !important;
     padding: 7px 10px;
+  }
+
+  .search-box {
+    width: 70px;
   }
 }
 

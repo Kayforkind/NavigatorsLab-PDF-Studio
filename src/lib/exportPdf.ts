@@ -165,6 +165,66 @@ async function drawAnn(
       page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(0.05, 0.05, 0.06), opacity: 1 });
       break;
     }
+    case 'arrow': {
+      const c = cssHexToRgb(ann.color);
+      const col = rgb(c.r, c.g, c.b);
+      page.drawLine({
+        start: { x: ann.x1, y: ann.y1 },
+        end: { x: ann.x2, y: ann.y2 },
+        thickness: ann.width,
+        color: col,
+        opacity: ann.opacity,
+        lineCap: LineCapStyle.Round,
+      });
+      // open V arrowhead at (x2,y2), oriented along the shaft
+      const ang = Math.atan2(ann.y2 - ann.y1, ann.x2 - ann.x1);
+      const head = Math.max(8, ann.width * 4);
+      const spread = Math.PI / 7; // ~26°
+      for (const s of [-1, 1]) {
+        const a2 = ang + Math.PI + s * spread;
+        page.drawLine({
+          start: { x: ann.x2, y: ann.y2 },
+          end: { x: ann.x2 + head * Math.cos(a2), y: ann.y2 + head * Math.sin(a2) },
+          thickness: ann.width,
+          color: col,
+          opacity: ann.opacity,
+          lineCap: LineCapStyle.Round,
+        });
+      }
+      break;
+    }
+    case 'rect': {
+      const c = cssHexToRgb(ann.color);
+      const f = ann.fill ? cssHexToRgb(ann.fill) : null;
+      page.drawRectangle({
+        x: ann.x,
+        y: ann.y,
+        width: ann.w,
+        height: ann.h,
+        borderColor: rgb(c.r, c.g, c.b),
+        borderWidth: ann.width,
+        borderOpacity: ann.opacity,
+        color: f ? rgb(f.r, f.g, f.b) : undefined,
+        opacity: f ? ann.opacity * 0.35 : 0,
+      });
+      break;
+    }
+    case 'ellipse': {
+      const c = cssHexToRgb(ann.color);
+      const f = ann.fill ? cssHexToRgb(ann.fill) : null;
+      page.drawEllipse({
+        x: ann.x + ann.w / 2,
+        y: ann.y + ann.h / 2,
+        xScale: Math.max(1, ann.w / 2),
+        yScale: Math.max(1, ann.h / 2),
+        borderColor: rgb(c.r, c.g, c.b),
+        borderWidth: ann.width,
+        borderOpacity: ann.opacity,
+        color: f ? rgb(f.r, f.g, f.b) : undefined,
+        opacity: f ? ann.opacity * 0.35 : 0,
+      });
+      break;
+    }
     case 'whiteout': {
       const c = cssHexToRgb(ann.color);
       page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(c.r, c.g, c.b), opacity: 1 });

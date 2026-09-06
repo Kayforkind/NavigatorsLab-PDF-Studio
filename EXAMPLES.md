@@ -47,10 +47,22 @@ On export the replacement is real vector text — searchable, selectable, print-
 
 ![Signature pad](docs/shots/05-signature-pad.png)
 
-- **Highlight / underline / strikethrough / pen / sticky notes / image stamps** — every mark
+- **Highlight / underline / strikethrough / pen / sticky notes / text boxes / image stamps** — every mark
   lives in true PDF coordinates and exports as real content:
 
 ![Highlights, pen strokes, and a sticky note](docs/shots/04-annotate.png)
+
+- **Styling shapes**: **Arrow / pointer** (drag tail → tip; the arrowhead lands at release),
+  **Rectangle** and **Ellipse** outlines — color and line weight follow the style controls:
+
+![Redaction, arrow pointer, ellipse, rectangle — live on the page](docs/shots/13-shapes-redact.png)
+
+## 3b · Redact sensitive content
+
+Pick **Redact**, drag over what must not be seen. The box is opaque black on canvas and is
+flattened black-over-content in the exported file — the covered content stays hidden in the
+shipped PDF. Prefer invisible cleanup on scans? **Whiteout** covers with the page-sampled
+background instead.
 
 ## 4 · Organize pages
 
@@ -101,7 +113,15 @@ Edit-text tool → **OCR this page**. Tesseract runs locally in WASM; each recog
 a real editable text box (background sampled from the page), so exports turn flat scans into clean
 vector text. One-time ~15 MB language download, cached after.
 
-## 10 · Resume where you left off
+## 10 · Edit on your phone
+
+Open the app on a phone: the tool rail docks to the **bottom of the screen** (thumb-reachable,
+labels under each icon), the top bar scrolls horizontally, and pages stack full-width. Install it
+as a PWA for a fullscreen, offline-capable editor:
+
+![Mobile layout with bottom tool bar](docs/shots/14-mobile.png)
+
+## 11 · Resume where you left off
 
 Everything autosaves on-device. After a refresh or crash, the start screen offers to restore the
 whole session — files, page ops, marks, and form values:
