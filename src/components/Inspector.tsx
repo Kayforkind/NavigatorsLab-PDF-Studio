@@ -17,6 +17,9 @@ const TOOL_BLURBS: Record<ToolId, string> = {
   image: 'Choose an image file; it is stamped at the click point. Drag to position, corner to scale.',
   redact: 'Drag a box over sensitive content to permanently black it out in the exported PDF.',
   whiteout: 'Drag a box to cover content with the sampled page background — ideal for cleaning up a scan.',
+  arrow: 'Drag from tail to tip to point at something — the arrowhead lands where you release.',
+  rect: 'Drag an outlined rectangle. Color and line weight follow the style controls.',
+  ellipse: 'Drag an outlined ellipse to circle the important part.',
 };
 
 function Field({

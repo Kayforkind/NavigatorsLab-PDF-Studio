@@ -43,6 +43,22 @@ export const Icon = {
       <path d="M9.5 14a2.5 2.5 0 002.5 2.5" />
     </Svg>
   ),
+  arrow: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <path d="M5 19L17 7" />
+      <path d="M9 7h8v8" />
+    </Svg>
+  ),
+  rect: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <rect x="4.5" y="6" width="15" height="12" rx="1" />
+    </Svg>
+  ),
+  ellipse: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <ellipse cx="12" cy="12" rx="7.5" ry="5.8" />
+    </Svg>
+  ),
   text: (p: SVGProps<SVGSVGElement>) => (
     <Svg {...p}>
       <path d="M5 6V4h14v2" />

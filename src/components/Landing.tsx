@@ -71,7 +71,10 @@ export function Landing({
             <Icon.undo /> Resume “{saved.name}” — saved {new Date(saved.at).toLocaleString()} (on this device)
           </button>
         )}
-        <p className="muted small">Files never leave this device — everything runs locally in your browser.</p>
+        <p className="muted small">
+          Files never leave this device — no uploads, no attachments kept, no user information collected. Everything runs
+          locally in your browser.
+        </p>
       </div>
     </div>
   );

@@ -301,8 +301,8 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
           <h3>Editing</h3>
           <ul>
             <li><b>Edit text</b> — switch to the edit tool and click a line of the original PDF. Its background is sampled and repainted, then your new text is stamped in place. Best effort on digital PDFs; scanned images need OCR (roadmap).</li>
-            <li><b>Add text</b>, <b>highlight</b>, <b>underline</b>, <b>strikethrough</b>, <b>notes</b> and <b>freehand drawing</b> all layer on top and are flattened into the exported file.</li>
-            <li><b>Redact</b> paints permanent black boxes; <b>whiteout</b> samples the page background so it blends in.</li>
+            <li><b>Add text</b>, <b>highlight</b>, <b>underline</b>, <b>strikethrough</b>, <b>notes</b>, <b>freehand pen</b>, <b>arrows &amp; pointers</b>, <b>rectangles</b> and <b>ellipses</b> all layer on top and are flattened into the exported file.</li>
+            <li><b>Redact</b> paints permanent black boxes — nothing sensitive remains visible in the exported file; <b>whiteout</b> samples the page background so it blends in.</li>
             <li><b>Search</b> — the box in the top bar finds text across the whole document; Enter / Shift+Enter jump between matches.</li>
           </ul>
         </section>
@@ -315,6 +315,14 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             <li><b>Forms</b>: the Forms button lists fillable AcroForm fields (text, checkboxes, radios, dropdowns). Values are written into the real fields on Save, or flattened from the dialog.</li>
             <li><b>Stamps</b>: in Export, add page numbers, a diagonal watermark, and header/footer text (tokens: <code>{'{page}'}</code> <code>{'{pages}'}</code> <code>{'{date}'}</code> <code>{'{title}'}</code>).</li>
             <li><b>Autosave</b>: your working session (including annotations and form values) is kept on this device and offered on the start screen after a refresh or crash.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Privacy</h3>
+          <ul>
+            <li><b>No uploads</b> — documents are opened, edited and saved entirely on this device.</li>
+            <li><b>No attachments kept, no user information retained</b> — there is no account, no tracking of your files, and nothing is stored on any server. Your session autosaves locally in your browser and only you can read it.</li>
+            <li>Optional AI/OCR models download public weights once; your <i>documents</i> never touch the network.</li>
           </ul>
         </section>
         <section>

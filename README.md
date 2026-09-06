@@ -4,7 +4,7 @@
 
 ### The free, open-source PDF editor that edits the text *inside* your PDF — entirely in your browser.
 
-**No uploads · No accounts · No watermarks · No page limits · No catches**
+**No uploads · No attachments kept · No user information retained · No accounts · No watermarks · No page limits · No catches**
 
 [![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
 [![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
@@ -49,11 +49,13 @@ Open a fillable PDF and the Forms dialog lists **every field**: text inputs, che
 
 ![Form widgets drawn on the page — click one to jump to it in the dialog](docs/shots/08-forms-on-canvas.png)
 
-### 🖋️ Signs, stamps, annotates
+### 🖋️ Signs, stamps, annotates — with full shape styling
 
-Draw your signature on the built-in pad (exported as a transparent PNG), place it anywhere, resize it. Highlight, underline, strike through, freehand pen, sticky notes, text stamps, image stamps — every mark lives in true PDF coordinates and exports as real content.
+Draw your signature on the built-in pad (exported as a transparent PNG), place it anywhere, resize it. Highlight, underline, strike through, freehand pen, sticky notes, text boxes, image stamps — plus **styling shapes**: **arrows & pointers** (arrowhead lands where you release), **outlined rectangles**, and **ellipses** for circling the important part. Every mark lives in true PDF coordinates and exports as real vector content. Color and line weight apply across pen, shapes, and arrows.
 
 ![Signature pad with live drawing](docs/shots/05-signature-pad.png)
+
+![Redaction box, an arrow pointer, an ellipse, and a rectangle — all live marks](docs/shots/13-shapes-redact.png)
 
 ![Highlight, freehand pen, and a sticky note placed on the page](docs/shots/04-annotate.png)
 
@@ -97,6 +99,16 @@ Scanned page with no text layer? The OCR tool runs **Tesseract locally in WebAss
 - **Mirrored content**: some generators store artwork flipped (your email print-to-PDF might be upside down in *every* viewer). Flip any page horizontally/vertically — the export mirrors the real page content while your marks stay put.
 - **Offset page boxes**: PDF Studio's geometry engine is **CropBox-aware** — it handles files whose MediaBox doesn't start at (0,0) (extremely common in print-to-PDF output) that displace clicks and annotations in lesser editors.
 
+### 🖤 Redacts sensitive content — permanently
+
+The Redact tool paints opaque boxes over sensitive content; in the exported file the marks are flattened **black-over-content**, so what's underneath stays hidden in the shipped document. Whiteout covers with the **page-sampled background** instead, for cleaning up scans invisibly. Drag, done — no "pending redaction" metaphysics like Acrobat: what you see covered is what everyone else gets covered.
+
+### 📱 Works on your phone
+
+The whole editor reflows for mobile: the tool rail becomes a **bottom bar** with labeled icons (thumb-reachable), the top bar scrolls horizontally, pages stack full-width, and touch dragging marks/pages just works. It's a PWA, so you can install it to your home screen and keep editing offline.
+
+![PDF Studio on a phone — bottom tool bar, full-width pages](docs/shots/14-mobile.png)
+
 ### 💾 Never loses your work
 
 Everything — open files, page operations, marks, form values — autosaves to on-device storage. After a crash or refresh, the start screen offers **Resume session**, and picks up exactly where you left off.
@@ -112,7 +124,7 @@ It's a PWA: install it to your dock/desktop and it keeps working with the networ
 | Question | Answer |
 | --- | --- |
 | Where do my files go? | **Nowhere.** There is no upload endpoint. Open the devtools network tab and watch it stay silent while you edit. |
-| Do I need an account? | **No.** There is no server to have an account on. |
+| Do you keep my attachments or user information? | **No.** No attachments are retained, no user information is collected — no account, no email, no analytics on your documents. Your session autosaves **locally in your browser** and never leaves it. |
 | Watermarks? | **None.** |
 | Page/task/hour limits? | **None.** |
 | What downloads over the network? | The app itself, plus optional public model weights (AI ~0.6 GB, OCR ~15 MB) — cached by your browser after the first fetch. Your *documents* never transit the network. |
