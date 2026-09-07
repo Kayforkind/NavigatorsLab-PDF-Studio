@@ -1017,6 +1017,15 @@ export default function App() {
           </span>
           <span className="st-right">
             <span className="privacy-chip">● private · nothing leaves this device</span>
+            <a
+              className="mini-btn suite-link"
+              href="https://navigatorslab.com/reimagine/"
+              target="_blank"
+              rel="noreferrer"
+              title="Reimagine — redesign any HTML page from its own content (opens in a new tab)"
+            >
+              🎨 Reimagine
+            </a>
             <button className="mini-btn" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title="Zoom out">
               −
             </button>
