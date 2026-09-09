@@ -97,6 +97,8 @@ export interface TextAnn extends AnnCommon {
   text: string;
   size: number;
   color: string;
+  /** optional per-annotation font family (Helvetica | Times | Courier) */
+  font?: string;
 }
 
 /** Replaces original page text: a background-colored cover rect + new text. */
@@ -112,6 +114,8 @@ export interface EditAnn extends AnnCommon {
   color: string;
   /** sampled page background used to cover the original glyphs */
   bg: string;
+  /** optional per-annotation font family (Helvetica | Times | Courier) */
+  font?: string;
 }
 
 export interface NoteAnn extends AnnCommon {

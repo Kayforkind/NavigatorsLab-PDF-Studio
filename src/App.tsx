@@ -88,6 +88,8 @@ export default function App() {
   const [fitScale, setFitScale] = useState(1);
   const [meta, setMeta] = useState<DocMeta>({ title: '', author: '', subject: '', keywords: '' });
   const [modal, setModal] = useState<'export' | 'help' | 'ai' | 'forms' | 'compare' | null>(null);
+  /** style drawer visibility on narrow screens (<1100px hides the sidebar) */
+  const [styleOpen, setStyleOpen] = useState(false);
   const [formValues, setFormValues] = useState<FormValuesBySource>({});
   const [searchState, setSearchState] = useState<{ q: string; matches: SearchMatch[]; idx: number; busy: boolean } | null>(null);
   const [showFormWidgets, setShowFormWidgets] = useState(false);
@@ -892,6 +894,13 @@ export default function App() {
             <button className="tb-btn icon" onClick={() => void printPdf()} title="Print the PDF with annotations (Ctrl+P)">
               <Icon.print />
             </button>
+            <button
+              className={`tb-btn icon ${styleOpen ? 'active' : ''}`}
+              onClick={() => setStyleOpen((v) => !v)}
+              title="Colors, fonts & size (opens the style panel)"
+            >
+              <Icon.palette />
+            </button>
             <button className="tb-btn icon" onClick={() => setModal('export')} title="Export options & document properties">
               <Icon.props />
             </button>
@@ -1038,6 +1047,8 @@ export default function App() {
             onDel={delAnn}
             onOcr={() => void runOcrOnCurrent()}
             ocrBusy={ocrBusy}
+            drawerOpen={styleOpen}
+            onDrawerClose={() => setStyleOpen(false)}
           />
 
           {dropState === 'over' && (

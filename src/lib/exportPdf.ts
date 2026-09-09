@@ -146,10 +146,9 @@ async function fontFor(pdfDoc: PDFDocument, weight: 'bold' | 'normal', family?: 
 }
 
 /**
- * Emits real redaction: the region is clipped OUT of the copied page content
- * stream (even-odd clip with `W* n`), so text/images under the box are never
- * painted — not merely hidden behind a black rectangle. The visual black box
- * is drawn on top only as a marker; the underlying content is unrecoverable.
+ * Emits real redaction: pages with redact boxes are RASTERIZED (see
+ * rasterize.ts) so the original content stream is discarded entirely — what
+ * is gone from the pixels is gone from the file, not hidden behind a box.
  */
 function burnRedactions(page: PDFPage, rects: Array<{ x: number; y: number; w: number; h: number }>): void {
   if (rects.length === 0) return;
@@ -310,7 +309,8 @@ async function drawAnn(
       const c = cssHexToRgb(ann.color);
       const size = Math.max(4, ann.size);
       const text = ann.text.replace(/\s+/g, ' ').trim();
-      if (text) page.drawText(text, { x: ann.x, y: ann.y, size, font: normal, color: rgb(c.r, c.g, c.b) });
+      const font = ann.font ? await fontFor(pdfDoc, 'normal', ann.font) : normal;
+      if (text) page.drawText(text, { x: ann.x, y: ann.y, size, font, color: rgb(c.r, c.g, c.b) });
       break;
     }
     case 'edit': {
@@ -319,7 +319,8 @@ async function drawAnn(
       page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(bg.r, bg.g, bg.b), opacity: 1 });
       const size = Math.max(4, ann.size);
       const text = ann.text.replace(/\s+/g, ' ').trim();
-      if (text) page.drawText(text, { x: ann.x, y: ann.y + ann.h * 0.18, size, font: normal, color: rgb(c.r, c.g, c.b) });
+      const font = ann.font ? await fontFor(pdfDoc, 'normal', ann.font) : normal;
+      if (text) page.drawText(text, { x: ann.x, y: ann.y + ann.h * 0.18, size, font, color: rgb(c.r, c.g, c.b) });
       break;
     }
     case 'note': {

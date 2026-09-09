@@ -193,6 +193,14 @@ export const Icon = {
       <rect x="6" y="14" width="12" height="7" />
     </Svg>
   ),
+  palette: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <path d="M12 21a9 9 0 110-18c4.97 0 9 3.58 9 8 0 2.5-2 4-4 4h-1.5a1.5 1.5 0 00-1.06 2.56A1.5 1.5 0 0112 21z" />
+      <circle cx="7.5" cy="11" r="1.2" />
+      <circle cx="10.5" cy="7.5" r="1.2" />
+      <circle cx="15" cy="7.5" r="1.2" />
+    </Svg>
+  ),
   file: (p: SVGProps<SVGSVGElement>) => (
     <Svg {...p}>
       <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" />
