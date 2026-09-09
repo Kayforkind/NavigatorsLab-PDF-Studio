@@ -11,7 +11,7 @@
 const path = require('node:path');
 const { chromium } = require(path.join(process.env.APPDATA + '/npm/node_modules/@playwright/test/node_modules', 'playwright'));
 
-const BASE = 'http://localhost:5198/pdf-studio/';
+const BASE = process.env.VERIFY_BASE || 'http://localhost:5198/pdf-studio/';
 let pass = 0;
 let fail = 0;
 const ok = (name, cond, extra = '') => {
@@ -34,6 +34,7 @@ const ok = (name, cond, extra = '') => {
     if (/raster-debug|rasterizePage failed/.test(m.text())) console.log('  [pg]', m.text().slice(0, 110));
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  page.on('response', (r) => { if (r.status() === 404) console.log('  [404]', r.url()); });
   const fontRequests = [];
   page.on('request', (r) => {
     const u = r.url();
@@ -57,7 +58,7 @@ const ok = (name, cond, extra = '') => {
   // The demo doc embeds its fonts, so pdf.js won't fetch aux assets for it —
   // assert instead that the asset trees are deployed AT THE RIGHT BASE (this
   // is what fixes non-embedded-font / CJK documents rendering blank).
-  const fontAsset = await page.evaluate(async (u) => (await fetch(u + 'standard_fonts/FoxitSans.pfb')).status, BASE);
+  const fontAsset = await page.evaluate(async (u) => (await fetch(u + 'standard_fonts/LiberationSans-Regular.ttf')).status, BASE);
   const cmapAsset = await page.evaluate(async (u) => (await fetch(u + 'cmaps/78-H.bcmap')).status, BASE);
   ok('standard font assets deployed at base', fontAsset === 200, `status=${fontAsset}`);
   ok('cmap assets deployed at base', cmapAsset === 200, `status=${cmapAsset}`);
