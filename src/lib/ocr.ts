@@ -19,8 +19,9 @@ export interface OcrLine {
 
 /**
  * Recognizes text in a rendered page canvas fully locally (Tesseract WASM).
- * The first run needs to download the ~15 MB eng traineddata (cached by the
- * browser afterwards). Rethrows with a friendly message when offline.
+ * The engine (worker script, WASM cores and the eng model) ships with the app
+ * under /tess and /tessdata — nothing is fetched from a CDN, so OCR works
+ * offline and on fully air-gapped deployments.
  */
 export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string) => void): Promise<OcrLine[]> {
   onStatus?.('Loading OCR engine…');
@@ -30,9 +31,16 @@ export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string)
   } catch (e) {
     throw new Error(`Could not load the OCR engine: ${e instanceof Error ? e.message : e}`);
   }
+  // Resolve engine asset roots against the deployed base (works at a site
+  // root AND under a sub-path like GitHub Pages /repo/).
+  const base: string = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/';
+  const asset = (p: string) => new URL(`${base}${p}`, document.baseURI).href;
   let worker: import('tesseract.js').Worker;
   try {
     worker = await Tesseract.createWorker('eng', 1, {
+      workerPath: asset('tess/worker.min.js'),
+      corePath: asset('tess/'),
+      langPath: asset('tessdata/'),
       logger: (m: { status: string; progress: number }) => {
         if (m.status === 'recognizing text') onStatus?.(`Recognizing… ${Math.round((m.progress ?? 0) * 100)}%`);
         else if (m.status) onStatus?.(m.status);
@@ -40,11 +48,6 @@ export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string)
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (/fetch|network|offline|download|load/i.test(msg)) {
-      throw new Error(
-        'OCR needs a one-time download of its language data (~15 MB). Check the network connection; afterwards it runs fully offline. Your document never leaves this device.',
-      );
-    }
     throw new Error(`OCR engine failed to start: ${msg}`);
   }
   try {

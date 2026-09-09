@@ -26,6 +26,17 @@ import { Landing } from './components/Landing';
 let toastSeq = 0;
 
 const SESSION_KEY = 'nl-pdf-studio.session.v1';
+const SETTINGS_KEY = 'nl-pdf-studio.settings.v1';
+
+function loadSettings(): ToolSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14, ...JSON.parse(raw) };
+  } catch {
+    /* private mode / corrupt */
+  }
+  return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14 };
+}
 
 interface SessionBlob {
   name: string;
@@ -58,8 +69,18 @@ export default function App() {
   const noteCounter = useRef(0);
 
   const [tool, setTool] = useState<ToolId>('select');
-  const [settings, setSettingsState] = useState<ToolSettings>({ color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14 });
-  const setSettings = useCallback((s: Partial<ToolSettings>) => setSettingsState((p) => ({ ...p, ...s })), []);
+  const [settings, setSettingsState] = useState<ToolSettings>(loadSettings);
+  const setSettings = useCallback((s: Partial<ToolSettings>) => {
+    setSettingsState((p) => {
+      const next = { ...p, ...s };
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  }, []);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
@@ -262,7 +283,7 @@ export default function App() {
   const doExport = useCallback(
     async (payload: ExportPayload) => {
       setMeta(payload.meta);
-      const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps });
+      const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
       const base = niceFileName(doc.name, payload.range.trim() ? 'extract' : 'edited');
       downloadBytes(bytes, base);
       toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}).`);
@@ -276,7 +297,7 @@ export default function App() {
       const n = doc.pages.length;
       const names: string[] = [];
       for (let i = 1; i <= n; i++) {
-        const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: String(i), formValues });
+        const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: String(i), formValues, proxies: proxiesRef.current });
         if (pages === 0) continue;
         const fn = niceFileName(doc.name, 'page', i);
         downloadBytes(bytes, fn);
@@ -291,11 +312,46 @@ export default function App() {
     void doExport({ range: '', meta });
   }, [doExport, meta]);
 
+  /** Print the actual PDF (with all annotations burned in) — not the app UI.
+   *  window.print() would screenshot the whole editor; instead we render the
+   *  final PDF into a hidden iframe and print that, exactly like a viewer. */
+  const printPdf = useCallback(async () => {
+    setBusy('Preparing print…');
+    try {
+      const { bytes } = await buildPdf({ doc, meta, range: '', formValues, proxies: proxiesRef.current });
+      const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const frame = document.createElement('iframe');
+      frame.style.position = 'fixed';
+      frame.style.right = '0';
+      frame.style.bottom = '0';
+      frame.style.width = '1px';
+      frame.style.height = '1px';
+      frame.style.border = '0';
+      frame.style.opacity = '0';
+      frame.onload = () => {
+        try {
+          frame.contentWindow?.focus();
+          frame.contentWindow?.print();
+        } finally {
+          setTimeout(() => {
+            frame.remove();
+            URL.revokeObjectURL(url);
+          }, 60_000); // keep alive until the print dialog finishes
+        }
+      };
+      frame.src = url;
+      document.body.appendChild(frame);
+    } finally {
+      setBusy('');
+    }
+  }, [doc, meta, formValues]);
+
   /** export with the form values burned into the pages (fields become static) */
   const exportFlattenedForms = useCallback(async () => {
     setBusy('Exporting filled form…');
     try {
-      const { bytes, pages } = await buildPdf({ doc, meta, range: '', formValues, flattenForms: true });
+      const { bytes, pages } = await buildPdf({ doc, meta, range: '', formValues, flattenForms: true, proxies: proxiesRef.current });
       const base = niceFileName(doc.name, 'filled');
       downloadBytes(bytes, base);
       toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}) with form values flattened in.`);
@@ -690,6 +746,11 @@ export default function App() {
         openInputRef.current?.click();
         return;
       }
+      if (mod && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        if (hasDocNow) void printPdf();
+        return;
+      }
       if (mod && e.key.toLowerCase() === 's') {
         e.preventDefault();
         quickSave();
@@ -734,7 +795,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [modal, signOpen, selectedId, delAnn, quickSave]);
+  }, [modal, signOpen, selectedId, delAnn, quickSave, hasDocNow, printPdf]);
 
   /* ---------------- drag & drop ---------------- */
   const onGlobalDrop = useCallback(
@@ -827,6 +888,9 @@ export default function App() {
             </button>
             <button className="tb-btn icon" onClick={() => setModal('help')} title="Help">
               <Icon.info />
+            </button>
+            <button className="tb-btn icon" onClick={() => void printPdf()} title="Print the PDF with annotations (Ctrl+P)">
+              <Icon.print />
             </button>
             <button className="tb-btn icon" onClick={() => setModal('export')} title="Export options & document properties">
               <Icon.props />

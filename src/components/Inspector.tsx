@@ -15,7 +15,7 @@ const TOOL_BLURBS: Record<ToolId, string> = {
   ink: 'Draw freehand with the pointer (mouse, pen or finger).',
   sign: 'Draw a signature once; it is remembered for this session and stamped where you click.',
   image: 'Choose an image file; it is stamped at the click point. Drag to position, corner to scale.',
-  redact: 'Drag a box over sensitive content to permanently black it out in the exported PDF.',
+  redact: 'Drag a box over sensitive content — on export the region is truly removed: the page content underneath is clipped out of the file, so it cannot be recovered or copied.',
   whiteout: 'Drag a box to cover content with the sampled page background — ideal for cleaning up a scan.',
   arrow: 'Drag from tail to tip to point at something — the arrowhead lands where you release.',
   rect: 'Drag an outlined rectangle. Color and line weight follow the style controls.',
@@ -63,7 +63,30 @@ function Field({
   );
 }
 
-const colorTools = new Set<ToolId>(['highlight', 'underline', 'strike', 'ink', 'text', 'note']);
+const colorTools = new Set<ToolId>(['highlight', 'underline', 'strike', 'ink', 'text', 'edit', 'note', 'arrow', 'rect', 'ellipse']);
+const widthTools = new Set<ToolId>(['ink', 'arrow', 'rect', 'ellipse']);
+const FONT_OPTIONS: Array<[string, string]> = [
+  ['Helvetica', 'Helvetica (sans)'],
+  ['Times', 'Times (serif)'],
+  ['Courier', 'Courier (mono)'],
+];
+const isHex = (c: string) => /^#[0-9a-fA-F]{6}$/.test(c);
+
+function SwatchRow({ current, onPick }: { current: string; onPick: (c: string) => void }) {
+  return (
+    <>
+      <div className="swatches">
+        {COLORS.map((c) => (
+          <button key={c} className={`swatch ${current === c ? 'active' : ''}`} style={{ background: c }} onClick={() => onPick(c)} aria-label={`color ${c}`} />
+        ))}
+      </div>
+      <label className="swatch-custom">
+        <input type="color" value={isHex(current) ? current : '#17171b'} onChange={(e) => onPick(e.target.value)} aria-label="Custom color" />
+        <span>Custom</span>
+      </label>
+    </>
+  );
+}
 
 export function Inspector({
   tool,
@@ -85,7 +108,8 @@ export function Inspector({
   ocrBusy: string;
 }) {
   const [noteText, setNoteText] = useState<string | null>(null);
-  const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note');
+  const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note' || selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
+  const resizable = selected && (selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
   const geometry = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'redact' || selected.type === 'whiteout' || selected.type === 'edit' || selected.type === 'image');
 
   return (
@@ -95,17 +119,7 @@ export function Inspector({
         <p className="tool-blurb">{TOOL_BLURBS[tool]}</p>
         {colorTools.has(tool) && (
           <>
-            <div className="swatches">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  className={`swatch ${settings.color === c ? 'active' : ''}`}
-                  style={{ background: c }}
-                  onClick={() => onSettings({ color: c })}
-                  aria-label={`color ${c}`}
-                />
-              ))}
-            </div>
+            <SwatchRow current={settings.color} onPick={(c) => onSettings({ color: c })} />
             <div className="slider-row">
               <span>Opacity</span>
               <input
@@ -120,11 +134,23 @@ export function Inspector({
             </div>
           </>
         )}
-        {(tool === 'ink') && (
+        {widthTools.has(tool) && (
           <div className="slider-row">
-            <span>Pen width</span>
+            <span>{tool === 'ink' ? 'Pen width' : 'Line width'}</span>
             <input type="range" min={0.5} max={14} step={0.5} value={settings.width} onChange={(e) => onSettings({ width: parseFloat(e.target.value) })} />
             <b>{settings.width.toFixed(1)}pt</b>
+          </div>
+        )}
+        {(tool === 'text' || tool === 'edit') && (
+          <div className="slider-row">
+            <span>Font</span>
+            <select value={settings.font ?? 'Helvetica'} onChange={(e) => onSettings({ font: e.target.value })}>
+              {FONT_OPTIONS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
           </div>
         )}
         {(tool === 'text' || tool === 'edit') && (
@@ -193,16 +219,19 @@ export function Inspector({
                 </button>
               </div>
             )}
-            {colorable && (
-              <div className="swatches small">
-                {COLORS.map((c) => (
-                  <button
-                    key={c}
-                    className={`swatch ${(selected as { color: string }).color === c ? 'active' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => onUpd(selected.id, { color: c } as Partial<Annotation>)}
-                  />
-                ))}
+            {colorable && <SwatchRow current={(selected as { color: string }).color} onPick={(c) => onUpd(selected.id, { color: c } as Partial<Annotation>)} />}
+            {resizable && (
+              <div className="slider-row">
+                <span>Line width</span>
+                <input
+                  type="range"
+                  min={0.5}
+                  max={14}
+                  step={0.5}
+                  value={(selected as { width: number }).width}
+                  onChange={(e) => onUpd(selected.id, { width: parseFloat(e.target.value) } as Partial<Annotation>)}
+                />
+                <b>{(selected as { width: number }).width.toFixed(1)}pt</b>
               </div>
             )}
             <p className="hint muted">Double-click text or a note marker to edit its content in place.</p>
