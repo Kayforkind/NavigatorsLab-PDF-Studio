@@ -8,6 +8,18 @@ export { parseRanges } from './ranges';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
+/**
+ * pdf.js resource roots (absolute URLs, resolved against the deployed base).
+ * Without cMaps, PDFs using CJK / pre-defined CMaps render blank pages and
+ * extract no text; without standard font data, pages that rely on the 14
+ * standard fonts (very common in generated invoices/statements) render
+ * glyphs invisible — the classic "blank page" report. Both trees are
+ * bundled into dist/ by vite-plugin-static-copy.
+ */
+const BASE: string = (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/';
+const CMAP_ROOT = new URL(`${BASE}cmaps/`, document.baseURI).href;
+const STD_FONT_ROOT = new URL(`${BASE}standard_fonts/`, document.baseURI).href;
+
 export interface LoadedSource {
   source: Source;
   /** pdf.js proxy used for rendering this source */
@@ -22,7 +34,12 @@ export async function loadSource(bytes: Uint8Array, name: string): Promise<Loade
     const cb = p.getCropBox();
     return { w: cb.width, h: cb.height, bx: cb.x, by: cb.y, rot: p.getRotation().angle };
   });
-  const js = await getDocument({ data: new Uint8Array(bytes) }).promise;
+  const js = await getDocument({
+    data: new Uint8Array(bytes),
+    cMapUrl: CMAP_ROOT,
+    cMapPacked: true,
+    standardFontDataUrl: STD_FONT_ROOT,
+  }).promise;
   return { source: { id: crypto.randomUUID(), name, bytes, pages }, js };
 }
 

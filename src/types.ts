@@ -118,6 +118,9 @@ export interface NoteAnn extends AnnCommon {
   type: 'note';
   x: number;
   y: number;
+  /** side length in points (resizable) — older docs fall back to 16 */
+  w?: number;
+  h?: number;
   text: string;
   color: string;
   /** 1-based marker number */
@@ -184,6 +187,8 @@ export interface DocState {
   /** ordered working pages */
   pages: PageRec[];
   anns: Annotation[];
+  /** non-undoable document preferences (currently the default text font family) */
+  settings?: { font?: string };
 }
 
 export interface DocModel {
@@ -214,6 +219,8 @@ export interface ToolSettings {
   width: number; // ink / line thickness in points
   fontSize: number; // text stamp size in points
   opacity: number;
+  /** standard font family for text stamps (export uses the matching built-in) */
+  font?: string;
 }
 
 export interface TextHit {

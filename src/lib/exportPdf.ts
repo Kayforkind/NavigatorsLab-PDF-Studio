@@ -15,6 +15,8 @@ import {
 import type { Annotation, DocState, PageRec, Source } from '../types';
 import { parseRanges } from './ranges';
 import { applyFieldValues } from './forms';
+import { rasterizePage, transformAnnsToDisplaySpace, type RasterResult } from './rasterize';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 export interface DocMeta {
   title: string;
@@ -120,6 +122,17 @@ function drawStamps(page: PDFPage, font: PDFFont, opts: StampOptions, pageNum: n
   }
 }
 
+/** The pdf-lib standard families the font picker offers (css name → key). */
+export const FONT_FAMILIES = ['Helvetica', 'Times', 'Courier'] as const;
+
+/** Pick the matching standard font pair for a css font-family name. */
+export function fontPairFor(family: string | undefined): { normal: StandardFonts; bold: StandardFonts } {
+  const f = (family ?? '').toLowerCase();
+  if (f.includes('times')) return { normal: StandardFonts.TimesRoman, bold: StandardFonts.TimesRomanBold };
+  if (f.includes('courier') || f.includes('mono')) return { normal: StandardFonts.Courier, bold: StandardFonts.CourierBold };
+  return { normal: StandardFonts.Helvetica, bold: StandardFonts.HelveticaBold };
+}
+
 export function cssHexToRgb(hex: string) {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return { r: 0, g: 0, b: 0 };
@@ -127,8 +140,54 @@ export function cssHexToRgb(hex: string) {
   return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
 }
 
-async function fontFor(pdfDoc: PDFDocument, weight: 'bold' | 'normal'): Promise<PDFFont> {
-  return pdfDoc.embedFont(weight === 'bold' ? StandardFonts.HelveticaBold : StandardFonts.Helvetica);
+async function fontFor(pdfDoc: PDFDocument, weight: 'bold' | 'normal', family?: string): Promise<PDFFont> {
+  const pair = fontPairFor(family);
+  return pdfDoc.embedFont(weight === 'bold' ? pair.bold : pair.normal);
+}
+
+/**
+ * Emits real redaction: the region is clipped OUT of the copied page content
+ * stream (even-odd clip with `W* n`), so text/images under the box are never
+ * painted — not merely hidden behind a black rectangle. The visual black box
+ * is drawn on top only as a marker; the underlying content is unrecoverable.
+ */
+function burnRedactions(page: PDFPage, rects: Array<{ x: number; y: number; w: number; h: number }>): void {
+  if (rects.length === 0) return;
+  const ops: PDFOperator[] = [PDFOperator.of(PDFOperatorNames.PushGraphicsState)];
+  for (const r of rects) {
+    if (!(r.w > 0 && r.h > 0)) continue;
+    ops.push(
+      PDFOperator.of(PDFOperatorNames.AppendRectangle, [PDFNumber.of(r.x), PDFNumber.of(r.y), PDFNumber.of(r.x + r.w), PDFNumber.of(r.y + r.h)]),
+    );
+  }
+  // Even-odd fill rule + no-paint closes the clip: every region inside an odd
+  // number of redact rects is excluded from ALL subsequent painting.
+  ops.push(PDFOperator.of(PDFOperatorNames.ClipEvenOdd), PDFOperator.of(PDFOperatorNames.EndPath), PDFOperator.of(PDFOperatorNames.PopGraphicsState));
+  page.pushOperators(...ops);
+}
+
+/** Redact annotations of one page, in content-space coordinates. */
+function redactRectsFor(anns: Annotation[] | undefined): Array<{ x: number; y: number; w: number; h: number }> {
+  return (anns ?? []).filter((a): a is Extract<Annotation, { type: 'redact' }> => a.type === 'redact');
+}
+
+/**
+ * Renders the page with pdf.js, burns the redact boxes into the pixels and
+ * returns the raster — the ONLY path in which redacted content is truly
+ * removed from the file (the original content stream is discarded). Returns
+ * null when there is nothing to redact or rendering is unavailable.
+ */
+async function maybeRasterForRedaction(
+  p: PageRec,
+  pageAnns: Annotation[] | undefined,
+  proxies: ReadonlyMap<string, PDFDocumentProxy> | undefined,
+  totalRotation: number,
+): Promise<RasterResult | null> {
+  const rects = redactRectsFor(pageAnns);
+  if (rects.length === 0 || !proxies || p.src === null) return null;
+  const proxy = proxies.get(p.src);
+  if (!proxy || p.page === null) return null;
+  return rasterizePage(proxy, p, p.page, totalRotation, rects);
 }
 
 async function drawAnn(
@@ -162,6 +221,7 @@ async function drawAnn(
       break;
     }
     case 'redact': {
+      // visual marker only — the actual content removal is burnRedactions()
       page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(0.05, 0.05, 0.06), opacity: 1 });
       break;
     }
@@ -263,9 +323,9 @@ async function drawAnn(
       break;
     }
     case 'note': {
-      const sz = 16;
+      const sz = Math.max(8, ann.w ?? 16);
       const c = cssHexToRgb(ann.color);
-      page.drawRectangle({ x: ann.x, y: ann.y, width: sz, height: sz, color: rgb(c.r, c.g, c.b), opacity: 1 });
+      page.drawRectangle({ x: ann.x, y: ann.y, width: sz, height: ann.h ?? sz, color: rgb(c.r, c.g, c.b), opacity: 1 });
       // folded corner
       const fold = sz * 0.34;
       page.drawRectangle({
@@ -278,10 +338,10 @@ async function drawAnn(
       });
       page.drawText(String(ann.n), {
         x: ann.x + sz * 0.5 - ann.n.toString().length * 1.7,
-        y: ann.y + sz * 0.5 - 3.2,
+        y: ann.y + (ann.h ?? sz) * 0.5 - 3.2,
         size: sz * 0.5,
         font: bold,
-        color: rgb(0.1, 0.1, 0.1),
+        color: ann.color.toLowerCase() === '#ffd43b' ? rgb(0.35, 0.26, 0) : rgb(1, 1, 1),
       });
       break;
     }    case 'image': {
@@ -341,14 +401,18 @@ export interface ExportInput {
   flattenForms?: boolean;
   /** page numbers / watermark / header-footer */
   stamps?: StampOptions;
+  /** pdf.js proxies per source id — enables TRUE redaction (content removal
+   *  via page rasterization) for pages that carry redact boxes. */
+  proxies?: ReadonlyMap<string, PDFDocumentProxy>;
 }
 
-export async function buildPdf({ doc, meta, range, formValues, flattenForms, stamps }: ExportInput): Promise<{ bytes: Uint8Array; pages: number }> {
+export async function buildPdf({ doc, meta, range, formValues, flattenForms, stamps, proxies }: ExportInput): Promise<{ bytes: Uint8Array; pages: number }> {
   const idxs = range.trim() ? parseRanges(range, doc.pages.length) : doc.pages.map((_, i) => i);
   const pagesToExport: PageRec[] = idxs.map((i) => doc.pages[i]);
 
   const out = await PDFDocument.create();
-  const fonts = { normal: await fontFor(out, 'normal'), bold: await fontFor(out, 'bold') };
+  const picked = fontPairFor(doc.settings?.font);
+  const fonts = { normal: await out.embedFont(picked.normal), bold: await out.embedFont(picked.bold) };
   const embedCache = new Map<string, Promise<PDFImage>>();
 
   // Load each needed source file once.
@@ -387,10 +451,27 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
 
   for (const p of pagesToExport) {
     let outPage: PDFPage;
+    let pageAnns = annsByPage.get(p.id) ?? [];
+    let raster: RasterResult | null = null;
     if (p.src) {
       const lib = libBySource.get(p.src);
       if (!lib || p.page === null || p.page >= lib.getPageCount()) continue;
-      if (p.flip) {
+      const intrinsic = doc.sources.find((s) => s.id === p.src)?.pages[p.page]?.rot ?? 0;
+      const total = ((intrinsic + p.rot) % 360 + 360) % 360;
+      // TRUE redaction: pages carrying redact boxes are REPLACED by a raster
+      // with the boxes burned into the pixels — the original content stream
+      // (text, images) is discarded entirely and cannot be recovered.
+      raster = await maybeRasterForRedaction(p, pageAnns, proxies, total);
+      if (raster) {
+        outPage = out.addPage([raster.w, raster.h]); // rotation + flip baked into the bitmap
+        const jpgB64 = raster.dataUrl.split(',')[1] ?? '';
+        const bin = atob(jpgB64);
+        const jpgBytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) jpgBytes[i] = bin.charCodeAt(i);
+        const img = await out.embedJpg(jpgBytes);
+        outPage.drawImage(img, { x: 0, y: 0, width: raster.w, height: raster.h, opacity: 1 });
+        pageAnns = transformAnnsToDisplaySpace(pageAnns, { x: p.bx, y: p.by, w: p.w, h: p.h }, total, p.flip ?? 0, raster.w, raster.h);
+      } else if (p.flip) {
         // MIRRORED PAGE: embed the source page (crop-box normalized, content
         // space) as an XObject and draw it with a mirror matrix on a fresh
         // page. NOTE: the embed must come from the SOURCE document — pdf-lib
@@ -402,8 +483,6 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
         const w = embedded.width;
         const h = embedded.height;
         outPage = out.addPage([w, h]);
-        const intrinsic = doc.sources.find((s) => s.id === p.src)?.pages[p.page]?.rot ?? 0;
-        const total = ((intrinsic + p.rot) % 360 + 360) % 360;
         outPage.setRotation(degrees(total));
         const swap = total % 180 === 90;
         const mh = swap ? p.flip & 2 : p.flip & 1;
@@ -431,7 +510,13 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
     } else {
       outPage = out.addPage([p.w, p.h]);
     }
-    for (const a of annsByPage.get(p.id) ?? []) {
+    if (!raster) {
+      // Clip-based fallback (only when rasterization is unavailable): the
+      // region is excluded from all later painting. Content underneath may
+      // still exist in the file — the raster path above is the real removal.
+      burnRedactions(outPage, redactRectsFor(pageAnns));
+    }
+    for (const a of pageAnns) {
       await drawAnn(outPage, a, fonts, embedCache, out);
     }
     if (stamps) {

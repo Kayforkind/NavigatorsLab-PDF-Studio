@@ -1750,3 +1750,31 @@ button {
 .check-row input {
   accent-color: #3b82f6;
 }
+
+/* ---------- custom color picker + inspector font select ---------- */
+.swatch-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #9fb0c8;
+  cursor: pointer;
+}
+.swatch-custom input[type='color'] {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+.inspector select {
+  background: #131a26;
+  color: #e6edf7;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  padding: 3px 6px;
+  font-size: 12px;
+}

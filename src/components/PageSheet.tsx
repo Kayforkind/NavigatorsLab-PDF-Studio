@@ -59,7 +59,7 @@ function annRect(a: Annotation): ContentRect | null {
     case 'text':
       return { x: a.x, y: a.y - a.size * 0.25, w: 0, h: a.size };
     case 'note':
-      return { x: a.x, y: a.y, w: NOTE_SIZE, h: NOTE_SIZE };
+      return { x: a.x, y: a.y, w: a.w ?? NOTE_SIZE, h: a.h ?? NOTE_SIZE };
     case 'arrow': {
       const x0 = Math.min(a.x1, a.x2);
       const y0 = Math.min(a.y1, a.y2);
@@ -92,6 +92,29 @@ function isLineTool(t: ToolId) {
 
 function isArrowTool(t: ToolId) {
   return t === 'arrow';
+}
+
+/**
+ * True when the rendered canvas is uniform (or fully transparent) — pdf.js
+ * occasionally yields an empty first paint; callers use this to retry once.
+ */
+function isBlankCanvas(canvas: HTMLCanvasElement): boolean {
+  try {
+    const ctx = canvas.getContext('2d');
+    if (!ctx || canvas.width === 0 || canvas.height === 0) return false;
+    const step = Math.max(2, Math.floor(Math.min(canvas.width, canvas.height) / 48));
+    let first: number[] | null = null;
+    for (let y = step >> 1; y < canvas.height; y += step) {
+      for (let x = step >> 1; x < canvas.width; x += step) {
+        const d = ctx.getImageData(x, y, 1, 1).data;
+        if (first === null) first = [d[0], d[1], d[2], d[3]];
+        else if (d[0] !== first[0] || d[1] !== first[1] || d[2] !== first[2] || d[3] !== first[3]) return false;
+      }
+    }
+    return true; // every sampled pixel identical
+  } catch {
+    return false; // tainted canvas etc — assume content is there
+  }
 }
 
 /** average rgb sampled along a horizontal scan inside the rendered canvas (css coords) */
@@ -156,6 +179,9 @@ interface InlineState {
 
 const NOTE_SIZE = 16; // content points
 
+/** Timestamp (ms) of the last inline editor open — guards the blur race. */
+let inlineOpenedAt = 0;
+
 export const PageSheet = memo(function PageSheet(props: SheetProps) {
   const { page, proxy, scale, settings, rotation } = props;
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -171,6 +197,10 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
   const [inline, setInline] = useState<InlineState | null>(null);
   const [inlineText, setInlineText] = useState('');
   const [loaded, setLoaded] = useState(false); // canvas painted
+
+  useEffect(() => {
+    if (inline) inlineOpenedAt = Date.now();
+  }, [inline]);
 
   const dpr = window.devicePixelRatio || 1;
   const isBlank = page.src === null;
@@ -214,11 +244,18 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         if (!alive || gen !== genRef.current) return;
         const pp = await proxy.getPage(pg + 1);
         if (!alive || gen !== genRef.current) return;
-        const task = beginRender(canvas, pp, { scale, dpr, rotation, flip: isBlank ? 0 : (page.flip ?? 0) });
-        taskRef.current = task;
-        await task.promise;
-        if (taskRef.current === task) taskRef.current = null;
-        if (!alive || gen !== genRef.current) return;
+        // pdf.js occasionally produces an empty first paint for a page (font
+        // / cmap warm-up race — reported as "the page shows blank"). Detect
+        // the blank canvas and retry once before giving up.
+        for (let attempt = 0; ; attempt++) {
+          const task = beginRender(canvas, pp, { scale, dpr, rotation, flip: isBlank ? 0 : (page.flip ?? 0) });
+          taskRef.current = task;
+          await task.promise;
+          if (taskRef.current === task) taskRef.current = null;
+          if (!alive || gen !== genRef.current) return;
+          if (attempt >= 1 || !isBlankCanvas(canvas)) break;
+          console.warn('PageSheet: blank first render detected, retrying page', pg + 1);
+        }
         setLoaded(true);
         setCssDims({ w: cssVp.width, h: cssVp.height });
       } catch (err) {
@@ -330,11 +367,13 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         props.onSelect(hit.ann.id);
         const { ann, entry } = hit;
         const rect = entry.r;
-        // resize handle on bottom-right corner (content space)
-        if (rect && rect.w > 3 && !(ann.type === 'ink' || ann.type === 'note' || ann.type === 'text')) {
-          const corner = toCss({ x: rect.x + rect.w, y: rect.y + rect.h });
+        // resize handle on the VISUAL bottom-right corner (css space) —
+        // mirrors the blue square drawn at selEntry.css.x+w, y+h
+        if (rect && rect.w > 3 && !(ann.type === 'ink' || ann.type === 'text')) {
           const cssPt = toCss(pt);
-          if (Math.abs(cssPt.x - corner.x) <= 11 && Math.abs(cssPt.y - corner.y) <= 11) {
+          const entry = geom.find((g) => g.ann.id === ann.id);
+          const cornerCss = entry?.css ? { x: entry.css.x + entry.css.w, y: entry.css.y + entry.css.h } : null;
+          if (cornerCss && Math.abs(cssPt.x - cornerCss.x) <= 13 && Math.abs(cssPt.y - cornerCss.y) <= 13) {
             setGesture({ kind: 'resize', annId: ann.id, start: pt, off: { x: 0, y: 0 }, base: rect, dx: 0, dy: 0 });
             return;
           }
@@ -363,6 +402,9 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       if (tool === 'text' || tool === 'edit') {
         const own = hitTest(pt);
         if (own && (own.ann.type === 'text' || own.ann.type === 'edit')) {
+          // preventDefault: stop the browser's default mousedown focus from
+          // blurring the autoFocus'd editor the moment it mounts.
+          e.preventDefault();
           props.onSelect(own.ann.id);
           setInline({
             mode: 'edit-text',
@@ -375,6 +417,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           return;
         }
         if (tool === 'text') {
+          e.preventDefault();
           setInline({ mode: 'new-text', pt, size: settings.fontSize, color: settings.color, initial: '' });
           setInlineText('');
           return;
@@ -392,12 +435,13 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         const bg = canvas
           ? sampleBackground(canvas, tl.x + 4, tl.y + Math.max(3, hit.h * scale - 8), Math.max(6, hit.w * scale - 8), dpr)
           : '#ffffff';
-        setInline({ mode: 'new-edit', pt: { x: hit.x, y: hit.y }, size: hit.size, hit, bg, initial: hit.text });
+        setInline({ mode: 'new-edit', pt: { x: hit.x, y: hit.y }, size: hit.size, hit, bg, initial: hit.text, color: settings.color });
         setInlineText(hit.text);
         return;
       }
 
       if (tool === 'note') {
+        e.preventDefault();
         const n = props.getNextNoteN();
         const ann: Annotation = {
           id: uid(),
@@ -554,6 +598,9 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
 
   const commitInline = useCallback(() => {
     if (!inline) return;
+    // The browser's default mousedown focus action can blur a just-mounted
+    // editor ~1ms after open; ignore that race so the editor stays open.
+    if (Date.now() - inlineOpenedAt < 30) return;
     const text = inlineText;
     if (inline.mode === 'new-text') {
       if (text.trim()) {
@@ -580,7 +627,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         h: h.h,
         text,
         size: h.size,
-        color: '#17171b',
+        color: inline.color ?? settings.color,
         bg: inline.bg ?? '#ffffff',
       } as Annotation);
     } else if (inline.mode === 'edit-text' && inline.annId) {
@@ -717,7 +764,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
             hits &&
             hits.map((h, i) => {
               const tl = toCss({ x: h.x, y: h.y });
-              return <rect key={i} x={tl.x} y={tl.y} width={h.w * scale} height={h.h * scale} rx={2} className="hit-hint" />;
+              return <rect key={i} x={tl.x} y={tl.y} width={h.w * scale} height={h.h * scale} rx={2} className="hit-hint" data-text={h.text} />;
             })}
 
           {(props.formFields ?? []).map((f) => {
@@ -871,7 +918,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                   <g key={ann.id}>
                     <rect x={css.x} y={css.y} width={css.w} height={css.h} rx={1} fill={ann.color} stroke="#b48a10" strokeWidth={0.8} />
                     <path d={`M${css.x + css.w * 0.68} ${css.y} v${css.h * 0.32} h${css.w * 0.32} z`} fill="rgba(120,90,0,0.35)" />
-                    <text x={css.x + css.w / 2} y={css.y + css.h * 0.7} textAnchor="middle" fontSize={Math.min(11, css.w * 0.5)} fontWeight="700" fill="#5a4300" fontFamily="Helvetica, Arial, sans-serif">
+                    <text x={css.x + css.w / 2} y={css.y + css.h * 0.7} textAnchor="middle" fontSize={Math.min(11, css.w * 0.5)} fontWeight="700" fill={ann.color === '#ffd43b' ? '#5a4300' : '#ffffff'} fontFamily="Helvetica, Arial, sans-serif">
                       {ann.n}
                     </text>
                   </g>
@@ -956,7 +1003,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           {selEntry && selEntry.css && !gesture && (
             <g pointerEvents="none">
               <rect x={selEntry.css.x - 2} y={selEntry.css.y - 2} width={selEntry.css.w + 4} height={selEntry.css.h + 4} fill="none" stroke="#2563eb" strokeWidth={1.4} strokeDasharray="5 3" />
-              {selEntry.ann.type !== 'ink' && selEntry.ann.type !== 'note' && (
+              {selEntry.ann.type !== 'ink' && (
                 <rect x={selEntry.css.x + selEntry.css.w - 4} y={selEntry.css.y + selEntry.css.h - 4} width={9} height={9} fill="#2563eb" stroke="#fff" strokeWidth={1} />
               )}
             </g>
