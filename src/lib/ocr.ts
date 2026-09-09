@@ -51,7 +51,10 @@ export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string)
     throw new Error(`OCR engine failed to start: ${msg}`);
   }
   try {
-    const data = await worker.recognize(canvas);
+    // tesseract.js v7 defaults `blocks: false` — without this override
+    // recognize() returns only flat text and every page reads as "no
+    // confident text". Request the block tree we group into lines.
+    const data = await worker.recognize(canvas, {}, { blocks: true, text: true });
     const words: OcrWord[] = [];
     for (const block of data.data.blocks ?? []) {
       for (const para of block.paragraphs ?? []) {

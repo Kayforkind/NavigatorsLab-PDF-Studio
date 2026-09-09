@@ -97,6 +97,8 @@ export function Inspector({
   onDel,
   onOcr,
   ocrBusy,
+  drawerOpen = false,
+  onDrawerClose,
 }: {
   tool: ToolId;
   settings: ToolSettings;
@@ -106,6 +108,9 @@ export function Inspector({
   onDel: (id: string) => void;
   onOcr: () => void;
   ocrBusy: string;
+  /** narrow-viewport drawer mode (sidebar hidden by CSS below 1100px) */
+  drawerOpen?: boolean;
+  onDrawerClose?: () => void;
 }) {
   const [noteText, setNoteText] = useState<string | null>(null);
   const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note' || selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
@@ -113,7 +118,12 @@ export function Inspector({
   const geometry = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'redact' || selected.type === 'whiteout' || selected.type === 'edit' || selected.type === 'image');
 
   return (
-    <aside className="inspector">
+    <aside className={`inspector ${drawerOpen ? 'drawer-open' : ''}`}>
+      {drawerOpen && (
+        <button className="drawer-close" title="Close style panel" onClick={onDrawerClose}>
+          ✕
+        </button>
+      )}
       <section className="insp-sec">
         <h3>Tool</h3>
         <p className="tool-blurb">{TOOL_BLURBS[tool]}</p>
@@ -160,7 +170,7 @@ export function Inspector({
             <b>{settings.fontSize.toFixed(0)}pt</b>
           </div>
         )}
-        {tool === 'redact' && <p className="tool-blurb warn">Redactions are flattened black boxes — content underneath is permanently hidden in the exported file.</p>}
+        {tool === 'redact' && <p className="tool-blurb warn">Redactions are burned into the page pixels at export — the original content stream is discarded, so redacted text is unrecoverable from the file.</p>}
         {tool === 'whiteout' && <p className="tool-blurb">The cover color is sampled from the page under your drag, so whiteouts blend in on tinted or scanned pages.</p>}
         {tool === 'note' && <p className="tool-blurb">Marker color:</p>}
         {tool === 'edit' && (
@@ -202,6 +212,25 @@ export function Inspector({
               </div>
             )}
             {selected.type === 'image' && (
+              <div className="slider-row">
+                <span>Size</span>
+                <input
+                  type="range"
+                  min={24}
+                  max={720}
+                  step={2}
+                  value={Math.round((selected as { w: number }).w)}
+                  onChange={(e) => {
+                    const ann = selected as { w: number; h: number };
+                    const nw = parseFloat(e.target.value);
+                    const nh = ann.h > 0.001 ? (nw * ann.h) / ann.w : ann.h;
+                    onUpd(selected.id, { w: nw, h: nh } as Partial<Annotation>);
+                  }}
+                />
+                <b>{Math.round((selected as { w: number }).w)}pt</b>
+              </div>
+            )}
+            {selected.type === 'image' && (
               <div className="flip-row">
                 <button
                   className={`btn ghost tiny ${(selected as { flipH?: boolean }).flipH ? 'active' : ''}`}
@@ -220,6 +249,35 @@ export function Inspector({
               </div>
             )}
             {colorable && <SwatchRow current={(selected as { color: string }).color} onPick={(c) => onUpd(selected.id, { color: c } as Partial<Annotation>)} />}
+            {(selected.type === 'text' || selected.type === 'edit') && (
+              <div className="slider-row">
+                <span>Font</span>
+                <select
+                  value={(selected as { font?: string }).font ?? 'Helvetica'}
+                  onChange={(e) => onUpd(selected.id, { font: e.target.value } as Partial<Annotation>)}
+                >
+                  {FONT_OPTIONS.map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {(selected.type === 'text' || selected.type === 'edit') && (
+              <div className="slider-row">
+                <span>Size</span>
+                <input
+                  type="range"
+                  min={6}
+                  max={48}
+                  step={0.5}
+                  value={(selected as { size: number }).size}
+                  onChange={(e) => onUpd(selected.id, { size: parseFloat(e.target.value) } as Partial<Annotation>)}
+                />
+                <b>{(selected as { size: number }).size.toFixed(0)}pt</b>
+              </div>
+            )}
             {resizable && (
               <div className="slider-row">
                 <span>Line width</span>

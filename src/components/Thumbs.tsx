@@ -84,7 +84,9 @@ function Thumb({
           taskRef.current = null;
         }
         if (!alive || gen !== genRef.current) return;
-        const pp = await proxy.getPage(pg);
+        // page.page is 0-based; pdf.js getPage() is 1-based — the missing +1
+        // made page 1 throw (blank thumb) and page N render page N-1.
+        const pp = await proxy.getPage(pg + 1);
         if (!alive || gen !== genRef.current) return;
         const task = beginRender(canvas, pp, { scale, dpr: window.devicePixelRatio || 1, rotation: rot, flip });
         taskRef.current = task;

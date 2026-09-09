@@ -613,6 +613,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
 }
 
 .insp-sec {
@@ -1309,9 +1310,54 @@ button {
   background: transparent;
 }
 
+/* ---------------- selection & resize handles ---------------- */
+
+/* toggled state (style/palette drawer button) */
+.tb-btn.active {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 @media (max-width: 1100px) {
+  /* the sidebar becomes an on-demand drawer — the palette button in the
+     topbar opens it, so styling controls exist on every screen size */
   .inspector {
     display: none;
+    position: fixed;
+    z-index: 60;
+    top: 52px;
+    right: 8px;
+    bottom: 8px;
+    width: min(320px, calc(100vw - 16px));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 18px 50px rgb(0 0 0 / 0.5);
+  }
+  .inspector.drawer-open {
+    display: flex;
+  }
+}
+
+/* close button for drawer mode (hidden on wide screens where the panel is docked) */
+.inspector .drawer-close {
+  display: none;
+}
+@media (max-width: 1100px) {
+  .inspector.drawer-open .drawer-close {
+    display: block;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
   }
 }
 

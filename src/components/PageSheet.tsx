@@ -1,7 +1,17 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { Annotation, PageRec, Point, RectAnn, TextHit, ToolId, ToolSettings } from '../types';
-import { uid } from '../types';  import {
+import { uid } from '../types';
+
+/** css font-family for the picker's logical names (falls back to Helvetica). */
+function cssFamilyFor(font: string | undefined): string {
+  const f = (font ?? '').toLowerCase();
+  if (f.includes('times')) return 'Times New Roman, Times, serif';
+  if (f.includes('courier') || f.includes('mono')) return 'Courier New, Courier, monospace';
+  return 'Helvetica, Arial, sans-serif';
+}
+
+import {
   beginRender,
   clientToContent,
   contentToCss,
@@ -163,6 +173,8 @@ interface GestureState {
   base?: ContentRect | null;
   /** running content-space delta */
   dx?: number;
+  /** live shift-key state during move/resize (aspect lock for stamps) */
+  shift?: boolean;
   dy?: number;
 }
 
@@ -280,13 +292,14 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
     let alive = true;
     void (async () => {
       try {
-        const pp = await proxy.getPage(page.page as number);
+        // page.page is 0-based; pdf.js getPage() is 1-based.
+        const pp = await proxy.getPage((page.page as number) + 1);
         const items = await pageTextItems(pp);
         const lines = groupIntoLines(items);
         hitsCache.current.set(page.id, lines);
         if (alive) setHits(lines);
-      } catch {
-        /* noop */
+      } catch (e) {
+        console.warn('[studio] text-hit extraction failed:', e);
       }
     })();
     return () => {
@@ -435,6 +448,8 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         const bg = canvas
           ? sampleBackground(canvas, tl.x + 4, tl.y + Math.max(3, hit.h * scale - 8), Math.max(6, hit.w * scale - 8), dpr)
           : '#ffffff';
+        // preventDefault, same focus-steal guard as the other inline branches
+        e.preventDefault();
         setInline({ mode: 'new-edit', pt: { x: hit.x, y: hit.y }, size: hit.size, hit, bg, initial: hit.text, color: settings.color });
         setInlineText(hit.text);
         return;
@@ -475,7 +490,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           setGesture({ kind: 'ink', pts: [...gesture.pts, pt] });
         }
       } else if ((gesture.kind === 'move' || gesture.kind === 'resize') && gesture.start) {
-        setGesture({ ...gesture, dx: pt.x - gesture.start.x, dy: pt.y - gesture.start.y });
+        setGesture({ ...gesture, dx: pt.x - gesture.start.x, dy: pt.y - gesture.start.y, shift: e.shiftKey });
       }
     },
     [gesture, contentAt],
@@ -547,9 +562,17 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       const dy = g.dy ?? 0;
       if (Math.abs(dx) < 0.2 && Math.abs(dy) < 0.2) return;
       const b = g.base;
-      const w = Math.max(2, b.w + dx);
-      const h = Math.max(2, b.h + dy);
       const ann = props.anns.find((a) => a.id === g.annId);
+      // image/signature stamps keep their aspect ratio while resizing
+      // (hold Shift to stretch freely) — free-form distortion was the #1 complaint
+      const lock = ann?.type === 'image' && !g.shift && b.w > 0.001 && b.h > 0.001;
+      let w = Math.max(2, b.w + dx);
+      let h = Math.max(2, b.h + dy);
+      if (lock) {
+        const ar = b.w / b.h;
+        if (w / h > ar) h = w / ar;
+        else w = h * ar;
+      }
       if (ann?.type === 'arrow') {
         // scale the free endpoint inside the resized bounding box
         const nx = b.w > 0.001 ? b.x + ((ann.x2 - b.x) / b.w) * w : b.x;
@@ -613,6 +636,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           text,
           size: inline.size,
           color: inline.color ?? settings.color,
+          font: settings.font,
         } as Annotation);
       }
     } else if (inline.mode === 'new-edit' && inline.hit) {
@@ -629,6 +653,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         size: h.size,
         color: inline.color ?? settings.color,
         bg: inline.bg ?? '#ffffff',
+        font: settings.font,
       } as Annotation);
     } else if (inline.mode === 'edit-text' && inline.annId) {
       props.onUpd(inline.annId, { text } as Partial<Annotation>);
@@ -897,7 +922,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                         y={toCss({ x: ann.x, y: ann.y + ann.h * 0.18 }).y}
                         fontSize={ann.size * scale}
                         fill={ann.color}
-                        fontFamily="Helvetica, Arial, sans-serif"
+                        fontFamily={`${cssFamilyFor(ann.font)}, Helvetica, Arial, sans-serif`}
                       >
                         {ann.text}
                       </text>
@@ -908,7 +933,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                 // baseline sits exactly where pdf-lib draws it (content y) — WYSIWYG with export
                 const bl = toCss({ x: ann.x, y: ann.y });
                 return (
-                  <text key={ann.id} x={css.x} y={bl.y} fontSize={ann.size * scale} fill={ann.color} fontFamily="Helvetica, Arial, sans-serif">
+                  <text key={ann.id} x={css.x} y={bl.y} fontSize={ann.size * scale} fill={ann.color} fontFamily={`${cssFamilyFor(ann.font)}, Helvetica, Arial, sans-serif`}>
                     {ann.text}
                   </text>
                 );
@@ -1003,8 +1028,33 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           {selEntry && selEntry.css && !gesture && (
             <g pointerEvents="none">
               <rect x={selEntry.css.x - 2} y={selEntry.css.y - 2} width={selEntry.css.w + 4} height={selEntry.css.h + 4} fill="none" stroke="#2563eb" strokeWidth={1.4} strokeDasharray="5 3" />
-              {selEntry.ann.type !== 'ink' && (
-                <rect x={selEntry.css.x + selEntry.css.w - 4} y={selEntry.css.y + selEntry.css.h - 4} width={9} height={9} fill="#2563eb" stroke="#fff" strokeWidth={1} />
+              {selEntry.ann.type !== 'ink' && selEntry.ann.type !== 'text' && (
+                <>
+                  {/* generous invisible grab zone — the old 9px handle with a
+                      ±13px wrap hit-test made stamp resizing nearly impossible */}
+                  <rect
+                    x={selEntry.css.x + selEntry.css.w - 14}
+                    y={selEntry.css.y + selEntry.css.h - 14}
+                    width={28}
+                    height={28}
+                    fill="transparent"
+                    pointerEvents="all"
+                    style={{ cursor: 'nwse-resize' }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      try {
+                        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                      } catch {
+                        /* synthetic */
+                      }
+                      const pt = contentAt(e);
+                      if (!pt || !selEntry.r) return;
+                      setGesture({ kind: 'resize', annId: selEntry.ann.id, start: pt, off: { x: 0, y: 0 }, base: selEntry.r, dx: 0, dy: 0 });
+                    }}
+                  />
+                  <rect x={selEntry.css.x + selEntry.css.w - 6} y={selEntry.css.y + selEntry.css.h - 6} width={12} height={12} fill="#2563eb" stroke="#fff" strokeWidth={1.4} style={{ cursor: 'nwse-resize' }} pointerEvents="none" />
+                </>
               )}
             </g>
           )}
