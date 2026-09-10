@@ -81,6 +81,40 @@ describe('planDeepEdit', () => {
   });
 });
 
+describe('planDeepEdit — table cells (TJ)', () => {
+  async function buildTjSample(): Promise<Uint8Array> {
+    const doc = await PDFDocument.create();
+    const helv = await doc.embedFont(StandardFonts.Helvetica);
+    const p = doc.addPage([400, 300]);
+    p.drawText('CellOne CellTwo', { x: 50, y: 200, size: 14, font: helv });
+    p.drawText('CellOne CellTwo', { x: 50, y: 160, size: 14, font: helv });
+    p.drawText('CellOne CellTwo', { x: 50, y: 120, size: 14, font: helv });
+    return doc.save();
+  }
+
+  it('rewrites only the clicked cell substring and leaves the neighbor intact', async () => {
+    const bytes = await buildTjSample();
+    const lib = await PDFDocument.load(bytes);
+    const plan = planDeepEdit(lib, 0, {
+      hit: { x: 50, y: 196, w: 55, h: 17, text: 'CellOne', cell: true, gapBefore: 0 },
+      newText: 'Edited!',
+      size: 14,
+    });
+    expect(plan).not.toBeNull();
+    installStream(lib, 0, plan!.bytes);
+    const out = await lib.save();
+    const s = await streamTextOf(out);
+    // new cell text present (hex for 'Edited!')
+    expect(s).toContain('<45646974656421>');
+    // this ROW's 'CellOne' bytes are gone (only 2 remain: rows 2 & 3)
+    expect(s.split('43656C6C4F6E65').length).toBe(3); // 3 rows − 1 edited = 2 remaining
+    // the neighbor cell in the SAME row survives untouched (hex for 'CellTwo')
+    expect(s).toContain('43656c6c54776f');
+    // single-edit flag: partial replacement → not a whole-line rewrite
+    expect(plan!.lineReplace).toBe(false);
+  });
+});
+
 describe('planVectorRedaction', () => {
   it('removes only the fully covered line', async () => {
     const bytes = await buildSample();

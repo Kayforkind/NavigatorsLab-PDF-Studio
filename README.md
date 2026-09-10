@@ -31,11 +31,11 @@ Every claim below is demonstrated by a real screenshot in this repository, captu
 
 ### ✏️ Edits the text that is already in your PDF
 
-The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target. Click a line, retype it, done — and on export PDF Studio **rewrites the page's content stream itself**: the original glyphs' show-text operators are deleted from the file and your replacement is written in as real vector text at the same position. The old bytes are gone — not covered, not hidden: gone. (Lines using exotic subset/CID fonts keep a visually identical page-sampled cover as a fallback, because those glyph ids cannot be safely re-encoded — everything else is a true edit.)
+The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target — **table rows light up per cell**, so editing one invoice amount never disturbs its neighbors. Click a line or cell, retype it, done — and on export PDF Studio **rewrites the page's content stream itself**: the original glyphs' show-text operators are deleted from the file and your replacement is written in as real vector text at the same position, with TJ kerning reproducing the original column spacing. The old bytes are gone — not covered, not hidden: gone. (Lines using exotic subset/CID fonts keep a visually identical page-sampled cover as a fallback, because those glyph ids cannot be safely re-encoded — everything else is a true edit.)
 
 ![Every line of the original text is a clickable edit target](docs/shots/02-edit-hints.png)
 
-![Retyping a line in place — old text covered with page-sampled background, new text stamped](docs/shots/03-edit-inline.png)
+![Retyping a line in place — the original text is rewritten in the file, table cells stay independent](docs/shots/03-edit-inline.png)
 
 - Works on any digital PDF with a text layer, at any zoom level
 - Hover hints show exactly what's editable before you commit
@@ -153,7 +153,7 @@ npm run build      # production build + PWA service worker → dist/
 
 **Architecture in one line:** every mark lives in the page's PDF user space; the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport` — including offset MediaBox/CropBox origins that break most home-grown editors.
 
-**Test suite (30):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips.
+**Test suite (34):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting (wide runs, prose safety, column detection).
 
 ## Deployment (any static host, one command)
 

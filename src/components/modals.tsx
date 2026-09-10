@@ -300,7 +300,7 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
         <section>
           <h3>Editing</h3>
           <ul>
-            <li><b>Edit text</b> — switch to the edit tool and click a line of the original PDF. Its background is sampled and repainted, then your new text is stamped in place. Best effort on digital PDFs; scanned images need OCR (roadmap).</li>
+            <li><b>Edit text</b> — switch to the edit tool and click a line (or one table cell) of the original PDF. On export the original text is rewritten in place inside the PDF content stream — tables keep their column positions, and the replacement becomes real selectable text. Scanned images need the OCR tool (same toolbar).</li>
             <li><b>Add text</b>, <b>highlight</b>, <b>underline</b>, <b>strikethrough</b>, <b>notes</b>, <b>freehand pen</b>, <b>arrows &amp; pointers</b>, <b>rectangles</b> and <b>ellipses</b> all layer on top and are flattened into the exported file.</li>
             <li><b>Redact</b> paints permanent black boxes — nothing sensitive remains visible in the exported file; <b>whiteout</b> samples the page background so it blends in.</li>
             <li><b>Search</b> — the box in the top bar finds text across the whole document; Enter / Shift+Enter jump between matches.</li>

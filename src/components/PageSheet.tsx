@@ -655,6 +655,8 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         bg: inline.bg ?? '#ffffff',
         origText: h.text,
         font: settings.font,
+        cell: h.cell,
+        gapBefore: h.gapBefore,
       } as Annotation);
     } else if (inline.mode === 'edit-text' && inline.annId) {
       props.onUpd(inline.annId, { text } as Partial<Annotation>);
