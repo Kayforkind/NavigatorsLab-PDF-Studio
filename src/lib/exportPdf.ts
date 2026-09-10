@@ -16,6 +16,7 @@ import type { Annotation, DocState, PageRec, Source } from '../types';
 import { parseRanges } from './ranges';
 import { applyFieldValues } from './forms';
 import { rasterizePage, transformAnnsToDisplaySpace, type RasterResult } from './rasterize';
+import { planDeepEdit, planVectorRedaction, installStream } from './textRewrite';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 export interface DocMeta {
@@ -186,7 +187,66 @@ async function maybeRasterForRedaction(
   if (rects.length === 0 || !proxies || p.src === null) return null;
   const proxy = proxies.get(p.src);
   if (!proxy || p.page === null) return null;
-  return rasterizePage(proxy, p, p.page, totalRotation, rects);
+  return rasterizePage(
+    proxy,
+    p,
+    p.page,
+    totalRotation,
+    rects,
+  );
+}
+
+/**
+ * Deep content-stream pass for one source page, applied to `lib` BEFORE the
+ * page is copied into the output:
+ *  1. Vector redaction — show-text operators FULLY covered by a redact box
+ *     are deleted from the content stream (unrecoverable), while the rest of
+ *     the page stays vector. When every intersecting line was removed this
+ *     way, pixel rasterization is skipped entirely.
+ *  2. True text edits — an edit annotation carrying `origText` removes the
+ *     original glyphs from the stream; the styled replacement is then drawn
+ *     by the normal overlay painter as REAL new text. Old bytes: gone.
+ *
+ * Returns true when vector redaction fully handled the page (no raster
+ * fallback needed). Never throws — failures fall back to the overlay/raster
+ * paths, which remain correct.
+ */
+async function applyDeepContentPass(
+  lib: import('pdf-lib').PDFDocument,
+  p: PageRec,
+  pageAnns: Annotation[],
+): Promise<boolean> {
+  try {
+    if (p.page === null) return false;
+    const rects = redactRectsFor(pageAnns);
+    let vectorDone = false;
+    if (rects.length > 0) {
+      const vr = planVectorRedaction(lib, p.page, rects);
+      if (vr) {
+        installStream(lib, p.page, vr.bytes);
+        if (vr.removed > 0 && vr.partial === 0) vectorDone = true;
+      }
+    }
+    // True text edits (skip when the page will be rasterized — the raster
+    // renders the ORIGINAL stream from the pdf.js proxy, so stream edits
+    // would be invisible there and the overlay must stay).
+    if (rects.length === 0 || vectorDone) {
+      for (const ea of pageAnns) {
+        if (ea.type !== 'edit') continue;
+        const orig = (ea as { origText?: string }).origText;
+        if (!orig) continue;
+        const plan = planDeepEdit(lib, p.page, {
+          hit: { x: ea.x, y: ea.y, w: ea.w, h: ea.h, text: orig },
+          newText: null,
+        });
+        if (plan) installStream(lib, p.page, plan.bytes);
+      }
+    }
+    return vectorDone;
+  } catch (e) {
+    console.warn('deep content pass skipped:', e);
+    return false;
+  }
 }
 
 async function drawAnn(
@@ -221,7 +281,8 @@ async function drawAnn(
     }
     case 'redact': {
       // visual marker only — the actual content removal is burnRedactions()
-      page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(0.05, 0.05, 0.06), opacity: 1 });
+      const c = cssHexToRgb(ann.color || '#101014');
+      page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(c.r, c.g, c.b), opacity: 1 });
       break;
     }
     case 'arrow': {
@@ -459,10 +520,14 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
       if (!lib || p.page === null || p.page >= lib.getPageCount()) continue;
       const intrinsic = doc.sources.find((s) => s.id === p.src)?.pages[p.page]?.rot ?? 0;
       const total = ((intrinsic + p.rot) % 360 + 360) % 360;
-      // TRUE redaction: pages carrying redact boxes are REPLACED by a raster
-      // with the boxes burned into the pixels — the original content stream
-      // (text, images) is discarded entirely and cannot be recovered.
-      raster = await maybeRasterForRedaction(p, pageAnns, proxies, total);
+      // Deep pass FIRST: delete covered text operators / edited lines from
+      // the source lib so the copied page (vector, flip or raster) carries
+      // the removal. Returns true when rasterization can be skipped.
+      const vectorRedactDone = await applyDeepContentPass(lib, p, pageAnns);
+      // TRUE redaction: pages still carrying unremovable redact coverage are
+      // REPLACED by a raster with the boxes burned into the pixels — the
+      // original content stream is discarded entirely.
+      raster = vectorRedactDone ? null : await maybeRasterForRedaction(p, pageAnns, proxies, total);
       if (raster) {
         outPage = out.addPage([raster.w, raster.h]); // rotation + flip baked into the bitmap
         const jpgB64 = raster.dataUrl.split(',')[1] ?? '';

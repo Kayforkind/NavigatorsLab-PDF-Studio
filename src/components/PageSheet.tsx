@@ -516,7 +516,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
       } else if (t === 'underline' || t === 'strike') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, opacity: settings.opacity } as Annotation);
       } else if (t === 'redact') {
-        props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: '#101014', opacity: 1 } as Annotation);
+        props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color === '#ffd400' ? '#101014' : settings.color, opacity: 1 } as Annotation);
       } else if (t === 'rect' || t === 'ellipse') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, width: settings.width, opacity: Math.min(1, 0.35 + settings.opacity), fill: null } as Annotation);
       } else if (t === 'whiteout') {
@@ -653,6 +653,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         size: h.size,
         color: inline.color ?? settings.color,
         bg: inline.bg ?? '#ffffff',
+        origText: h.text,
         font: settings.font,
       } as Annotation);
     } else if (inline.mode === 'edit-text' && inline.annId) {

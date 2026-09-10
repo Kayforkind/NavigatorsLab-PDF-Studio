@@ -24,6 +24,8 @@ export interface RedactRect {
   y: number;
   w: number;
   h: number;
+  /** css hex fill; defaults to the classic near-black when omitted */
+  color?: string;
 }
 
 /** Longest canvas side we allow when rasterizing (≈ 2200px ≈ 260 DPI on Letter). */
@@ -90,7 +92,6 @@ export async function rasterizePage(
       const m = mapVp.transform;
       return { x: m[0] * p.x + m[2] * p.y + m[4], y: m[1] * p.x + m[3] * p.y + m[5] };
     };
-    ctx.fillStyle = '#0a0a0c';
     for (const r of rects) {
       const tl = toPx({ x: r.x, y: r.y + r.h });
       const br = toPx({ x: r.x + r.w, y: r.y });
@@ -98,6 +99,7 @@ export async function rasterizePage(
       const y = Math.min(tl.y, br.y);
       const w = Math.abs(br.x - tl.x);
       const h = Math.abs(br.y - tl.y);
+      ctx.fillStyle = r.color || '#0a0a0c';
       // +1px bleed so hairline anti-aliased edges of the original glyphs
       // cannot peek out around the box.
       ctx.fillRect(Math.floor(x) - 1, Math.floor(y) - 1, Math.ceil(w) + 2, Math.ceil(h) + 2);

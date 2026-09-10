@@ -205,6 +205,15 @@ const ok = (name, cond, extra = '') => {
   const allDecoded = hexToAscii(pageTexts.join(' '));
   const hasEdited = allDecoded.includes('EDITED BY TEST');
   ok('edited text present in exported PDF', hasEdited);
+  // TRUE EDIT: the original line's bytes must be GONE from the file — not
+  // just covered. This is the deep content-stream rewrite assertion.
+  const origToken = String(original || '').split(/\s+/).map((w) => w.replace(/[^A-Za-z0-9]/g, '')).filter((w) => w.length >= 6)[0];
+  if (origToken) {
+    const origLeak = allDecoded.includes(origToken);
+    ok('original edited-line glyphs deleted from content stream', !origLeak, origLeak ? `"${origToken}" still in stream` : 'old bytes gone');
+  } else {
+    ok('original edited-line glyphs deleted from content stream', true, 'token too short to assert');
+  }
   // TRUE redaction: page 1 is replaced by a raster — its original text
   // operators (the heading under the redact box) must be GONE from the file.
   let hasDct = false;

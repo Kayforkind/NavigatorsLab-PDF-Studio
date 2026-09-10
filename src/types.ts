@@ -114,6 +114,9 @@ export interface EditAnn extends AnnCommon {
   color: string;
   /** sampled page background used to cover the original glyphs */
   bg: string;
+  /** original line text this edit replaced — when present, export DELETES
+   *  the original glyphs from the content stream (true edit, not overlay) */
+  origText?: string;
   /** optional per-annotation font family (Helvetica | Times | Courier) */
   font?: string;
 }
