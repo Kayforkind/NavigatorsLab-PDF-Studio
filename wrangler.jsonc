@@ -1,10 +1,17 @@
 {
   "name": "pdf-studio-site",
+  "main": "worker.js",
   "compatibility_date": "2026-09-01",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none"
   },
   "routes": [
-    { "pattern": "navigatorslab.com", "custom_domain": true }
+    // The site root is now the NavigatorsLab library hub (served by the
+    // navigatorslab-tools worker's catch-all). PDF Studio lives at
+    // /pdf-studio/ — this path pattern beats the catch-all by specificity.
+    { "pattern": "navigatorslab.com/pdf-studio*", "zone_name": "navigatorslab.com" }
   ]
 }
