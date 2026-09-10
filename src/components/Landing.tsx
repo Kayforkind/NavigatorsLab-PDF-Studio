@@ -39,7 +39,7 @@ export function Landing({
         </div>
         <p className="landing-brand">
           Free &amp; open source (MIT) · <a href="https://navigatorslab.com" target="_blank" rel="noreferrer">by NavigatorsLab</a>
-          · <a href="https://navigatorslab.com/tools/" target="_blank" rel="noreferrer">🧭 16 free tools</a>
+          · <a href="https://navigatorslab.com/tools/" target="_blank" rel="noreferrer">🧭 23 free tools & projects</a>
           · <a href="https://navigatorslab.com/reimagine/" target="_blank" rel="noreferrer">🎨 Reimagine</a>
         </p>
       </div>
