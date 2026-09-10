@@ -15,7 +15,7 @@ const TOOL_BLURBS: Record<ToolId, string> = {
   ink: 'Draw freehand with the pointer (mouse, pen or finger).',
   sign: 'Draw a signature once; it is remembered for this session and stamped where you click.',
   image: 'Choose an image file; it is stamped at the click point. Drag to position, corner to scale.',
-  redact: 'Drag a box over sensitive content — on export the region is truly removed: the page content underneath is clipped out of the file, so it cannot be recovered or copied.',
+  redact: 'Drag a box over sensitive content — at export the covered text is DELETED from the document itself (vector removal), with a pixel-level burn as the safety net for images and exotic fonts. The redaction fill color is yours to choose below.',
   whiteout: 'Drag a box to cover content with the sampled page background — ideal for cleaning up a scan.',
   arrow: 'Drag from tail to tip to point at something — the arrowhead lands where you release.',
   rect: 'Drag an outlined rectangle. Color and line weight follow the style controls.',
@@ -63,7 +63,7 @@ function Field({
   );
 }
 
-const colorTools = new Set<ToolId>(['highlight', 'underline', 'strike', 'ink', 'text', 'edit', 'note', 'arrow', 'rect', 'ellipse']);
+const colorTools = new Set<ToolId>(['highlight', 'underline', 'strike', 'ink', 'text', 'edit', 'note', 'arrow', 'rect', 'ellipse', 'redact']);
 const widthTools = new Set<ToolId>(['ink', 'arrow', 'rect', 'ellipse']);
 const FONT_OPTIONS: Array<[string, string]> = [
   ['Helvetica', 'Helvetica (sans)'],
@@ -113,7 +113,7 @@ export function Inspector({
   onDrawerClose?: () => void;
 }) {
   const [noteText, setNoteText] = useState<string | null>(null);
-  const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note' || selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
+  const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note' || selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse' || selected.type === 'redact');
   const resizable = selected && (selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
   const geometry = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'redact' || selected.type === 'whiteout' || selected.type === 'edit' || selected.type === 'image');
 
@@ -170,7 +170,7 @@ export function Inspector({
             <b>{settings.fontSize.toFixed(0)}pt</b>
           </div>
         )}
-        {tool === 'redact' && <p className="tool-blurb warn">Redactions are burned into the page pixels at export — the original content stream is discarded, so redacted text is unrecoverable from the file.</p>}
+        {tool === 'redact' && <p className="tool-blurb warn">Redactions remove content: covered text operators are deleted from the file and the area is burned into page pixels as a safety net. Pick the fill color below — black is standard, any color works.</p>}
         {tool === 'whiteout' && <p className="tool-blurb">The cover color is sampled from the page under your drag, so whiteouts blend in on tinted or scanned pages.</p>}
         {tool === 'note' && <p className="tool-blurb">Marker color:</p>}
         {tool === 'edit' && (

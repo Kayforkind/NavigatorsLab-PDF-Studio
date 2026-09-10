@@ -8,7 +8,8 @@ nothing you open ever leaves your device.
 
 ## 1 · Edit the text that is already in the PDF
 
-The flagship. Most editors only stamp new text on top; PDF Studio rewrites the original.
+The flagship. Most editors only stamp new text on top; PDF Studio **rewrites the original at the
+content-stream level** — the old glyphs' operators are deleted from the file itself.
 
 1. Open any digital PDF (one with selectable text — not a scan).
 2. Pick the **Edit text** tool in the left rail.
@@ -16,10 +17,16 @@ The flagship. Most editors only stamp new text on top; PDF Studio rewrites the o
 
 ![Editable lines highlighted on hover](docs/shots/02-edit-hints.png)
 
-4. Click a line, retype it, press Enter. The old glyphs are painted over with a **background
-   color sampled from the page**, and your text is stamped at the same position and size:
+4. Click a line, retype it, press Enter. On export, PDF Studio splices the page's content stream:
+   the original line's text operators are **removed from the file** and your replacement is written
+   in as real vector text at the same position and size — searchable, selectable, and unrecoverable
+   in its original form:
 
 ![A line retyped in place](docs/shots/03-edit-inline.png)
+
+   Want proof? Export a file after an edit and search the bytes for any word of the original line —
+   it is not there. (Lines in exotic subset/CID fonts keep a page-sampled cover fallback, since
+   their glyph ids cannot be safely re-encoded; everything else is a true rewrite.)
 
 On export the replacement is real vector text — searchable, selectable, print-crisp.
 

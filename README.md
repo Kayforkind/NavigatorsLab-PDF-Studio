@@ -9,7 +9,7 @@
 [![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
 [![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-24_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
+[![Tests](https://img.shields.io/badge/tests-30_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
 
 *A [NavigatorsLab](https://navigatorslab.com) project.*
 
@@ -31,7 +31,7 @@ Every claim below is demonstrated by a real screenshot in this repository, captu
 
 ### ✏️ Edits the text that is already in your PDF
 
-The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target. Click a line, retype it, done — the old glyphs are painted over with a **background color sampled from the page itself** (so it works on scanned or textured pages, not just white), and your replacement is stamped at the same position and size. On export it's real vector text in real PDF content, not a screenshot pasted on top.
+The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target. Click a line, retype it, done — and on export PDF Studio **rewrites the page's content stream itself**: the original glyphs' show-text operators are deleted from the file and your replacement is written in as real vector text at the same position. The old bytes are gone — not covered, not hidden: gone. (Lines using exotic subset/CID fonts keep a visually identical page-sampled cover as a fallback, because those glyph ids cannot be safely re-encoded — everything else is a true edit.)
 
 ![Every line of the original text is a clickable edit target](docs/shots/02-edit-hints.png)
 
@@ -153,7 +153,7 @@ npm run build      # production build + PWA service worker → dist/
 
 **Architecture in one line:** every mark lives in the page's PDF user space; the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport` — including offset MediaBox/CropBox origins that break most home-grown editors.
 
-**Test suite (24):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine.
+**Test suite (30):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips.
 
 ## Deployment (any static host, one command)
 

@@ -538,6 +538,7 @@ export default function App() {
           w,
           h,
           text: ln.text,
+          origText: ln.text,
           size: Math.max(5, Math.min(40, h * 0.85)),
           color: '#17171b',
           bg: sample(ln.x0, ln.y0, ln.x1, ln.y1),
