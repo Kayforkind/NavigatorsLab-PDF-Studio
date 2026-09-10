@@ -540,13 +540,15 @@ export interface LineOp {
 
 export interface DeepEditRequest {
   /** content-space hit (from TextHit: y-up, crop-box origin) */
-  hit: Pick<TextHit, 'x' | 'y' | 'w' | 'h' | 'text'>;
+  hit: Pick<TextHit, 'x' | 'y' | 'w' | 'h' | 'text' | 'cell' | 'gapBefore'>;
   /** replacement text; null deletes the line without replacement */
   newText: string | null;
   /** requested font size (points) for the injected text */
   size?: number;
   /** hex color for the injected text, e.g. '#17171b' */
   color?: string;
+  /** standard font family for the injected text (Helvetica/Times/Courier) */
+  font?: string;
 }
 
 export interface PageRewritePlan {
@@ -556,6 +558,10 @@ export interface PageRewritePlan {
   matched: LineOp;
   /** all recognized lines (for redaction batching) */
   lines: LineOp[];
+  /** true when the WHOLE line was rewritten in the stream (the exporter can
+   *  then skip drawing the annotation overlay — the replacement text is part
+   *  of the page content itself) */
+  lineReplace: boolean;
 }
 
 /** True when the page's resources reference image XObjects (incl. inherited). */
@@ -592,7 +598,7 @@ function pageHasImages(lib: PDFDocument, node: import('pdf-lib').PDFPageLeaf): b
 }
 
 /** Decode + recognize all invertible show-text lines on a page. */
-export function recognizePageText(lib: PDFDocument, pageIndex: number): { lines: LineOp[]; cropX: number; cropY: number; stream: PDFRawStream; decoded: Uint8Array; hasImages: boolean } | null {
+export function recognizePageText(lib: PDFDocument, pageIndex: number): { lines: LineOp[]; cropX: number; cropY: number; stream: PDFRawStream; decoded: Uint8Array; source: string; hasImages: boolean } | null {
   const page = lib.getPage(pageIndex);
   const node = page.node;
   const contents = node.get(PDFName.of('Contents'));
@@ -656,7 +662,7 @@ export function recognizePageText(lib: PDFDocument, pageIndex: number): { lines:
     if (!ok || !text.trim()) continue;
     lines.push({ seg, text, font: info, advance });
   }
-  return { lines, cropX, cropY, stream: streams[0], decoded, hasImages: pageHasImages(lib, node) };
+  return { lines, cropX, cropY, stream: streams[0], decoded, source: latin1(decoded), hasImages: pageHasImages(lib, node) };
 }
 
 /** Score a line against a hit: text similarity + origin proximity. */
@@ -705,11 +711,103 @@ function hexOperand(bytes: Uint8Array): Uint8Array {
   return bytesOf(`<${hex}>`);
 }
 
+/** Does the target token sit inside a TJ array? Returns the array token. */
+function enclosingArray(src: string, tok: Tok, toks: Tok[]): Tok | null {
+  const idx = toks.indexOf(tok);
+  for (let i = idx - 1; i >= 0; i--) {
+    const t = toks[i];
+    if (t.kind === 'arr') {
+      if (t.start <= tok.start && t.end >= tok.end) return t;
+      break;
+    }
+    if (t.kind === 'op') break;
+  }
+  return null;
+}
+
+/** Sum of the TJ kerning numbers (in thousandths of a text-space unit) that
+ *  sit between `arr.start` and `tok.start`. */
+function kernBefore(src: string, arr: Tok, tok: Tok): number {
+  let sum = 0;
+  let i = arr.start + 1;
+  while (i < tok.start) {
+    const ch = src[i];
+    if (ch === '(') { const t = readStringLit(src, i); i = t.end; continue; }
+    if (ch === '<' && src[i + 1] !== '<') { const t = readHexLit(src, i); i = t.end; continue; }
+    if (/[0-9.+-]/.test(ch)) {
+      let j = i;
+      while (j < tok.start && /[0-9.+-]/.test(src[j])) j++;
+      const n = parseFloat(src.slice(i, j));
+      if (Number.isFinite(n)) sum += n;
+      i = j;
+      continue;
+    }
+    i++;
+  }
+  return sum;
+}
+
 /**
- * Plan a single-line deep edit: returns the new decoded stream bytes with
- * the clicked line's string operand replaced by the re-encoded replacement
- * (or emptied when replacement can't be represented). Null = no confident
- * match (caller keeps the overlay fallback).
+ * Build the replacement operand for a substring edit inside a TJ array:
+ * `<newText> <adjust> TJ` — the adjustment (negative, in thousandths of a
+ * text-space unit) restores the original cell advance so neighboring cells
+ * keep their exact positions.
+ */
+function tjOperand(newText: string, size: number, keepWidth: number): Uint8Array | null {
+  const enc = encodeWinAnsi(newText);
+  if (!enc) return null;
+  const glyphW = ((enc.length * 500) / 1000) * size; // Helvetica-ish average
+  const adjust = keepWidth - glyphW; // points to reclaim after the new glyphs
+  let s = `<${[...enc].map((b) => b.toString(16).padStart(2, '0')).join('')}>`;
+  if (Math.abs(adjust) > 0.05) s += ` ${(-adjust / Math.max(0.01, size) * 1000).toFixed(1)}`;
+  return bytesOf(s);
+}
+
+/**
+ * Build a TJ-array operand for a SINGLE-STRING `Tj` line that contains
+ * several table cells: `<left> <gap> <new> <trailing-adjust> TJ` — the gap
+ * kerning reproduces the original space between cells, and the trailing
+ * adjustment preserves the cell's original advance so the following cells
+ * keep their exact positions.
+ */
+function subTjOperand(prefix: string, gapBefore: number, newText: string, size: number, segW: number, trailing: string): Uint8Array | null {
+  const newBytes = encodeWinAnsi(newText);
+  if (!newBytes) return null;
+  const newHex = [...newBytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const parts: string[] = [];
+  const cleanPrefix = prefix.replace(/\s+$/, '');
+  let prefixBytes: Uint8Array | null = null;
+  if (cleanPrefix.length > 0) {
+    prefixBytes = encodeWinAnsi(cleanPrefix);
+    if (!prefixBytes) return null;
+    parts.push(`<${[...prefixBytes].map((b) => b.toString(16).padStart(2, '0')).join('')}>`);
+    const gapKern = -(gapBefore / Math.max(0.01, size)) * 1000; // 1e-3 text units
+    if (Math.abs(gapKern) > 0.05) parts.push(gapKern.toFixed(1));
+  }
+  parts.push(`<${newHex}>`);
+  const trailingBytes = encodeWinAnsi(trailing.trimStart());
+  if (trailingBytes && trailingBytes.length > 0) {
+    parts.push(`<${[...trailingBytes].map((b) => b.toString(16).padStart(2, '0')).join('')}>`);
+  }
+  // Reclaim the width difference so the row keeps its total advance: the
+  // replacement must occupy the same advance as the cell it replaces, and the
+  // (trimmed) gap before it is re-added as kerning.
+  const prefixW = ((prefixBytes?.length ?? 0) * 500) / 1000 * size;
+  const newW = ((newBytes.length * 500) / 1000) * size;
+  const trailW = ((trailingBytes?.length ?? 0) * 500) / 1000 * size;
+  const gapW = gapBefore;
+  const adjust = segW - (prefixW + gapW + newW + trailW); // points to reclaim
+  if (Math.abs(adjust) > 0.05) parts.push((-(adjust / Math.max(0.01, size)) * 1000).toFixed(1));
+  return bytesOf(`[${parts.join(' ')}]`);
+}
+
+/**
+ * Plan a deep edit. When the hit is a whole line, the string operand is
+ * replaced outright. When it is ONE CELL of a wider row (`hit.cell`), only
+ * the matched substring is replaced — a TJ adjustment restores the original
+ * cell advance, so the row's other cells keep their exact positions and the
+ * layout does NOT reflow. Returns null when no confident match exists
+ * (caller keeps the overlay fallback) or when the edit cannot be represented.
  */
 export function planDeepEdit(lib: PDFDocument, pageIndex: number, req: DeepEditRequest): PageRewritePlan | null {
   const rec = recognizePageText(lib, pageIndex);
@@ -722,15 +820,76 @@ export function planDeepEdit(lib: PDFDocument, pageIndex: number, req: DeepEditR
   }
   if (best < 0 || bestScore < 1.2) return null;
   const target = rec.lines[best];
-  let operand: Uint8Array;
-  if (req.newText !== null && req.newText.length > 0) {
-    const enc = encodeWinAnsi(req.newText);
-    operand = enc ? hexOperand(enc) : new Uint8Array(0);
-  } else {
-    operand = new Uint8Array(0);
+  const seg = target.seg;
+
+  const replacement = req.newText ?? '';
+  if (replacement.length === 0) {
+    // deletion: remove the matched line (or cell substring) from the stream
+    const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: new Uint8Array(0) }]);
+    return { bytes, matched: target, lines: rec.lines, lineReplace: true };
   }
-  const bytes = applySplices(rec.decoded, [{ start: target.seg.start, end: target.seg.end, bytes: operand }]);
-  return { bytes, matched: target, lines: rec.lines };
+
+  const enc = encodeWinAnsi(replacement);
+  if (!enc) return null; // replacement can't be represented in WinAnsi → overlay
+  const size = Math.max(4, req.size ?? seg.size);
+
+  if (!req.hit.cell) {
+    // whole-line rewrite
+    const operand = hexOperand(enc);
+    const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: operand }]);
+    return { bytes, matched: target, lines: rec.lines, lineReplace: true };
+  }
+
+  // Cell edit inside a (possibly TJ) segment: match the substring within the
+  // segment's decoded text and replace only its byte span.
+  const segToks = tokenizeContent(rec.decoded);
+  const strTok =
+    segToks.find((t) => t.kind === 'str' && t.start === seg.start && t.end === seg.end) ??
+    segToks.find((t) => t.kind === 'hex' && t.start === seg.start && t.end === seg.end);
+  const arr = strTok ? enclosingArray(rec.source, strTok, segToks) : null;
+  if (!strTok) return null;
+  const txt = target.text; // decoded segment text (may include spaces)
+  const want = (req.hit.text ?? '').replace(/\s+/g, ' ').trim();
+  const at = txt.indexOf(want);
+  if (at < 0) return null;
+  if (arr) {
+    // TJ: replace the string element and re-emit the leading gap as kerning
+    const kern = kernBefore(rec.source, arr, strTok);
+    const base = target.font.widths;
+    const segW =
+      (Array.from(txt).reduce((acc, ch) => acc + (base.get(ch.charCodeAt(0)) ?? 500), 0) / 1000) * seg.size;
+    const keep = (kern / 1000) * seg.size + segW; // original total advance
+    const op = tjOperand(replacement, size, keep);
+    if (!op) return null;
+    const bytes = applySplices(rec.decoded, [{ start: strTok.start, end: strTok.end, bytes: op }]);
+    return { bytes, matched: target, lines: rec.lines, lineReplace: false };
+  }
+  // Single Tj: the segment may be ONE STRING that contains several table
+  // cells ("R18027182586  BytesPak  2500.00 USD …"). When the clicked cell is
+  // a substring with text before it, splice INSIDE the string operand and
+  // re-emit it as a TJ array that preserves the original spacing — so the
+  // row's other cells keep their exact positions. When the hit covers the
+  // whole string, replace it outright.
+  const prefix = txt.slice(0, at);
+  const trailing = txt.slice(at + want.length);
+  // The hit covers the whole string only when nothing meaningful follows it
+  // (or precedes it). Otherwise this string contains MORE cells — edit the
+  // substring in place and keep the rest of the row untouched.
+  const cellIsWhole = prefix.trim().length === 0 && trailing.trim().length === 0;
+  if (cellIsWhole) {
+    const operand = hexOperand(enc);
+    const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: operand }]);
+    return { bytes, matched: target, lines: rec.lines, lineReplace: true };
+  }
+  const gap = Math.max(0, req.hit.gapBefore ?? 0);
+  // The output keeps the text BEFORE the clicked cell, then the replacement,
+  // with the inter-cell gap reproduced as TJ kerning so the cells after the
+  // edit land exactly where they did in the original row.
+  const segW = (txt.length * 500) / 1000 * seg.size;
+  const op = subTjOperand(prefix, gap, replacement, size, segW, trailing);
+  if (!op) return null;
+  const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: op }]);
+  return { bytes, matched: target, lines: rec.lines, lineReplace: false };
 }
 
 /**

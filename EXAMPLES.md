@@ -13,14 +13,15 @@ content-stream level** — the old glyphs' operators are deleted from the file i
 
 1. Open any digital PDF (one with selectable text — not a scan).
 2. Pick the **Edit text** tool in the left rail.
-3. Every line of the original text glows as a clickable target:
+3. Every line of the original text glows as a clickable target — and **table rows light up per
+   cell**, so an invoice's Reference / Recipient / Amount columns are independent targets:
 
 ![Editable lines highlighted on hover](docs/shots/02-edit-hints.png)
 
-4. Click a line, retype it, press Enter. On export, PDF Studio splices the page's content stream:
-   the original line's text operators are **removed from the file** and your replacement is written
-   in as real vector text at the same position and size — searchable, selectable, and unrecoverable
-   in its original form:
+4. Click a line (or one cell), retype it, press Enter. On export, PDF Studio splices the page's
+   content stream: the original text operators are **removed from the file** and your replacement
+   is written in as real vector text at the same position and size, with kerning that reproduces
+   the original column spacing — searchable, selectable, and unrecoverable in its original form:
 
 ![A line retyped in place](docs/shots/03-edit-inline.png)
 

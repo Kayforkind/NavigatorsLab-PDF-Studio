@@ -119,6 +119,12 @@ export interface EditAnn extends AnnCommon {
   origText?: string;
   /** optional per-annotation font family (Helvetica | Times | Courier) */
   font?: string;
+  /** true when this edit replaces ONE CELL of a wider table row — the deep
+   *  rewrite only touches that cell's substring, leaving neighbors untouched */
+  cell?: boolean;
+  /** horizontal gap (points) between the previous cell and this one — lets
+   *  the deep rewrite replicate the original spacing exactly */
+  gapBefore?: number;
 }
 
 export interface NoteAnn extends AnnCommon {
@@ -242,6 +248,11 @@ export interface TextHit {
   size: number;
   /** typical color of the text (css hex) */
   color: string;
+  /** true when this hit is one cell of a wider table row */
+  cell?: boolean;
+  /** horizontal gap (points) from the previous cell — the deep rewrite
+   *  keeps the original spacing by re-emitting it as TJ kerning */
+  gapBefore?: number;
 }
 
 export const BLANK_SIZES = {

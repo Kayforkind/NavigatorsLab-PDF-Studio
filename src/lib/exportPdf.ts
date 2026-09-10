@@ -236,10 +236,29 @@ async function applyDeepContentPass(
         const orig = (ea as { origText?: string }).origText;
         if (!orig) continue;
         const plan = planDeepEdit(lib, p.page, {
-          hit: { x: ea.x, y: ea.y, w: ea.w, h: ea.h, text: orig },
-          newText: null,
+          hit: {
+            x: ea.x,
+            y: ea.y,
+            w: ea.w,
+            h: ea.h,
+            text: orig,
+            cell: (ea as { cell?: boolean }).cell,
+            gapBefore: (ea as { gapBefore?: number }).gapBefore,
+          },
+          newText: ea.text,
+          size: ea.size,
+          color: ea.color,
+          font: ea.font,
         });
-        if (plan) installStream(lib, p.page, plan.bytes);
+        if (plan) {
+          installStream(lib, p.page, plan.bytes);
+          // whole-line rewrite → the replacement is IN the page content now;
+          // drop the overlay annotation so it is not double-drawn.
+          if (plan.lineReplace) {
+            const i = pageAnns.indexOf(ea);
+            if (i >= 0) pageAnns.splice(i, 1);
+          }
+        }
       }
     }
     return vectorDone;
@@ -255,6 +274,7 @@ async function drawAnn(
   fonts: { normal: PDFFont; bold: PDFFont },
   embedCache: Map<string, Promise<PDFImage>>,
   pdfDoc: PDFDocument,
+  skipEditOverlay = false,
 ): Promise<void> {
   const normal = fonts.normal;
   const bold = fonts.bold;
@@ -375,6 +395,10 @@ async function drawAnn(
       break;
     }
     case 'edit': {
+      // When the deep content pass rewrote the WHOLE line into the stream, the
+      // replacement is already part of the page content — the annotation is
+      // removed from pageAnns by the deep pass, so this is normally not hit.
+      if (skipEditOverlay) break;
       const bg = cssHexToRgb(ann.bg || '#ffffff');
       const c = cssHexToRgb(ann.color);
       page.drawRectangle({ x: ann.x, y: ann.y, width: ann.w, height: ann.h, color: rgb(bg.r, bg.g, bg.b), opacity: 1 });
