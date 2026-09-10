@@ -832,6 +832,20 @@ button {
   font-size: 11px;
 }
 
+/* cross-suite link in the status bar (Reimagine) — same chrome as mini-btn,
+   minus the button reset an <a> needs (no default underline/color). */
+a.mini-btn.suite-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+a.mini-btn.suite-link:hover {
+  color: var(--text);
+  border-color: var(--line2);
+}
+
 /* ---------------- modal ---------------- */
 .modal-backdrop {
   position: fixed;
