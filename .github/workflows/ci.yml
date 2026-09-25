@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Dependency audit (prod)
+        run: npm audit --omit=dev
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build:pages
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install chromium --with-deps
+      - name: Generate fixtures
+        run: node scripts/make-form-pdf.cjs
+      # Serve at the PRODUCTION URL SHAPE (/pdf-studio/ subpath, exactly like
+      # GitHub Pages project sites) so base-URL bugs can never pass CI.
+      - name: Browser suites at production URL shape
+        run: |
+          node scripts/subpath-server.cjs 5198 &
+          sleep 2
+          node scripts/verify-fixes.cjs
+          node scripts/review-e2e.cjs
+        env:
+          VERIFY_BASE: http://localhost:5198/pdf-studio/
+          REVIEW_BASE: http://localhost:5198/pdf-studio/
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: pdf-studio-failure-context
+          path: |
+            docs/
+          retention-days: 7

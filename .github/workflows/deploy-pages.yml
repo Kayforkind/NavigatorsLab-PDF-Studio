@@ -24,6 +24,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Deploy gate: what ships must at least typecheck and pass unit tests.
+      # (The full browser suites run in ci.yml; this keeps a broken push from
+      # reaching Pages even when CI is skipped.)
+      - run: npm run typecheck
+      - run: npm test
       - run: npm run build:pages
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
