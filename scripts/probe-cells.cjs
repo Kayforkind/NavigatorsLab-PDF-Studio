@@ -2,7 +2,17 @@
  * must produce per-CELL hits, not one box spanning the whole row.
  * Usage: node scripts/probe-cells.cjs [baseUrl] */
 const path = require('node:path');
-const { chromium } = require(path.join(process.env.APPDATA + '/npm/node_modules/@playwright/test/node_modules', 'playwright'));
+/* Playwright resolution: PW_MODULES → global @playwright/test → repo-local. */
+function resolvePlaywright() {
+  const candidates = [
+    process.env.PW_MODULES,
+    (process.env.APPDATA ? process.env.APPDATA + '/npm/node_modules/@playwright/test/node_modules' : ''),
+    path.resolve(__dirname, '..', 'node_modules'),
+  ].filter(Boolean);
+  for (const c of candidates) { try { return require(path.join(c, 'playwright')); } catch { /* next */ } }
+  throw new Error('playwright not found; set PW_MODULES or npm i -D playwright');
+}
+const { chromium } = resolvePlaywright();
 
 const BASE = process.argv[2] || 'http://localhost:5198/pdf-studio/';
 
