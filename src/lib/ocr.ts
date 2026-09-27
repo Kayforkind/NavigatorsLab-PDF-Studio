@@ -84,24 +84,60 @@ export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string)
   }
 }
 
-function groupToLines(words: OcrWord[]): OcrLine[] {
-  const sorted = [...words].sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
-  const lines: OcrLine[] = [];
-  for (const w of sorted) {
-    let line = lines[lines.length - 1];
-    const sameLine = line && Math.abs(w.y0 - line.y0) < Math.max(6, (line.y1 - line.y0) * 0.8);
-    if (!sameLine) {
-      line = { text: '', x0: w.x0, y0: w.y0, x1: w.x1, y1: w.y1, confidence: w.confidence };
-      lines.push(line);
+/**
+ * Groups flat OCR words into text lines.
+ *
+ * Geometry notes (learned from a real failure): a word's bbox TOP varies
+ * with its letter shapes — "over" (x-height letters) sits ~0.3em lower than
+ * "The" (cap + ascender) on the same baseline. Sorting or grouping by raw
+ * y0 therefore scrambles reading order ("the lazy dog 1234567890over").
+ * Row clustering uses bbox CENTERS, which are stable across glyph shapes,
+ * and words are ordered left-to-right by x0 within each row.
+ *
+ * Word spacing: a genuine inter-word space is ~0.25em, while fragments of a
+ * single word tesseract split apart sit ~0 apart. The gap threshold is a
+ * small fraction of the median word height so normal spaces are kept
+ * ("fox jumps", not "foxjumps") without gluing split fragments.
+ */
+export function groupToLines(words: OcrWord[]): OcrLine[] {
+  interface Row { words: OcrWord[]; yc: number; h: number }
+  const rows: Row[] = [];
+  const byCenter = [...words].sort(
+    (a, b) => (a.y0 + a.y1) - (b.y0 + b.y1) || a.x0 - b.x0,
+  );
+  for (const w of byCenter) {
+    const yc = (w.y0 + w.y1) / 2;
+    const h = Math.max(1, w.y1 - w.y0);
+    let row = rows.find((r) => Math.abs(yc - r.yc) < Math.max(r.h, h) * 0.6);
+    if (!row) {
+      row = { words: [], yc, h };
+      rows.push(row);
     }
-    const gap = w.x0 - line.x1;
-    if (line.text && gap > Math.max(2, (line.y1 - line.y0) * 0.4)) line.text += ' ';
-    line.text += w.text;
-    line.x0 = Math.min(line.x0, w.x0);
-    line.y0 = Math.min(line.y0, w.y0);
-    line.x1 = Math.max(line.x1, w.x1);
-    line.y1 = Math.max(line.y1, w.y1);
-    line.confidence = Math.min(line.confidence, w.confidence);
+    row.words.push(w);
+    const n = row.words.length;
+    row.yc = (row.yc * (n - 1) + yc) / n;
+    row.h = Math.max(row.h, h);
   }
-  return lines.filter((l) => l.confidence >= 45 && l.text.trim().length > 0);
+  const lines: OcrLine[] = [];
+  for (const row of rows) {
+    const ws = row.words.sort((a, b) => a.x0 - b.x0);
+    const heights = ws.map((w) => w.y1 - w.y0).sort((a, b) => a - b);
+    const medH = heights[Math.floor(heights.length / 2)] || 10;
+    let text = '';
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    let conf = Infinity;
+    for (const w of ws) {
+      if (text && w.x0 - x1 > medH * 0.18) text += ' ';
+      text += w.text;
+      x0 = Math.min(x0, w.x0);
+      y0 = Math.min(y0, w.y0);
+      x1 = Math.max(x1, w.x1);
+      y1 = Math.max(y1, w.y1);
+      conf = Math.min(conf, w.confidence);
+    }
+    lines.push({ text, x0, y0, x1, y1, confidence: conf });
+  }
+  return lines
+    .sort((a, b) => a.y0 - b.y0)
+    .filter((l) => l.confidence >= 45 && l.text.trim().length > 0);
 }
