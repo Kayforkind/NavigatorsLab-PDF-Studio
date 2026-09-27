@@ -2,16 +2,13 @@
 
 # PDF Studio
 
-### The free, open-source PDF editor that edits the text *inside* your PDF — entirely in your browser.
+**The free, open-source PDF editor that edits the text *inside* your PDF — entirely in your browser.**
 
-**No uploads · No attachments kept · No user information retained · No accounts · No watermarks · No page limits · No catches**
+**No uploads · No accounts · No watermarks · No page limits · No catch**
 
-[![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
-[![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
+[![Use it live](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-42_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
-
-*A [NavigatorsLab](https://navigatorslab.com) project.*
+[![Tests](https://img.shields.io/badge/tests-42_passing-brightgreen?style=for-the-badge)](#for-developers)
 
 > ⭐ **If this saves you an Adobe subscription, a star helps others find it.**
 
@@ -21,195 +18,129 @@
 
 ---
 
-## ⚡ 30-second quick start
+## The problem
 
-1. **Open the app:** [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/) — no install, no account.
-2. **Drop in any PDF** (or click "Open the demo document").
-3. **Press `E`** and click any line of existing text — retype it, and the file itself is rewritten on export.
+Every "free" PDF editor works the same way: upload your contract or your ID to somebody's server, edit three pages, then get hit with a paywall, a watermark, a page cap, or a sign-up screen the moment you press Save. Desktop editors that genuinely modify existing text cost a subscription.
 
-That's it. Your document never leaves your computer.
+## The fix
 
-> **The pitch, in one sentence:** PDF Studio is the PDF editor you keep trying to find and never find — one that actually rewrites the text already in the document, fills real forms, OCRs scans, signs, redacts, reorganizes pages, diffs two revisions, and answers questions about the file with an on-device AI — and it does all of it **without your document ever leaving your computer**, for **free**, as **open source (MIT)**.
+PDF Studio runs **100% in your browser**. Your files are opened, edited, and saved on your own machine — there is no server to upload to. And unlike every other free editor, it doesn't fake the editing: the Edit tool **rewrites the page's content stream itself**. The original text is deleted from the file and your replacement is written in as real vector text. Not an overlay. Not a text box on top. The old bytes are gone.
 
-## Why this exists
+**Try it in 30 seconds:** [open the live app](https://navigatorslab.com/pdf-studio/), drop in any PDF, press `E`, click any line of existing text, retype it.
 
-Every "free" PDF editor online hits you the same way: upload your contract or your ID to somebody's server, edit three pages, then hit a paywall, a watermark, a page cap, or a sign-up screen at the exact moment you press Save. Desktop editors that genuinely modify existing text cost money or lock the feature behind a subscription.
+---
 
-**PDF Studio's answer:** a full editor that runs 100% client-side. Your files are opened, edited, and saved by your own browser, on your own machine. There is no server to upload to. There is no account. There is no watermark, no quota, no "pro" tier. It is MIT-licensed open source — fork it, self-host it, ship it.
+## What it does
 
-## What it actually does (with proof)
+| | |
+|---|---|
+| ✏️ **True text editing** | Click any line — or any table cell — and retype it. Exports as real vector text, searchable and print-crisp. |
+| 📝 **Forms** | Fill real AcroForms (text, checkboxes, radios, dropdowns), then flatten them so nobody can change your answers. |
+| 🖋️ **Sign & annotate** | Signature pad, highlight, pen, arrows, shapes, sticky notes, image stamps — all real vector content. |
+| 🖤 **Redaction** | Burned-in black redaction, or invisible whiteout covers sampled from the page. What's covered stays covered. |
+| 🔠 **OCR** | Scanned pages become editable text via on-device Tesseract (EN/ES/FR/DE). No upload, ever. |
+| 🤖 **On-device AI** | Ask questions about your document; a real LLM runs in your browser via WebAssembly. Your data never leaves. |
+| ⚖️ **Revision diff** | Drop in two versions, get a line-by-line diff. Did the payment terms change? Now you know. |
+| 📄 **Pages** | Reorder, rotate, merge, split, duplicate, delete. Stamp page numbers, watermarks, headers & footers at export. |
+| 📱 **Anywhere** | PWA — installs to your phone or desktop, works offline, autosaves and resumes your session. |
 
-Every claim below is demonstrated by a real screenshot in this repository, captured from the running app.
+<details>
+<summary><b>Screenshots</b> — every claim above, captured from the running app</summary>
 
-### ✏️ Edits the text that is already in your PDF
+<br>
 
-The feature other "editors" fake. Pick the Edit tool and every line of the original text lights up as a clickable target — **table rows light up per cell**, so editing one invoice amount never disturbs its neighbors. Click a line or cell, retype it, done — and on export PDF Studio **rewrites the page's content stream itself**: the original glyphs' show-text operators are deleted from the file and your replacement is written in as real vector text at the same position, with TJ kerning reproducing the original column spacing. The old bytes are gone — not covered, not hidden: gone. (Lines using exotic subset/CID fonts keep a visually identical page-sampled cover as a fallback, because those glyph ids cannot be safely re-encoded — everything else is a true edit.)
-
-![Every line of the original text is a clickable edit target](docs/shots/02-edit-hints.png)
-
-![Retyping a line in place — the original text is rewritten in the file, table cells stay independent](docs/shots/03-edit-inline.png)
-
-- Works on any digital PDF with a text layer, at any zoom level
-- Hover hints show exactly what's editable before you commit
-- Exports as true vector text — searchable, selectable, print-crisp
-
-### 📝 Fills real PDF forms (AcroForms) — then flattens them
-
-Open a fillable PDF and the Forms dialog lists **every field**: text inputs, checkboxes, radio groups, dropdowns — with jump-to-page buttons. Type your values right in the list, or flip on "show fields on pages" and click the widgets directly on the page canvas. On save, values are written into the *real* form fields — or **flattened** into page content so nobody downstream can change them. Tax forms, applications, contracts: filled privately, on your machine.
-
-![The Forms dialog listing every field with inline editing](docs/shots/07-forms.png)
-
-![Form widgets drawn on the page — click one to jump to it in the dialog](docs/shots/08-forms-on-canvas.png)
-
-### 🖋️ Signs, stamps, annotates — with full shape styling
-
-Draw your signature on the built-in pad (exported as a transparent PNG), place it anywhere, resize it. Highlight, underline, strike through, freehand pen, sticky notes, text boxes, image stamps — plus **styling shapes**: **arrows & pointers** (arrowhead lands where you release), **outlined rectangles**, and **ellipses** for circling the important part. Every mark lives in true PDF coordinates and exports as real vector content. Color and line weight apply across pen, shapes, and arrows.
-
+![Edit hints — every line of the original text is a clickable target](docs/shots/02-edit-hints.png)
+![Inline editing — retyping a line rewrites the file, table cells stay independent](docs/shots/03-edit-inline.png)
+![Forms dialog listing every field with inline editing](docs/shots/07-forms.png)
 ![Signature pad with live drawing](docs/shots/05-signature-pad.png)
-
-![Redaction box, an arrow pointer, an ellipse, and a rectangle — all live marks](docs/shots/13-shapes-redact.png)
-
-![Highlight, freehand pen, and a sticky note placed on the page](docs/shots/04-annotate.png)
-
-### 📄 Reorganizes pages like a pro
-
-Drag thumbnails to reorder. Rotate 90° (honoring the file's own rotation metadata — with a one-click **"Turn upright"** banner when a file was scanned sideways). Duplicate, delete, insert blank pages. **Merge** another PDF at any position — or just drop a file onto the canvas. **Split** by page range (`1-3,5`) or explode to one-file-per-page.
-
+![Redaction, arrows, ellipses, rectangles — all live marks](docs/shots/13-shapes-redact.png)
 ![Thumbnail rail with per-page organize controls](docs/shots/06-pages-thumbs.png)
+![Export dialog with stamping panel](docs/shots/09-export-stamps.png)
+![Compare dialog with line diff](docs/shots/10-compare.png)
+![On-device AI assistant dialog](docs/shots/11-ai.png)
+![Mobile layout — bottom tool bar, full-width pages](docs/shots/14-mobile.png)
 
-### 🔢 Stamps page numbers, watermarks, headers & footers
+</details>
 
-At export time: page numbers (position, `1` / `Page 1` / `1 of N` formats, custom first number, skip-the-cover), diagonal watermarks with size/opacity/color, and header/footer lines with `{page}`, `{pages}`, `{date}`, `{title}` tokens. Rendered at true PDF coordinates — crisp at any zoom.
-
-![Export dialog with the full stamping panel](docs/shots/09-export-stamps.png)
-
-### 🔍 Searches the whole document
-
-Full-text search across every page, case-insensitive, with highlighted matches on the page and Enter/Shift+Enter navigation with a live counter.
-
-![Search matches highlighted with the n/N counter](docs/shots/12-search.png)
-
-### ⚖️ Diffs two PDFs line by line
-
-Drop two versions of a document into Compare and get an LCS line-diff of their extracted text — additions in green, removals in red, per-page counts. Did the payment terms change between v1 and v2? Now you know in seconds.
-
-![Compare dialog with green/red line diff](docs/shots/10-compare.png)
-
-### 🤖 Asks an AI about your document — without leaking it
-
-The ✦ assistant runs a real LLM (Qwen2.5 0.5B / Llama 3.2 1B) **in your browser via WebAssembly**. Ask questions, get summaries. The document text never leaves the device — the model comes to your data, not the other way around. Weights download once (~0.6–0.9 GB), then work offline. The lighter **Extract text** path needs no download at all and runs fully offline.
-
-![The on-device AI assistant dialog](docs/shots/11-ai.png)
-
-### 🔠 OCRs scanned pages into editable text
-
-Scanned page with no text layer? The OCR tool runs **Tesseract locally in WebAssembly** — each recognized line becomes a real, editable text box whose background is sampled from the page, so the export turns a flat scan into clean vector text. One-time ~15 MB language download, cached forever after.
-
-### 🩹 Repairs broken files
-
-- **Sideways scans**: detects camera-style rotation metadata and offers a one-click, undoable "Turn upright" for every affected page — including files stuck at 180°.
-- **Mirrored content**: some generators store artwork flipped (your email print-to-PDF might be upside down in *every* viewer). Flip any page horizontally/vertically — the export mirrors the real page content while your marks stay put.
-- **Offset page boxes**: PDF Studio's geometry engine is **CropBox-aware** — it handles files whose MediaBox doesn't start at (0,0) (extremely common in print-to-PDF output) that displace clicks and annotations in lesser editors.
-
-### 🖤 Redacts sensitive content — permanently
-
-The Redact tool paints opaque boxes over sensitive content; in the exported file the marks are flattened **black-over-content**, so what's underneath stays hidden in the shipped document. Whiteout covers with the **page-sampled background** instead, for cleaning up scans invisibly. Drag, done — no "pending redaction" metaphysics like Acrobat: what you see covered is what everyone else gets covered.
-
-### 📱 Works on your phone
-
-The whole editor reflows for mobile: the tool rail becomes a **bottom bar** with labeled icons (thumb-reachable), the top bar scrolls horizontally, pages stack full-width, and touch dragging marks/pages just works. It's a PWA, so you can install it to your home screen and keep editing offline.
-
-![PDF Studio on a phone — bottom tool bar, full-width pages](docs/shots/14-mobile.png)
-
-### 💾 Never loses your work
-
-Everything — open files, page operations, marks, form values — autosaves to on-device storage. After a crash or refresh, the start screen offers **Resume session**, and picks up exactly where you left off.
-
-### 📴 Works offline
-
-It's a PWA: install it to your dock/desktop and it keeps working with the network off. Your toolkit shouldn't have an "out of service" state.
-
-![The landing screen — drop a file, or resume your last session](docs/shots/01-landing.png)
-
-## Privacy model — short and absolute
-
-| Question | Answer |
-| --- | --- |
-| Where do my files go? | **Nowhere.** There is no upload endpoint. Open the devtools network tab and watch it stay silent while you edit. |
-| Do you keep my attachments or user information? | **No.** No attachments are retained, no user information is collected — no account, no email, no analytics on your documents. Your session autosaves **locally in your browser** and never leaves it. |
-| Watermarks? | **None.** |
-| Page/task/hour limits? | **None.** |
-| What downloads over the network? | The app itself, plus optional public model weights (AI ~0.6 GB, OCR ~15 MB) — cached by your browser after the first fetch. Your *documents* never transit the network. |
-| Can I air-gap it? | **Yes.** Clone the repo, host `dist/` on an internal network, point the AI/OCR loaders at internal mirrors. |
-
-## The honest limits (we'd rather tell you than oversell)
-
-- Edit-text targets PDFs **with a text layer**; for flat scans you use the OCR tool (which exists precisely for that).
-- Replacement text is set in Helvetica metrics — extremely close, but not glyph-identical to exotic embedded fonts.
-- Compare diffs extracted **text**, not rendered pixels — it's built for contract/revision review, not detecting a shifted logo.
-- The AI runs small models (0.5B–1B parameters) — good at summarizing and locating content in a document, not a replacement for a frontier model.
+---
 
 ## How it compares
 
-Verified against public pricing/feature pages on 2026-09-27. Competitors change plans often — check before you quote us.
+Verified against public pricing/feature pages on 2026-09-27.
 
-| | **PDF Studio** | Adobe Acrobat | Smallpdf | Sejda | Stirling PDF | QwikPDF |
-|---|---|---|---|---|---|---|
-| Price | **Free, MIT open source** | ~$19.99/user/mo | $10–15/mo | ~$7.50/mo | Free (self-hosted) | Free |
-| True in-place text editing | **Yes** (content-stream rewrite) | Yes (paid) | Yes (paid) | Yes | Partial | Overlay only |
-| Document leaves your device | **Never** | Uploads to Adobe servers | Uploads to Smallpdf servers | Uploads (web) / local (desktop app) | Never (your server) | Never (browser) |
-| Daily/task caps | **None** | Paid tier | ~2 tasks/day free | 3 tasks/day, 50 MB | None | None claimed |
-| Watermark on free output | **None** | — | Reported on some tools | None reported | None | None |
-| Redaction (burned in) | **Yes** | Yes (paid) | Paid | Whiteout-style | Yes | Whiteout-style |
-| OCR | **Yes** (on-device, 4 languages) | Paid | Paid | Yes (capped) | Yes | Claimed local |
-| Revision diff | **Yes** | Yes (paid) | Paid | No | — | No |
-| On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No | No |
-| Self-hostable | **Yes** (static files) | No | No | No | Yes (Docker) | — |
+| | **PDF Studio** | Adobe Acrobat | Smallpdf | Sejda | Stirling PDF |
+|---|---|---|---|---|---|
+| Price | **Free, MIT open source** | ~$19.99/user/mo | $10–15/mo | ~$7.50/mo | Free (self-hosted) |
+| True in-place text editing | **Yes** | Yes (paid) | Yes (paid) | Yes | Partial |
+| Your document leaves your device | **Never** | Uploads to Adobe | Uploads to Smallpdf | Uploads (web) | Never (your server) |
+| Daily / task caps | **None** | Paid tier | ~2 tasks/day | 3 tasks/day | None |
+| Watermark on free output | **None** | — | Reported on some tools | None reported | None |
+| Burned-in redaction | **Yes** | Yes (paid) | Paid | Whiteout-style | Yes |
+| OCR | **Yes, on-device** | Paid | Paid | Capped | Yes |
+| Revision diff | **Yes** | Yes (paid) | Paid | No | — |
+| On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No |
+| Zero-setup (no install, no server) | **Yes** | — | Yes | Yes | No (Docker) |
 
-**The short version:** the incumbents upload your files and meter your work. The open/self-hosted options make you run infrastructure. PDF Studio is the zero-setup browser app with the full feature list — true text rewrite, burned-in redaction, on-device OCR, diff, and AI — free, with no caps.
+**The short version:** incumbents upload your files and meter your work. Self-hosted tools make you run infrastructure. PDF Studio is the zero-setup app with the full feature list — free, no caps, no uploads.
 
-## FAQ
+---
 
-- **Is it really free? What's the catch?** — Yes, free, MIT-licensed, no catch. No accounts, no watermarks, no page/task caps, no "pro" tier. Fork it, self-host it, ship it.
-- **Do my documents upload anywhere?** — No. Open the devtools network tab and watch it stay silent while you edit. The only network traffic is the app itself plus optional public AI/OCR model weights (cached after first download).
-- **How is this different from other "free" PDF editors?** — Most only let you *annotate* (text boxes on top of content). PDF Studio's Edit tool rewrites the page's content stream: original text operators are deleted from the file and your replacement is written in as real vector text.
-- **Can I use it offline or self-host?** — Yes. Clone the repo, serve `dist/` from any static host, and point the AI/OCR loaders at internal mirrors for a fully air-gapped setup.
-- **Who makes this?** — A [NavigatorsLab](https://navigatorslab.com) project. Issues and PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+## Privacy — absolute, by architecture
 
-## Developer quick start
+| Question | Answer |
+|---|---|
+| Where do my files go? | **Nowhere.** There is no upload endpoint. Open devtools and watch the network tab stay silent while you edit. |
+| Is any of my data collected? | **No.** No accounts, no analytics on your documents. Sessions autosave **locally in your browser**. |
+| What *does* download? | The app itself, plus optional public AI/OCR model weights (cached after first fetch). Your documents never transit the network. |
+| Can I air-gap it? | **Yes.** Serve `dist/` on an internal network and point the model loaders at internal mirrors. |
+
+---
+
+## For developers
 
 ```bash
 git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
-npm run dev        # http://localhost:5199 → click "Open the demo document"
+npm run dev        # http://localhost:5199
 npm test           # 42 passing tests
-npm run typecheck
-npm run build      # production build + PWA service worker → dist/
+npm run build      # → dist/ (relative base: works at domain root, subpath, or CDN)
 ```
 
-**Stack:** TypeScript · React 19 · Vite · pdf.js (render) · pdf-lib (write) · Tesseract.js (OCR) · WebLLM (AI) · vite-plugin-pwa. Zero backend.
+**Stack:** TypeScript · React 19 · Vite · pdf.js (render) · pdf-lib (write) · Tesseract.js (OCR) · WebLLM (AI) · vite-plugin-pwa. **Zero backend.**
 
-**Architecture in one line:** every mark lives in the page's PDF user space; the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport` — including offset MediaBox/CropBox origins that break most home-grown editors.
+**The interesting engineering:** every mark lives in the page's PDF user space — the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport`, including offset MediaBox/CropBox origins that break most home-grown editors. Text edits go through a content-stream tokenizer: the original glyphs' show-text operators are deleted and replacements are written back with TJ kerning reproducing the original spacing. Tesseract, pdf.js workers, and WASM all run under a strict Content Security Policy with zero network calls for document data.
 
-**Test suite (42):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting (wide runs, prose safety, column detection).
+**Test suite (42):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
 
-## Deployment (any static host, one command)
+Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-```bash
-npm run build   # → dist/
-```
+---
 
-The build uses a **relative base**, so the same `dist/` works at a domain root, a subpath (`/repo-name/`), or a CDN — verified under a simulated GitHub Pages subpath. A GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) publishes to Pages on every push to `main`; `wrangler.jsonc` deploys to Cloudflare Workers (`navigatorslab.com`) with `npx wrangler deploy`.
+## Built by
+
+**Kazim Raza** ([@Kayforkind](https://github.com/Kayforkind)) — creator of PDF Studio and founder of [NavigatorsLab](https://navigatorslab.com). He designed and built the content-stream text rewriting engine, burned-in vector redaction, per-cell table editing, the on-device OCR pipeline, and the in-browser AI integration.
+
+> Note: early commits appear under the `kazim` git identity — same person; GitHub splits the two identities in the contributors graph.
+
+---
+
+## FAQ
+
+- **Is it really free? What's the catch?** — Free, MIT-licensed, no catch. No accounts, no watermarks, no caps, no "pro" tier. Fork it, self-host it, ship it.
+- **How is this different from other free PDF editors?** — They let you *annotate* (text boxes over content). PDF Studio rewrites the content stream: original text operators are deleted from the file, replacements written in as real vector text.
+- **Honest limits?** — Text editing needs a text layer (flat scans go through the OCR tool). Replacement text uses Helvetica metrics — near-identical, not glyph-perfect, on exotic embedded fonts. The on-device AI runs small models (0.5B–1B): great at summarizing your document, not a frontier model.
+
+---
 
 ## License
 
-**MIT** — free for personal, commercial, and everything-in-between use. That's the whole point: [LICENSE](./LICENSE).
+**MIT** — free for personal, commercial, and everything in between. That's the whole point: [LICENSE](./LICENSE).
 
 <div align="center">
 
 **Free. Open source. Private by architecture, not by policy.**
 
-[navigatorslab.com](https://navigatorslab.com) · [use it live](https://navigatorslab.com) · [GitHub Pages mirror](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
+[use it live](https://navigatorslab.com/pdf-studio/) · [navigatorslab.com](https://navigatorslab.com)
 
 </div>
