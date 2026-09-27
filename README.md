@@ -26,7 +26,7 @@ Every "free" PDF editor works the same way: upload your contract or your ID to s
 
 ## The fix
 
-PDF Studio runs **100% in your browser**. Your files are opened, edited, and saved on your own machine — there is no server to upload to. And unlike every other free editor, it doesn't fake the editing: the Edit tool **rewrites the page's content stream itself**. The original text is deleted from the file and your replacement is written in as real vector text. Not an overlay. Not a text box on top. The old bytes are gone.
+PDF Studio runs **100% in your browser**. Your files are opened, edited, and saved on your own machine — there is no server to upload to. And unlike most free editors, it doesn't fake the editing: the Edit tool **rewrites the page's content stream itself**. The original text is deleted from the file and your replacement is written in as real vector text. Not an overlay. Not a text box on top. The old bytes are gone.
 
 **Try it in 30 seconds:** [open the live app](https://navigatorslab.com/pdf-studio/), drop in any PDF, press `E`, click any line of existing text, retype it.
 
@@ -39,7 +39,7 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 | ✏️ **True text editing** | Click any line — or any table cell — and retype it. Exports as real vector text, searchable and print-crisp. |
 | 📝 **Forms** | Fill real AcroForms (text, checkboxes, radios, dropdowns), then flatten them so nobody can change your answers. |
 | 🖋️ **Sign & annotate** | Signature pad, highlight, pen, arrows, shapes, sticky notes, image stamps — all real vector content. |
-| 🖤 **Redaction** | Burned-in black redaction, or invisible whiteout covers sampled from the page. What's covered stays covered. |
+| 🖤 **Redaction** | True redaction — covered text is deleted from the file at export, not painted over. (Whiteout covers are visual-only; use redaction for sensitive data.) |
 | 🔠 **OCR** | Scanned pages become editable text via on-device Tesseract (EN/ES/FR/DE). No upload, ever. |
 | 🤖 **On-device AI** | Ask questions about your document; a real LLM runs in your browser via WebAssembly. Your data never leaves. |
 | ⚖️ **Revision diff** | Drop in two versions, get a line-by-line diff. Did the payment terms change? Now you know. |
@@ -83,7 +83,7 @@ Verified against public pricing/feature pages on 2026-09-27.
 | On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No |
 | Zero-setup (no install, no server) | **Yes** | — | Yes | Yes | No (Docker) |
 
-**The short version:** incumbents upload your files and meter your work. Self-hosted tools make you run infrastructure. PDF Studio is the zero-setup app with the full feature list — free, no caps, no uploads.
+**The short version:** incumbents upload your files and meter your work. Self-hosted tools make you run infrastructure. PDF Studio is the zero-setup option that keeps the full feature list — free, no caps, no uploads.
 
 ---
 
@@ -91,7 +91,7 @@ Verified against public pricing/feature pages on 2026-09-27.
 
 | Question | Answer |
 |---|---|
-| Where do my files go? | **Nowhere.** There is no upload endpoint. Open devtools and watch the network tab stay silent while you edit. |
+| Where do my files go? | **Nowhere.** There is no upload endpoint. Open devtools while you edit: your document bytes never leave the machine. |
 | Is any of my data collected? | **No.** No accounts, no analytics on your documents. Sessions autosave **locally in your browser**. |
 | What *does* download? | The app itself, plus optional public AI/OCR model weights (cached after first fetch). Your documents never transit the network. |
 | Can I air-gap it? | **Yes.** Serve `dist/` on an internal network and point the model loaders at internal mirrors. |
@@ -121,9 +121,7 @@ Good first issues are labeled [`good first issue`](https://github.com/Kayforkind
 
 ## Built by
 
-**Kazim Raza** ([@Kayforkind](https://github.com/Kayforkind)) — creator of PDF Studio and founder of [NavigatorsLab](https://navigatorslab.com). He designed and built the content-stream text rewriting engine, burned-in vector redaction, per-cell table editing, the on-device OCR pipeline, and the in-browser AI integration.
-
-> Note: early commits appear under the `kazim` git identity — same person; GitHub splits the two identities in the contributors graph.
+**Kazim Raza** ([@Kayforkind](https://github.com/Kayforkind)) — creator of PDF Studio and founder of [NavigatorsLab](https://navigatorslab.com).
 
 ---
 
