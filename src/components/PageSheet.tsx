@@ -510,7 +510,11 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         return;
       }
       const r = rectOf(g.a, g.b);
-      if (r.w < 1.5 || r.h < 1.5) return;
+      // Line tools (underline/strike) are horizontal strokes: only the run
+      // length matters. A steady horizontal drag has ~zero height, so the
+      // generic "both dimensions >= 1.5" gate would silently swallow it.
+      const isLine = t === 'underline' || t === 'strike';
+      if (isLine ? r.w < 1.5 : (r.w < 1.5 || r.h < 1.5)) return;
       if (t === 'highlight') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, opacity: settings.opacity } as Annotation);
       } else if (t === 'underline' || t === 'strike') {
