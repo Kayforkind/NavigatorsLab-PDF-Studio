@@ -12,7 +12,9 @@
 
 > ⭐ **If this saves you an Adobe subscription, a star helps others find it.**
 
-![PDF Studio — the free, open-source PDF editor that runs entirely in your browser](social-preview.png)
+![Demo — open the demo document, press E, click any line of text, retype it](docs/demo.gif)
+
+*Real recording: the tagline above is retyped live — the original text operators are rewritten in the file, not overlaid.*
 
 </div>
 
