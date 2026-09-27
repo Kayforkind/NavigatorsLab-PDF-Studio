@@ -9,6 +9,7 @@ export function Landing({
   onDropFile,
   saved,
   onRestore,
+  onForget,
 }: {
   busy: boolean;
   onOpen: () => void;
@@ -17,6 +18,7 @@ export function Landing({
   onDropFile: (e: DragEvent) => void;
   saved?: { name: string; at: number } | null;
   onRestore?: () => void;
+  onForget?: () => void;
 }) {
   const [over, setOver] = useState(false);
   return (
@@ -76,6 +78,11 @@ export function Landing({
         {saved && onRestore && (
           <button className="btn ghost restore-cta" onClick={onRestore} disabled={busy}>
             <Icon.undo /> Resume “{saved.name}” — saved {new Date(saved.at).toLocaleString()} (on this device)
+          </button>
+        )}
+        {saved && onForget && (
+          <button className="btn ghost danger" onClick={onForget} disabled={busy} title="Deletes the saved document, annotations and form values from this device">
+            <Icon.trash /> Forget saved data on this device
           </button>
         )}
         <p className="muted small">

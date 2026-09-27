@@ -279,6 +279,17 @@ export default function App() {
 
   /* ---------------- session restore ---------------- */
   const [savedSession, setSavedSession] = useState<{ name: string; at: number } | null>(null);
+
+  /** Delete the locally saved session (document bytes, annotations, form values) from this device. */
+  const forgetSession = useCallback(() => {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* ignore */
+    }
+    setSavedSession(null);
+    toast('Saved session deleted from this device.');
+  }, [toast]);
   useEffect(() => {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
@@ -1020,6 +1031,7 @@ export default function App() {
           onImages={() => newPdfInputRef.current?.click()}
           saved={savedSession}
           onRestore={() => void restoreSession()}
+          onForget={forgetSession}
           onDropFile={(e) => {
             void onGlobalDrop(e, 'open');
           }}
