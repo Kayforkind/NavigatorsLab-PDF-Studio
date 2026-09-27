@@ -5,6 +5,7 @@ export function Landing({
   busy,
   onOpen,
   onDemo,
+  onImages,
   onDropFile,
   saved,
   onRestore,
@@ -12,6 +13,7 @@ export function Landing({
   busy: boolean;
   onOpen: () => void;
   onDemo: () => void;
+  onImages: () => void;
   onDropFile: (e: DragEvent) => void;
   saved?: { name: string; at: number } | null;
   onRestore?: () => void;
@@ -67,6 +69,9 @@ export function Landing({
         </button>
         <button className="btn ghost" onClick={onDemo} disabled={busy}>
           No file handy? Open the demo document →
+        </button>
+        <button className="btn ghost" onClick={onImages} disabled={busy}>
+          <Icon.image /> New PDF from images
         </button>
         {saved && onRestore && (
           <button className="btn ghost restore-cta" onClick={onRestore} disabled={busy}>

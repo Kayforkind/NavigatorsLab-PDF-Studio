@@ -235,4 +235,37 @@ export const Icon = {
       <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" />
     </Svg>
   ),
+  formtext: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <rect x="3" y="7" width="18" height="10" rx="1.5" />
+      <path d="M6.5 12h7" opacity={0.6} />
+      <path d="M16 10.5v3" opacity={0.6} />
+    </Svg>
+  ),
+  formcheck: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M8 12.5l2.8 2.8L16.5 9" />
+    </Svg>
+  ),
+  shield: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <path d="M12 3l7 2.5v5.2c0 4.6-3 8.3-7 10.3-4-2-7-5.7-7-10.3V5.5L12 3z" />
+      <path d="M9 11.5l2.2 2.2L15.5 9" />
+    </Svg>
+  ),
+  compress: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <path d="M4 9V6a1 1 0 011-1h3M20 9V6a1 1 0 00-1-1h-3M4 15v3a1 1 0 001 1h3M20 15v3a1 1 0 01-1 1h-3" />
+      <path d="M9 12h6" />
+    </Svg>
+  ),
+  imageDown: (p: SVGProps<SVGSVGElement>) => (
+    <Svg {...p}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="9" cy="9" r="1.6" />
+      <path d="M4.5 17.5l4.5-4.5 3 3 3.5-3.5 4 4" />
+      <path d="M12 3v0" opacity={0} />
+    </Svg>
+  ),
 };

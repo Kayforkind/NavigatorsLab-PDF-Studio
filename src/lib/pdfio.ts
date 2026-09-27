@@ -26,6 +26,16 @@ export interface LoadedSource {
   js: PDFDocumentProxy;
 }
 
+/** Shared pdf.js document options (cMaps + standard fonts) for ad-hoc loads. */
+export function pdfjsLoadOptions(data: Uint8Array) {
+  return {
+    data,
+    cMapUrl: CMAP_ROOT,
+    cMapPacked: true,
+    standardFontDataUrl: STD_FONT_ROOT,
+  };
+}
+
 export async function loadSource(bytes: Uint8Array, name: string): Promise<LoadedSource> {
   const lib = await PdfLibDoc.load(bytes, { ignoreEncryption: true });
   const pages: PageInfo[] = lib.getPages().map((p) => {

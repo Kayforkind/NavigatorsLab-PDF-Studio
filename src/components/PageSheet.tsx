@@ -77,6 +77,7 @@ function annRect(a: Annotation): ContentRect | null {
     }
     case 'rect':
     case 'ellipse':
+    case 'formfield':
       return a;
     case 'ink': {
       if (a.pts.length < 2) return null;
@@ -154,7 +155,7 @@ function sampleBackground(canvas: HTMLCanvasElement, cssX: number, cssY: number,
   }
 }
 
-const RECT_TOOLS = new Set<ToolId>(['highlight', 'underline', 'strike', 'redact', 'whiteout', 'rect', 'ellipse']);
+const RECT_TOOLS = new Set<ToolId>(['highlight', 'underline', 'strike', 'redact', 'whiteout', 'rect', 'ellipse', 'formtext', 'formcheck']);
 
 interface GestureState {
   kind: 'rect' | 'ink' | 'move' | 'resize';
@@ -523,6 +524,17 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color === '#ffd400' ? '#101014' : settings.color, opacity: 1 } as Annotation);
       } else if (t === 'rect' || t === 'ellipse') {
         props.onAdd({ id: uid(), pageId: page.id, type: t, ...r, color: settings.color, width: settings.width, opacity: Math.min(1, 0.35 + settings.opacity), fill: null } as Annotation);
+      } else if (t === 'formtext' || t === 'formcheck') {
+        // User-placed fillable form field — exported as a real AcroForm widget.
+        // Minimum sensible sizes so the widget stays usable in readers.
+        const w = Math.max(t === 'formcheck' ? 14 : 40, r.w);
+        const h = Math.max(t === 'formcheck' ? 14 : 18, r.h);
+        props.onAdd({
+          id: uid(), pageId: page.id, type: 'formfield',
+          kind: t === 'formcheck' ? 'checkbox' : 'text',
+          x: r.x, y: r.y, w, h,
+          name: `field_${uid()}`,
+        } as Annotation);
       } else if (t === 'whiteout') {
         // paint with the page background sampled from inside the drawn box
         const canvas = canvasRef.current;
@@ -971,6 +983,24 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
                     preserveAspectRatio="none"
                     transform={fh !== 1 || fv !== 1 ? `translate(${cx} ${cy}) scale(${fh} ${fv}) translate(${-cx} ${-cy})` : undefined}
                   />
+                );
+              }
+              case 'formfield': {
+                const isCheck = ann.kind === 'checkbox';
+                return (
+                  <g key={ann.id}>
+                    <rect x={css.x} y={css.y} width={css.w} height={css.h} rx={2} fill="rgba(37,99,235,0.10)" stroke="#2563eb" strokeWidth={1.2} strokeDasharray="5 3" />
+                    {isCheck ? (
+                      <path d={`M${css.x + css.w * 0.28} ${css.y + css.h * 0.52} l${css.w * 0.16} ${css.h * 0.16} l${css.w * 0.3} ${-css.h * 0.32}`} fill="none" stroke="#2563eb" strokeWidth={Math.max(1.4, css.w * 0.06)} strokeLinecap="round" strokeLinejoin="round" opacity={0.65} />
+                    ) : (
+                      <text x={css.x + 5} y={css.y + css.h / 2} dominantBaseline="central" fontSize={Math.min(11 * scale, css.h * 0.45)} fill="#2563eb" opacity={0.75} fontFamily="Helvetica, Arial, sans-serif">
+                        {ann.value || 'Text field'}
+                      </text>
+                    )}
+                    <text x={css.x + 2} y={css.y - 3} fontSize={9} fill="#1d4ed8" fontFamily="Helvetica, Arial, sans-serif">
+                      {isCheck ? '☐' : '▭'} {ann.name}
+                    </text>
+                  </g>
                 );
               }
               default:

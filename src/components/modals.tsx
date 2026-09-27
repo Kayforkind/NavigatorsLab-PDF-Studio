@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { DocMeta, StampOptions } from '../lib/exportPdf';
+import { expandTokens, hasStamps } from '../lib/exportPdf';
+import { COMPRESS_PRESETS } from '../lib/compress';
 import { Icon } from './icons';
 
 export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
@@ -130,25 +132,93 @@ export interface ExportPayload {
   range: string;
   meta: DocMeta;
   stamps?: StampOptions;
+  /** when set, rasterize pages to JPEG at these settings after building */
+  compress?: { maxSide: number; quality: number } | null;
+}
+
+/** Live preview of page numbers / watermark / header-footer on a mini page. */
+export function StampPreview({
+  stamps,
+  aspect,
+  pageCount,
+  title,
+}: {
+  stamps: StampOptions;
+  /** page width / height */
+  aspect: number;
+  pageCount: number;
+  title: string;
+}) {
+  const W = 200;
+  const H = Math.max(120, Math.min(320, W / Math.max(0.2, aspect)));
+  const k = W / 612; // css px per PDF point at ~letter width
+  const pn = expandTokens(stamps.pnFormat || '{page}', stamps.pnStart, pageCount, title);
+  const wm = expandTokens(stamps.watermark, 1, pageCount, title);
+  const hl = expandTokens(stamps.headerLeft, 1, pageCount, title);
+  const hr = expandTokens(stamps.headerRight, 1, pageCount, title);
+  const fl = expandTokens(stamps.footerLeft, 1, pageCount, title);
+  const fr = expandTokens(stamps.footerRight, 1, pageCount, title);
+  const pnStyle: React.CSSProperties =
+    stamps.pnPosition === 'bottom-left'
+      ? { left: 24 * k }
+      : stamps.pnPosition === 'bottom-right'
+        ? { right: 24 * k }
+        : { left: '50%', transform: 'translateX(-50%)' };
+  return (
+    <div className="stamp-preview" style={{ width: W, height: H }}>
+      <div className="sp-page-lines" />
+      {wm.trim() && (
+        <div
+          className="sp-watermark"
+          style={{ fontSize: Math.max(8, stamps.wmSize * k), color: stamps.wmColor, opacity: stamps.wmOpacity }}
+        >
+          {wm}
+        </div>
+      )}
+      {(hl.trim() || hr.trim()) && (
+        <div className="sp-row sp-top">
+          <span>{hl}</span>
+          <span>{hr}</span>
+        </div>
+      )}
+      {stamps.pageNumbers && !stamps.pnSkipFirst && (
+        <div className="sp-pagenum" style={pnStyle}>
+          {pn}
+        </div>
+      )}
+      {(fl.trim() || fr.trim()) && (
+        <div className="sp-row sp-bottom">
+          <span>{fl}</span>
+          <span>{fr}</span>
+        </div>
+      )}
+      <div className="sp-caption">preview · page 1 of {pageCount}</div>
+    </div>
+  );
 }
 
 export function ExportDialog({
   fileName,
   pageCount,
+  pageAspect,
   meta,
   stamps,
   setStamps,
   onExport,
   onSplit,
+  onPagePng,
   onClose,
 }: {
   fileName: string;
   pageCount: number;
+  /** width/height of the first page — used for the stamp preview */
+  pageAspect: number;
   meta: DocMeta;
   stamps: StampOptions;
   setStamps: React.Dispatch<React.SetStateAction<StampOptions>>;
   onExport: (p: ExportPayload) => void;
   onSplit: (p: ExportPayload) => void;
+  onPagePng: () => void;
   onClose: () => void;
 }) {
   const [range, setRange] = useState('');
@@ -156,7 +226,13 @@ export function ExportDialog({
   const [author, setAuthor] = useState(meta.author);
   const [subject, setSubject] = useState(meta.subject);
   const [keywords, setKeywords] = useState(meta.keywords);
-  const payload = (): ExportPayload => ({ range, meta: { title, author, subject, keywords }, stamps });
+  const [compressKey, setCompressKey] = useState<string>('');
+  const payload = (): ExportPayload => ({
+    range,
+    meta: { title, author, subject, keywords },
+    stamps,
+    compress: compressKey ? { ...COMPRESS_PRESETS[compressKey].opts } : null,
+  });
 
   return (
     <Dialog title="Export PDF" onClose={onClose} wide>
@@ -174,6 +250,9 @@ export function ExportDialog({
             </button>
             <button className="btn ghost" onClick={() => onSplit(payload())} title="Creates one PDF file per page">
               <Icon.split /> Split — one file per page
+            </button>
+            <button className="btn ghost" onClick={onPagePng} title="Download the current page as a PNG image">
+              <Icon.image /> Page as PNG
             </button>
           </div>
           <details className="stamp-box">
@@ -268,6 +347,37 @@ export function ExportDialog({
             </div>
           </details>
           <p className="muted small">Rotation, reordering, blank pages and all marks are applied. Sticky-note text stays in the app (markers are stamped).</p>
+          {hasStamps(stamps) ? (
+            <div className="preview-wrap">
+              <StampPreview stamps={stamps} aspect={pageAspect} pageCount={pageCount} title={title.trim() || fileName} />
+            </div>
+          ) : (
+            <p className="muted small">Tip: enable page numbers, a watermark or header/footer above to see a live preview here.</p>
+          )}
+          <details className="stamp-box">
+            <summary>Reduce file size</summary>
+            <label className="check-row">
+              <input type="checkbox" checked={compressKey !== ''} onChange={(e) => setCompressKey(e.target.checked ? 'medium' : '')} />
+              Compress the exported PDF
+            </label>
+            {compressKey !== '' && (
+              <>
+                <div className="stamp-row">
+                  <select className="text-input" value={compressKey} onChange={(e) => setCompressKey(e.target.value)}>
+                    {Object.entries(COMPRESS_PRESETS).map(([k, p]) => (
+                      <option key={k} value={k}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="muted small">
+                  Pages are rasterized to images — the file gets much smaller, but text is no longer selectable or searchable.
+                  Annotations and stamps are burned in first.
+                </p>
+              </>
+            )}
+          </details>
         </section>
         <section>
           <h3>Document properties</h3>
@@ -334,6 +444,7 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             <li><kbd>Ctrl/⌘ O</kbd> open · <kbd>Ctrl/⌘ S</kbd> save a copy</li>
             <li><kbd>Del</kbd> delete the selected mark · <kbd>Esc</kbd> cancel / deselect</li>
             <li><kbd>+</kbd> / <kbd>−</kbd> zoom · <kbd>0</kbd> fit to width</li>
+            <li>Tools: <kbd>V</kbd> select · <kbd>E</kbd> edit · <kbd>T</kbd> text · <kbd>H</kbd> highlight · <kbd>U</kbd> underline · <kbd>X</kbd> strike · <kbd>N</kbd> note · <kbd>D</kbd> pen · <kbd>A</kbd> arrow · <kbd>R</kbd> rect · <kbd>O</kbd> ellipse · <kbd>G</kbd> sign · <kbd>I</kbd> image · <kbd>F</kbd> text field · <kbd>C</kbd> checkbox · <kbd>B</kbd> redact · <kbd>W</kbd> whiteout</li>
           </ul>
         </section>
       </div>

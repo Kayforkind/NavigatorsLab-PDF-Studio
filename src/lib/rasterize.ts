@@ -147,6 +147,7 @@ export function transformAnnsToDisplaySpace(
       case 'image':
       case 'rect':
       case 'ellipse':
+      case 'formfield':
         return { ...a, ...rect(a.x, a.y, a.w, a.h) };
       case 'note': {
         const sz = a.w ?? 16;

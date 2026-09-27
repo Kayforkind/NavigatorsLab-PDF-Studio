@@ -17,7 +17,9 @@ export type ToolId =
   | 'whiteout'
   | 'arrow'
   | 'rect'
-  | 'ellipse';
+  | 'ellipse'
+  | 'formtext'
+  | 'formcheck';
 
 export interface Point {
   x: number;
@@ -154,6 +156,22 @@ export interface ImageAnn extends AnnCommon {
   flipV?: boolean;
 }
 
+/** A user-placed fillable form field. Exported as a real AcroForm widget. */
+export interface FormFieldAnn extends AnnCommon {
+  type: 'formfield';
+  kind: 'text' | 'checkbox';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** AcroForm fully-qualified field name (auto-generated, unique per doc) */
+  name: string;
+  /** default text for text fields */
+  value?: string;
+  /** default state for checkboxes */
+  checked?: boolean;
+}
+
 /** Straight pointer arrow from (x1,y1) to (x2,y2) with an arrowhead at the end. */
 export interface ArrowAnn extends AnnCommon {
   type: 'arrow';
@@ -188,7 +206,8 @@ export type Annotation =
   | NoteAnn
   | ImageAnn
   | ArrowAnn
-  | ShapeAnn;
+  | ShapeAnn
+  | FormFieldAnn;
 
 /* ------------------------------------------------------------------ */
 /* Document model                                                      */

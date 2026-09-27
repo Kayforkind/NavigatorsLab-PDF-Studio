@@ -6,11 +6,13 @@ import { docModelReducer, emptyModel, pagesForSource } from './lib/docModel';
 import { loadSource, makeViewport, cssToContent, pagePlainText } from './lib/pdfio';
 import type { Source } from './types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import { runOcr } from './lib/ocr';
+import { runOcr, OCR_LANGS, isOcrLang, type OcrLang } from './lib/ocr';
 import { buildPdf, downloadBytes, niceFileName, defaultStamps, type DocMeta, type StampOptions } from './lib/exportPdf';
+import { compressPdfBytes } from './lib/compress';
+import { imagesToPdf, pageToPng } from './lib/images';
 import { makeSamplePdf } from './lib/sample';
 import { PageSheet } from './components/PageSheet';
-import { ToolRail } from './components/ToolRail';
+import { ToolRail, TOOL_SHORTCUTS } from './components/ToolRail';
 import { ThumbStrip } from './components/Thumbs';
 import { Inspector } from './components/Inspector';
 import { ExportDialog, HelpModal, SignPadModal, type ExportPayload } from './components/modals';
@@ -113,6 +115,14 @@ export default function App() {
   }, [showFormWidgets, doc.sources]);
   const [signOpen, setSignOpen] = useState(false);
   const [ocrBusy, setOcrBusy] = useState('');
+  const [ocrLang, setOcrLang] = useState<OcrLang>(() => {
+    try {
+      const v = localStorage.getItem('pdfstudio.ocrLang') ?? '';
+      return isOcrLang(v) ? v : 'eng';
+    } catch {
+      return 'eng';
+    }
+  });
   const [busy, setBusy] = useState('');
   const [toasts, setToasts] = useState<Array<{ id: number; msg: string }>>([]);
   const [dropState, setDropState] = useState<'none' | 'over'>('none');
@@ -122,6 +132,7 @@ export default function App() {
   const openInputRef = useRef<HTMLInputElement>(null);
   const mergeInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const newPdfInputRef = useRef<HTMLInputElement>(null);
   const signRef = useRef<{ dataUrl: string; w: number; h: number } | null>(null);
   const pendingSpecial = useRef<{ kind: 'sign' | 'image'; pt: Point; pageId: string } | null>(null);
 
@@ -216,6 +227,56 @@ export default function App() {
     }
   }, [busy, openBytes]);
 
+  /** Build a new PDF from image files (one full-bleed page per image) and open it. */
+  const openImages = useCallback(
+    async (files: File[]) => {
+      if (busy) return;
+      setBusy('Building PDF from images…');
+      try {
+        const { bytes, pages } = await imagesToPdf(files);
+        await openBytes(bytes, 'images.pdf');
+        toast(`Created a ${pages}-page PDF from your images.`);
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Could not build a PDF from those images.');
+      } finally {
+        setBusy('');
+      }
+    },
+    [busy, openBytes, toast],
+  );
+
+  /** Download the current page as a PNG image. */
+  const downloadPagePng = useCallback(async () => {
+    const idx = currentPageId ? doc.pages.findIndex((p) => p.id === currentPageId) : 0;
+    const rec = doc.pages[idx];
+    if (!rec || rec.src === null) {
+      toast('Pick a page first.');
+      return;
+    }
+    const proxy = proxiesRef.current.get(rec.src);
+    if (!proxy) {
+      toast('Page is still loading — try again in a moment.');
+      return;
+    }
+    setBusy('Rendering PNG…');
+    try {
+      const blob = await pageToPng(proxy, idx, rotationFor(rec));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = niceFileName(doc.name, 'page', idx + 1).replace(/\.pdf$/i, '') + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      toast(`Downloaded page ${idx + 1} as PNG.`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not render PNG.');
+    } finally {
+      setBusy('');
+    }
+  }, [currentPageId, doc, toast, rotationFor]);
+
   /* ---------------- session restore ---------------- */
   const [savedSession, setSavedSession] = useState<{ name: string; at: number } | null>(null);
   useEffect(() => {
@@ -287,10 +348,22 @@ export default function App() {
   const doExport = useCallback(
     async (payload: ExportPayload) => {
       setMeta(payload.meta);
-      const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
-      const base = niceFileName(doc.name, payload.range.trim() ? 'extract' : 'edited');
-      downloadBytes(bytes, base);
-      toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}).`);
+      setBusy('Building PDF…');
+      try {
+        const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
+        let out = bytes;
+        let note = '';
+        if (payload.compress) {
+          const r = await compressPdfBytes(bytes, payload.compress, (d, t) => setBusy(`Compressing… ${d}/${t}`));
+          out = r.bytes;
+          note = ` Compressed ${Math.max(0, Math.round((1 - r.ratio) * 100))}% smaller.`;
+        }
+        const base = niceFileName(doc.name, payload.range.trim() ? 'extract' : 'edited');
+        downloadBytes(out, base);
+        toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}).${note}`);
+      } finally {
+        setBusy('');
+      }
     },
     [doc, toast, formValues],
   );
@@ -500,7 +573,7 @@ export default function App() {
     if (!el) return;
     setOcrBusy('OCR starting…');
     try {
-      const lines = await runOcr(el, (m) => setOcrBusy(`OCR: ${m}`));
+      const lines = await runOcr(el, ocrLang, (m) => setOcrBusy(`OCR: ${m}`));
       if (!lines.length) {
         toast('OCR found no confident text — try again with a larger zoom.');
         return;
@@ -562,7 +635,7 @@ export default function App() {
     } finally {
       setOcrBusy('');
     }
-  }, [doc.pages, currentPageId, rotationFor, fitScale, zoom, toast]);
+  }, [doc.pages, currentPageId, rotationFor, fitScale, zoom, toast, ocrLang]);
 
   const deletePage = useCallback(
     (id: string) => {
@@ -805,6 +878,13 @@ export default function App() {
       if (e.key === '0') {
         setZoom(100);
       }
+      // single-key tool shortcuts (V/E/T/H/… as shown on the rail)
+      const shortcutTool = TOOL_SHORTCUTS[e.key.toLowerCase()];
+      if (shortcutTool && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setTool(shortcutTool);
+        return;
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -937,6 +1017,7 @@ export default function App() {
           busy={!!busy}
           onOpen={() => openInputRef.current?.click()}
           onDemo={loadDemo}
+          onImages={() => newPdfInputRef.current?.click()}
           saved={savedSession}
           onRestore={() => void restoreSession()}
           onDropFile={(e) => {
@@ -1058,6 +1139,15 @@ export default function App() {
             onDel={delAnn}
             onOcr={() => void runOcrOnCurrent()}
             ocrBusy={ocrBusy}
+            ocrLang={ocrLang}
+            setOcrLang={(l) => {
+              setOcrLang(l);
+              try {
+                localStorage.setItem('pdfstudio.ocrLang', l);
+              } catch {
+                /* private mode — default next time */
+              }
+            }}
             drawerOpen={styleOpen}
             onDrawerClose={() => setStyleOpen(false)}
           />
@@ -1159,9 +1249,21 @@ export default function App() {
           if (f) void onImageChosen(f);
         }}
       />
+      <input
+        ref={newPdfInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={(e) => {
+          const files = Array.from(e.target.files ?? []);
+          e.target.value = '';
+          if (files.length) void openImages(files);
+        }}
+      />
 
       {modal === 'export' && (
-        <ExportDialog fileName={doc.name} pageCount={doc.pages.length} meta={meta} stamps={exportStamps} setStamps={setExportStamps} onExport={(p) => void doExport(p)} onSplit={(p) => void doSplit(p)} onClose={() => setModal(null)} />
+        <ExportDialog fileName={doc.name} pageCount={doc.pages.length} pageAspect={doc.pages[0] ? doc.pages[0].w / Math.max(1, doc.pages[0].h) : 8.5 / 11} meta={meta} stamps={exportStamps} setStamps={setExportStamps} onExport={(p) => void doExport(p)} onSplit={(p) => void doSplit(p)} onPagePng={() => void downloadPagePng()} onClose={() => setModal(null)} />
       )}
       {modal === 'help' && <HelpModal onClose={() => setModal(null)} />}
       {modal === 'compare' && <CompareDialog onClose={() => setModal(null)} />}

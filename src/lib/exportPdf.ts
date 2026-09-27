@@ -12,7 +12,7 @@ import {
   degrees,
   rgb,
 } from 'pdf-lib';
-import type { Annotation, DocState, PageRec, Source } from '../types';
+import type { Annotation, DocState, FormFieldAnn, PageRec, Source } from '../types';
 import { parseRanges } from './ranges';
 import { applyFieldValues } from './forms';
 import { rasterizePage, transformAnnsToDisplaySpace, type RasterResult } from './rasterize';
@@ -61,7 +61,7 @@ export const defaultStamps: StampOptions = {
 export const hasStamps = (s: StampOptions): boolean =>
   s.pageNumbers || s.watermark.trim().length > 0 || [s.headerLeft, s.headerRight, s.footerLeft, s.footerRight].some((v) => v.trim().length > 0);
 
-function expandTokens(tpl: string, pageNum: number, pageCount: number, title: string): string {
+export function expandTokens(tpl: string, pageNum: number, pageCount: number, title: string): string {
   return tpl
     .replace(/\{page\}/g, String(pageNum))
     .replace(/\{pages\}/g, String(pageCount))
@@ -535,6 +535,10 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
   }
   // Marker numbering is drawn from the annotation itself (n) — fine.
 
+  /** User-placed fillable fields, collected with their final out page so
+   *  real AcroForm widgets can be created after the page loop. */
+  const formWidgets: Array<{ page: PDFPage; ann: FormFieldAnn }> = [];
+
   for (const p of pagesToExport) {
     let outPage: PDFPage;
     let pageAnns = annsByPage.get(p.id) ?? [];
@@ -607,11 +611,47 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
       burnRedactions(outPage, redactRectsFor(pageAnns));
     }
     for (const a of pageAnns) {
+      // User-placed fillable fields become real AcroForm widgets below —
+      // they are not drawn as vector annotations.
+      if (a.type === 'formfield') {
+        formWidgets.push({ page: outPage, ann: a });
+        continue;
+      }
       await drawAnn(outPage, a, fonts, embedCache, out);
     }
     if (stamps) {
       const displayNum = pagesToExport.indexOf(p) + 1;
       drawStamps(outPage, fonts.normal, stamps, displayNum, pagesToExport.length, meta.title.trim() || doc.name);
+    }
+  }
+
+  // Emit real, fillable AcroForm fields for user-placed form widgets.
+  if (formWidgets.length > 0) {
+    const form = out.getForm();
+    const usedNames = new Set<string>();
+    let seq = 0;
+    for (const { page, ann } of formWidgets) {
+      seq += 1;
+      const name = ann.name && !usedNames.has(ann.name) ? ann.name : `field_${seq}`;
+      usedNames.add(name);
+      try {
+        if (ann.kind === 'checkbox') {
+          const cb = form.createCheckBox(name);
+          cb.addToPage(page, { x: ann.x, y: ann.y, width: Math.max(8, ann.w), height: Math.max(8, ann.h) });
+          if (ann.checked) cb.check();
+        } else {
+          const tf = form.createTextField(name);
+          tf.addToPage(page, { x: ann.x, y: ann.y, width: Math.max(10, ann.w), height: Math.max(10, ann.h) });
+          if (ann.value) tf.setText(ann.value);
+        }
+      } catch (e) {
+        console.warn('form widget skipped:', name, e);
+      }
+    }
+    try {
+      form.updateFieldAppearances(fonts.normal);
+    } catch {
+      /* appearance generation is best-effort */
     }
   }
 

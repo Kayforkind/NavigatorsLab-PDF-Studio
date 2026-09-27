@@ -17,13 +17,27 @@ export interface OcrLine {
   confidence: number;
 }
 
+/** OCR languages shipped with the app (tesseract traineddata under /tessdata). */
+export const OCR_LANGS = [
+  { code: 'eng', label: 'English' },
+  { code: 'spa', label: 'Español' },
+  { code: 'fra', label: 'Français' },
+  { code: 'deu', label: 'Deutsch' },
+] as const;
+
+export type OcrLang = (typeof OCR_LANGS)[number]['code'];
+
+export function isOcrLang(v: string): v is OcrLang {
+  return OCR_LANGS.some((l) => l.code === v);
+}
+
 /**
  * Recognizes text in a rendered page canvas fully locally (Tesseract WASM).
- * The engine (worker script, WASM cores and the eng model) ships with the app
- * under /tess and /tessdata — nothing is fetched from a CDN, so OCR works
- * offline and on fully air-gapped deployments.
+ * The engine (worker script, WASM cores and the language models) ships with
+ * the app under /tess and /tessdata — nothing is fetched from a CDN, so OCR
+ * works offline and on fully air-gapped deployments.
  */
-export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string) => void): Promise<OcrLine[]> {
+export async function runOcr(canvas: HTMLCanvasElement, lang: OcrLang = 'eng', onStatus?: (msg: string) => void): Promise<OcrLine[]> {
   onStatus?.('Loading OCR engine…');
   let Tesseract: typeof import('tesseract.js');
   try {
@@ -37,7 +51,7 @@ export async function runOcr(canvas: HTMLCanvasElement, onStatus?: (msg: string)
   const asset = (p: string) => new URL(`${base}${p}`, document.baseURI).href;
   let worker: import('tesseract.js').Worker;
   try {
-    worker = await Tesseract.createWorker('eng', 1, {
+    worker = await Tesseract.createWorker(lang, 1, {
       workerPath: asset('tess/worker.min.js'),
       corePath: asset('tess/'),
       langPath: asset('tessdata/'),

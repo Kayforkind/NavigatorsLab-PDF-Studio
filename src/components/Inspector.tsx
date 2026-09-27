@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Annotation, ToolId, ToolSettings } from '../types';
+import { OCR_LANGS, isOcrLang, type OcrLang } from '../lib/ocr';
 import { Icon } from './icons';
 
 const COLORS = ['#ffd400', '#7cf29c', '#69c4ff', '#ff8fd0', '#ff7a5c', '#c4b5fd', '#ff5c5c', '#a8b3c0', '#17171b'];
@@ -20,6 +21,8 @@ const TOOL_BLURBS: Record<ToolId, string> = {
   arrow: 'Drag from tail to tip to point at something — the arrowhead lands where you release.',
   rect: 'Drag an outlined rectangle. Color and line weight follow the style controls.',
   ellipse: 'Drag an outlined ellipse to circle the important part.',
+  formtext: 'Drag a box to place a fillable text field. Exported as a real AcroForm field — readers can type into it.',
+  formcheck: 'Drag a box to place a fillable checkbox. Exported as a real AcroForm widget.',
 };
 
 function Field({
@@ -97,6 +100,8 @@ export function Inspector({
   onDel,
   onOcr,
   ocrBusy,
+  ocrLang,
+  setOcrLang,
   drawerOpen = false,
   onDrawerClose,
 }: {
@@ -108,6 +113,8 @@ export function Inspector({
   onDel: (id: string) => void;
   onOcr: () => void;
   ocrBusy: string;
+  ocrLang: OcrLang;
+  setOcrLang: (l: OcrLang) => void;
   /** narrow-viewport drawer mode (sidebar hidden by CSS below 1100px) */
   drawerOpen?: boolean;
   onDrawerClose?: () => void;
@@ -174,10 +181,31 @@ export function Inspector({
         {tool === 'whiteout' && <p className="tool-blurb">The cover color is sampled from the page under your drag, so whiteouts blend in on tinted or scanned pages.</p>}
         {tool === 'note' && <p className="tool-blurb">Marker color:</p>}
         {tool === 'edit' && (
-          <button className="btn ghost ocr-cta" onClick={onOcr} disabled={!!ocrBusy}>
-            {ocrBusy ? <span className="spinner small" /> : null}
-            {ocrBusy ? ocrBusy : 'OCR this page → editable text'}
-          </button>
+          <>
+            <div className="slider-row">
+              <span>OCR language</span>
+              <select
+                className="text-input"
+                value={ocrLang}
+                disabled={!!ocrBusy}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (isOcrLang(v)) setOcrLang(v);
+                }}
+                title="Language model used for on-device OCR"
+              >
+                {OCR_LANGS.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button className="btn ghost ocr-cta" onClick={onOcr} disabled={!!ocrBusy}>
+              {ocrBusy ? <span className="spinner small" /> : null}
+              {ocrBusy ? ocrBusy : 'OCR this page → editable text'}
+            </button>
+          </>
         )}
       </section>
 
