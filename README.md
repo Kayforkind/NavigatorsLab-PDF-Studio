@@ -9,9 +9,11 @@
 [![Live app](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com)
 [![GitHub Pages mirror](https://img.shields.io/badge/mirror-github.io-24292f?style=for-the-badge&logo=github)](https://kayforkind.github.io/NavigatorsLab-PDF-Studio/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-30_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
+[![Tests](https://img.shields.io/badge/tests-42_passing-brightgreen?style=for-the-badge)](#developer-quick-start)
 
 *A [NavigatorsLab](https://navigatorslab.com) project.*
+
+> ⭐ **If this saves you an Adobe subscription, a star helps others find it.**
 
 </div>
 
