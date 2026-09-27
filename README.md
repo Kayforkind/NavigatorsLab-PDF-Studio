@@ -15,9 +15,19 @@
 
 > ⭐ **If this saves you an Adobe subscription, a star helps others find it.**
 
+![PDF Studio — the free, open-source PDF editor that runs entirely in your browser](social-preview.png)
+
 </div>
 
 ---
+
+## ⚡ 30-second quick start
+
+1. **Open the app:** [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/) — no install, no account.
+2. **Drop in any PDF** (or click "Open the demo document").
+3. **Press `E`** and click any line of existing text — retype it, and the file itself is rewritten on export.
+
+That's it. Your document never leaves your computer.
 
 > **The pitch, in one sentence:** PDF Studio is the PDF editor you keep trying to find and never find — one that actually rewrites the text already in the document, fills real forms, OCRs scans, signs, redacts, reorganizes pages, diffs two revisions, and answers questions about the file with an on-device AI — and it does all of it **without your document ever leaving your computer**, for **free**, as **open source (MIT)**.
 
@@ -139,6 +149,33 @@ It's a PWA: install it to your dock/desktop and it keeps working with the networ
 - Compare diffs extracted **text**, not rendered pixels — it's built for contract/revision review, not detecting a shifted logo.
 - The AI runs small models (0.5B–1B parameters) — good at summarizing and locating content in a document, not a replacement for a frontier model.
 
+## How it compares
+
+Verified against public pricing/feature pages on 2026-09-27. Competitors change plans often — check before you quote us.
+
+| | **PDF Studio** | Adobe Acrobat | Smallpdf | Sejda | Stirling PDF | QwikPDF |
+|---|---|---|---|---|---|---|
+| Price | **Free, MIT open source** | ~$19.99/user/mo | $10–15/mo | ~$7.50/mo | Free (self-hosted) | Free |
+| True in-place text editing | **Yes** (content-stream rewrite) | Yes (paid) | Yes (paid) | Yes | Partial | Overlay only |
+| Document leaves your device | **Never** | Uploads to Adobe servers | Uploads to Smallpdf servers | Uploads (web) / local (desktop app) | Never (your server) | Never (browser) |
+| Daily/task caps | **None** | Paid tier | ~2 tasks/day free | 3 tasks/day, 50 MB | None | None claimed |
+| Watermark on free output | **None** | — | Reported on some tools | None reported | None | None |
+| Redaction (burned in) | **Yes** | Yes (paid) | Paid | Whiteout-style | Yes | Whiteout-style |
+| OCR | **Yes** (on-device, 4 languages) | Paid | Paid | Yes (capped) | Yes | Claimed local |
+| Revision diff | **Yes** | Yes (paid) | Paid | No | — | No |
+| On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No | No |
+| Self-hostable | **Yes** (static files) | No | No | No | Yes (Docker) | — |
+
+**The short version:** the incumbents upload your files and meter your work. The open/self-hosted options make you run infrastructure. PDF Studio is the zero-setup browser app with the full feature list — true text rewrite, burned-in redaction, on-device OCR, diff, and AI — free, with no caps.
+
+## FAQ
+
+- **Is it really free? What's the catch?** — Yes, free, MIT-licensed, no catch. No accounts, no watermarks, no page/task caps, no "pro" tier. Fork it, self-host it, ship it.
+- **Do my documents upload anywhere?** — No. Open the devtools network tab and watch it stay silent while you edit. The only network traffic is the app itself plus optional public AI/OCR model weights (cached after first download).
+- **How is this different from other "free" PDF editors?** — Most only let you *annotate* (text boxes on top of content). PDF Studio's Edit tool rewrites the page's content stream: original text operators are deleted from the file and your replacement is written in as real vector text.
+- **Can I use it offline or self-host?** — Yes. Clone the repo, serve `dist/` from any static host, and point the AI/OCR loaders at internal mirrors for a fully air-gapped setup.
+- **Who makes this?** — A [NavigatorsLab](https://navigatorslab.com) project. Issues and PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Developer quick start
 
 ```bash
@@ -146,7 +183,7 @@ git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
 npm run dev        # http://localhost:5199 → click "Open the demo document"
-npm test           # 24 unit + integration tests
+npm test           # 42 passing tests
 npm run typecheck
 npm run build      # production build + PWA service worker → dist/
 ```
@@ -155,7 +192,7 @@ npm run build      # production build + PWA service worker → dist/
 
 **Architecture in one line:** every mark lives in the page's PDF user space; the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport` — including offset MediaBox/CropBox origins that break most home-grown editors.
 
-**Test suite (34):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting (wide runs, prose safety, column detection).
+**Test suite (42):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · real export round-trips re-parsed with pdf.js (rotation, blanks, flattened annotations, form flattening, stamps) · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting (wide runs, prose safety, column detection).
 
 ## Deployment (any static host, one command)
 
