@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { DocMeta, StampOptions } from '../lib/exportPdf';
-import { defaultStamps } from '../lib/exportPdf';
 import { Icon } from './icons';
 
 export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
@@ -137,6 +136,8 @@ export function ExportDialog({
   fileName,
   pageCount,
   meta,
+  stamps,
+  setStamps,
   onExport,
   onSplit,
   onClose,
@@ -144,6 +145,8 @@ export function ExportDialog({
   fileName: string;
   pageCount: number;
   meta: DocMeta;
+  stamps: StampOptions;
+  setStamps: React.Dispatch<React.SetStateAction<StampOptions>>;
   onExport: (p: ExportPayload) => void;
   onSplit: (p: ExportPayload) => void;
   onClose: () => void;
@@ -153,7 +156,6 @@ export function ExportDialog({
   const [author, setAuthor] = useState(meta.author);
   const [subject, setSubject] = useState(meta.subject);
   const [keywords, setKeywords] = useState(meta.keywords);
-  const [stamps, setStamps] = useState<StampOptions>(defaultStamps);
   const payload = (): ExportPayload => ({ range, meta: { title, author, subject, keywords }, stamps });
 
   return (

@@ -7,7 +7,7 @@ import { loadSource, makeViewport, cssToContent, pagePlainText } from './lib/pdf
 import type { Source } from './types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { runOcr } from './lib/ocr';
-import { buildPdf, downloadBytes, niceFileName, type DocMeta } from './lib/exportPdf';
+import { buildPdf, downloadBytes, niceFileName, defaultStamps, type DocMeta, type StampOptions } from './lib/exportPdf';
 import { makeSamplePdf } from './lib/sample';
 import { PageSheet } from './components/PageSheet';
 import { ToolRail } from './components/ToolRail';
@@ -88,6 +88,8 @@ export default function App() {
   const [fitScale, setFitScale] = useState(1);
   const [meta, setMeta] = useState<DocMeta>({ title: '', author: '', subject: '', keywords: '' });
   const [modal, setModal] = useState<'export' | 'help' | 'ai' | 'forms' | 'compare' | null>(null);
+  /** Export stamp options persist across dialog opens (the dialog unmounts on close). */
+  const [exportStamps, setExportStamps] = useState<StampOptions>(defaultStamps);
   /** style drawer visibility on narrow screens (<1100px hides the sidebar) */
   const [styleOpen, setStyleOpen] = useState(false);
   const [formValues, setFormValues] = useState<FormValuesBySource>({});
@@ -1159,7 +1161,7 @@ export default function App() {
       />
 
       {modal === 'export' && (
-        <ExportDialog fileName={doc.name} pageCount={doc.pages.length} meta={meta} onExport={(p) => void doExport(p)} onSplit={(p) => void doSplit(p)} onClose={() => setModal(null)} />
+        <ExportDialog fileName={doc.name} pageCount={doc.pages.length} meta={meta} stamps={exportStamps} setStamps={setExportStamps} onExport={(p) => void doExport(p)} onSplit={(p) => void doSplit(p)} onClose={() => setModal(null)} />
       )}
       {modal === 'help' && <HelpModal onClose={() => setModal(null)} />}
       {modal === 'compare' && <CompareDialog onClose={() => setModal(null)} />}
