@@ -379,8 +379,16 @@ export default function App() {
   const runSearch = useCallback(
     async (q: string) => {
       const query = q.trim();
-      if (query.length < 2) {
+      if (!query) {
         setSearchState(null);
+        return;
+      }
+      if (query.length < 2) {
+        // Keep the typed text visible in the controlled input; just don't
+        // run the document search until there are at least 2 characters.
+        // (Clearing the state here would snap the input back to '' and make
+        // it impossible to ever type a second character.)
+        setSearchState({ q, matches: [], idx: -1, busy: false });
         return;
       }
       setSearchState({ q: query, matches: [], idx: 0, busy: true });
