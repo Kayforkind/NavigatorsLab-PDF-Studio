@@ -22,7 +22,7 @@
 
 ## The problem
 
-Every "free" PDF editor works the same way: upload your contract or your ID to somebody's server, edit three pages, then get hit with a paywall, a watermark, a page cap, or a sign-up screen the moment you press Save. Desktop editors that genuinely modify existing text cost a subscription.
+Most "free" PDF editors work the same way: upload your contract or your ID to somebody's server, edit three pages, then get hit with a paywall, a watermark, a page cap, or a sign-up screen the moment you press Save. (The honest exceptions are self-hosted tools — but those make *you* run the infrastructure.) Desktop editors that genuinely modify existing text cost a subscription.
 
 ## The fix
 
@@ -51,16 +51,17 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 
 <br>
 
+![PDF Studio — the full editor, free forever and private by design](docs/shots/01-hero.png)
 ![Edit hints — every line of the original text is a clickable target](docs/shots/02-edit-hints.png)
-![Inline editing — retyping a line rewrites the file, table cells stay independent](docs/shots/03-edit-inline.png)
-![Forms dialog listing every field with inline editing](docs/shots/07-forms.png)
-![Signature pad with live drawing](docs/shots/05-signature-pad.png)
-![Redaction, arrows, ellipses, rectangles — all live marks](docs/shots/13-shapes-redact.png)
-![Thumbnail rail with per-page organize controls](docs/shots/06-pages-thumbs.png)
-![Export dialog with stamping panel](docs/shots/09-export-stamps.png)
-![Compare dialog with line diff](docs/shots/10-compare.png)
-![On-device AI assistant dialog](docs/shots/11-ai.png)
-![Mobile layout — bottom tool bar, full-width pages](docs/shots/14-mobile.png)
+![Underline tool with color and opacity controls](docs/shots/03-annotate.png)
+![True redaction — covered text is deleted from the file, not painted over](docs/shots/04-redact.png)
+![Signature pad — draw with mouse, trackpad, or touch](docs/shots/05-signature-pad.png)
+![Signature stamped onto the page](docs/shots/05b-signature-placed.png)
+![Fill form fields — values written into the real AcroForm fields](docs/shots/06-forms.png)
+![Compare two PDFs — line-by-line diff of two versions](docs/shots/07-compare.png)
+![Export dialog — page ranges, split, stamps, document properties](docs/shots/08-export.png)
+![On-device AI assistant — ask questions about your document, nothing uploaded](docs/shots/09-ai.png)
+![Mobile layout — bottom toolbar, full-width pages](docs/shots/10-mobile.png)
 
 </details>
 
