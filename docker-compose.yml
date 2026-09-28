@@ -1,0 +1,7 @@
+services:
+  pdf-studio:
+    image: ghcr.io/kayforkind/navigatorslab-pdf-studio:latest
+    container_name: pdf-studio
+    ports:
+      - "8080:80"
+    restart: unless-stopped
