@@ -17,12 +17,12 @@ export interface OcrLine {
   confidence: number;
 }
 
-/** OCR languages shipped with the app (tesseract traineddata under /tessdata). */
+/** OCR languages shipped with the app (tesseract traineddata under /tessdata). `size` is the one-time .gz download for that language. */
 export const OCR_LANGS = [
-  { code: 'eng', label: 'English' },
-  { code: 'spa', label: 'Español' },
-  { code: 'fra', label: 'Français' },
-  { code: 'deu', label: 'Deutsch' },
+  { code: 'eng', label: 'English', size: '2.8 MB' },
+  { code: 'spa', label: 'Español', size: '1.1 MB' },
+  { code: 'fra', label: 'Français', size: '0.6 MB' },
+  { code: 'deu', label: 'Deutsch', size: '0.8 MB' },
 ] as const;
 
 export type OcrLang = (typeof OCR_LANGS)[number]['code'];

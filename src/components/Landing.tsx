@@ -1,5 +1,6 @@
 import { useState, type DragEvent } from 'react';
 import { Icon } from './icons';
+import { ShortcutCheatsheet } from './Shortcuts';
 
 export function Landing({
   busy,
@@ -89,6 +90,11 @@ export function Landing({
           Files never leave this device — no uploads, no attachments kept, no user information collected. Everything runs
           locally in your browser.
         </p>
+      </div>
+
+      <div className="landing-shortcuts">
+        <h2>Keyboard shortcuts</h2>
+        <ShortcutCheatsheet />
       </div>
     </div>
   );

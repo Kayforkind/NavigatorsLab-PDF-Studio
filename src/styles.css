@@ -995,6 +995,38 @@ a.mini-btn.suite-link:hover {
   color: var(--text);
 }
 
+/* shared keyboard-shortcut cheatsheet (help modal + landing page) */
+.shortcut-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #c7d0e0;
+  line-height: 1.55;
+  font-size: 13px;
+}
+.shortcut-list kbd {
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.landing-shortcuts {
+  max-width: 880px;
+  margin: 30px auto 0;
+  text-align: left;
+}
+.landing-shortcuts h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
 /* ---------------- landing ---------------- */
 .landing {
   flex: 1;

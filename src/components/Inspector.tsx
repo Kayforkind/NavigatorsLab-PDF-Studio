@@ -196,7 +196,7 @@ export function Inspector({
               >
                 {OCR_LANGS.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.label}
+                    {l.label} · {l.size} download
                   </option>
                 ))}
               </select>

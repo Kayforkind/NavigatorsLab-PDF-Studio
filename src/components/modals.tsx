@@ -3,6 +3,7 @@ import type { DocMeta, StampOptions } from '../lib/exportPdf';
 import { expandTokens, hasStamps } from '../lib/exportPdf';
 import { COMPRESS_PRESETS } from '../lib/compress';
 import { Icon } from './icons';
+import { ShortcutCheatsheet } from './Shortcuts';
 
 export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => {
@@ -136,6 +137,9 @@ export interface ExportPayload {
   compress?: { maxSide: number; quality: number } | null;
 }
 
+/** localStorage key for the last-used export page range (pre-selected on open). */
+const EXPORT_RANGE_KEY = 'pdfstudio.export.range';
+
 /** Live preview of page numbers / watermark / header-footer on a mini page. */
 export function StampPreview({
   stamps,
@@ -221,7 +225,13 @@ export function ExportDialog({
   onPagePng: () => void;
   onClose: () => void;
 }) {
-  const [range, setRange] = useState('');
+  const [range, setRange] = useState(() => {
+    try {
+      return localStorage.getItem(EXPORT_RANGE_KEY) ?? '';
+    } catch {
+      return ''; // private mode — start blank
+    }
+  });
   const [title, setTitle] = useState(meta.title || fileName);
   const [author, setAuthor] = useState(meta.author);
   const [subject, setSubject] = useState(meta.subject);
@@ -233,6 +243,14 @@ export function ExportDialog({
     stamps,
     compress: compressKey ? { ...COMPRESS_PRESETS[compressKey].opts } : null,
   });
+  /** remember the range so the dialog pre-selects it next time it opens */
+  const rememberRange = () => {
+    try {
+      localStorage.setItem(EXPORT_RANGE_KEY, range);
+    } catch {
+      /* private mode — forget it */
+    }
+  };
 
   return (
     <Dialog title="Export PDF" onClose={onClose} wide>
@@ -245,7 +263,7 @@ export function ExportDialog({
           </p>
           <input className="text-input" value={range} onChange={(e) => setRange(e.target.value)} placeholder={`All ${pageCount} pages`} />
           <div className="modal-actions" style={{ marginTop: 10 }}>
-            <button className="btn primary" onClick={() => onExport(payload())}>
+            <button className="btn primary" onClick={() => { rememberRange(); onExport(payload()); }}>
               <Icon.download /> {range.trim() ? 'Download these pages' : 'Download PDF'}
             </button>
             <button className="btn ghost" onClick={() => onSplit(payload())} title="Creates one PDF file per page">
@@ -439,13 +457,7 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
         </section>
         <section>
           <h3>Shortcuts</h3>
-          <ul>
-            <li><kbd>Ctrl/⌘ Z</kbd> undo · <kbd>Ctrl/⌘ Y</kbd> or <kbd>Ctrl/⌘⇧Z</kbd> redo</li>
-            <li><kbd>Ctrl/⌘ O</kbd> open · <kbd>Ctrl/⌘ S</kbd> save a copy</li>
-            <li><kbd>Del</kbd> delete the selected mark · <kbd>Esc</kbd> cancel / deselect</li>
-            <li><kbd>+</kbd> / <kbd>−</kbd> zoom · <kbd>0</kbd> fit to width</li>
-            <li>Tools: <kbd>V</kbd> select · <kbd>E</kbd> edit · <kbd>T</kbd> text · <kbd>H</kbd> highlight · <kbd>U</kbd> underline · <kbd>X</kbd> strike · <kbd>N</kbd> note · <kbd>D</kbd> pen · <kbd>A</kbd> arrow · <kbd>R</kbd> rect · <kbd>O</kbd> ellipse · <kbd>G</kbd> sign · <kbd>I</kbd> image · <kbd>F</kbd> text field · <kbd>C</kbd> checkbox · <kbd>B</kbd> redact · <kbd>W</kbd> whiteout</li>
-          </ul>
+          <ShortcutCheatsheet />
         </section>
       </div>
       <div className="modal-actions">
