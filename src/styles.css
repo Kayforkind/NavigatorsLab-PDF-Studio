@@ -57,6 +57,23 @@ button {
   border-bottom: 1px solid var(--line);
   background: linear-gradient(180deg, #121a2b, #0f1624);
   flex: none;
+  /* D1 fix: the topbar's button row is ~1192px wide. Below that width the row
+     must scroll INTERNALLY. When it overflowed the page instead, the layout
+     viewport grew to 1192px and every position:fixed dialog backdrop sized to
+     that, centering .modal-wide dialogs off-screen at 768–1191px widths. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.topbar::-webkit-scrollbar {
+  display: none;
+}
+/* items keep their size and scroll — never squash (flex-shrink would collapse
+   the search box) and never push past the page edge */
+.topbar > * {
+  flex: none;
+}
+.topbar > .tb-spacer {
+  flex: 1 0 4px;
 }
 
 .brand {
