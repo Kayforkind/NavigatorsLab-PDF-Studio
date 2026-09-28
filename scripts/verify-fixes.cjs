@@ -117,7 +117,7 @@ const ok = (name, cond, extra = '') => {
   await page.evaluate(() => {
     const rail = document.querySelector('.tool-rail');
     const btns = rail ? Array.from(rail.querySelectorAll('button')) : [];
-    const red = btns.find((b) => b.title === 'Redact');
+    const red = btns.find((b) => (b.title || '').startsWith('Redact'));
     red?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
   await page.waitForTimeout(300);
@@ -131,7 +131,7 @@ const ok = (name, cond, extra = '') => {
   // after the Edit-Text step the view may be scrolled onto a later page.
   // The hit hints only render while the Edit tool is active: re-select it,
   // find a line on the CURRENT sheet, then switch back to redact.
-  await page.evaluate(() => { const b = [...document.querySelectorAll('.tool-rail button')].find((x) => x.title === 'Edit text'); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.tool-rail button')].find((x) => (x.title || '').startsWith('Edit text')); if (b) b.click(); });
   await page.waitForTimeout(700);
   // Bring a hit INTO the viewport first (mouse coords are viewport-relative).
   const anyHit = page.locator('.hit-hint[data-text]:not([data-text=""])').first();
@@ -160,7 +160,7 @@ const ok = (name, cond, extra = '') => {
     return sheets.findIndex((s) => s.getAttribute('data-page-id') === pid);
   }, targetInfo.pageId);
   // back to redact for the actual drag
-  await page.evaluate(() => { const b = [...document.querySelectorAll('.tool-rail button')].find((x) => x.title === 'Redact'); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.tool-rail button')].find((x) => (x.title || '').startsWith('Redact')); if (b) b.click(); });
   await page.waitForTimeout(300);
   if (!band || !bandText) throw new Error('no edit-text hits visible — cannot place redaction band');
   // Drag a band covering the chosen line (padded vertically to be safe).
@@ -249,7 +249,7 @@ const ok = (name, cond, extra = '') => {
   await page.evaluate(() => {
     const rail = document.querySelector('.tool-rail');
     const btns = rail ? Array.from(rail.querySelectorAll('button')) : [];
-    const note = btns.find((b) => b.title === 'Sticky note');
+    const note = btns.find((b) => (b.title || '').startsWith('Sticky note'));
     note?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
   await sheetEl.scrollIntoViewIfNeeded();
@@ -266,7 +266,7 @@ const ok = (name, cond, extra = '') => {
   await page.evaluate(() => {
     const rail = document.querySelector('.tool-rail');
     const btns = rail ? Array.from(rail.querySelectorAll('button')) : [];
-    const sel = btns.find((b) => b.title === 'Select & move');
+    const sel = btns.find((b) => (b.title || '').startsWith('Select & move'));
     sel?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
   await page.waitForTimeout(200);

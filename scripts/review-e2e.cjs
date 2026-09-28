@@ -92,7 +92,7 @@ const ok = (name, cond, extra = '') => {
   // successful render of a text-only page.
   ok('non-embedded-font page renders visibly (no blank)', diversity2 > 1, `${diversity2} colors`);
   // Edit Text should see its lines too (text extraction may take a moment)
-  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => x.title === 'Edit text'); if (el) el.click(); });
+  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => (x.title || '').startsWith('Edit text')); if (el) el.click(); });
   let hitCount2 = 0;
   for (let i = 0; i < 16 && !hitCount2; i++) {
     await page.waitForTimeout(500);
@@ -229,7 +229,7 @@ const ok = (name, cond, extra = '') => {
   }
 
   console.log('== G · OCR (same-origin engine) ==');
-  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => x.title === 'Edit text'); if (el) el.click(); });
+  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => (x.title || '').startsWith('Edit text')); if (el) el.click(); });
   await page.waitForTimeout(500);
   const before = await marks();
   await page.evaluate(() => document.querySelector('.ocr-cta')?.click());
@@ -260,7 +260,7 @@ const ok = (name, cond, extra = '') => {
   }
   // 2) …create a text annotation on the CURRENT sheet (earlier sections scroll
   // the page column; a stale .sheet-inner box clicks off-viewport)
-  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => x.title === 'Add text'); if (el) el.click(); });
+  await page.evaluate(() => { const el = [...document.querySelectorAll('.tool-rail button')].find((x) => (x.title || '').startsWith('Add text')); if (el) el.click(); });
   await page.waitForTimeout(300);
   // center the current sheet — scrollIntoViewIfNeeded no-ops when partially
   // visible, leaving the click point outside the viewport
