@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "isolatedModules": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "strict": true,
+    "target": "ES2022",
+    "types": [
+      "node"
+    ],
+    "rootDir": "../.."
+  },
+  "include": [
+    "src/**/*",
+    "../../src/lib/textRewrite.ts",
+    "../../src/lib/ranges.ts",
+    "../../src/types.ts"
+  ]
+}

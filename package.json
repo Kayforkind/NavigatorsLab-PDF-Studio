@@ -4,14 +4,19 @@
   "license": "MIT",
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite --port 5199 --strictPort",
     "build": "tsc -b && vite build",
     "build:pages": "vite build",
+    "build:packages": "npm run build --workspaces --if-present",
     "deploy:pages": "npm run build && npx gh-pages -d dist -t true",
     "preview": "vite preview --port 5199 --strictPort",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:packages": "npm run test --workspaces --if-present",
     "typecheck": "tsc --noEmit -p tsconfig.json --pretty false"
   },
   "dependencies": {

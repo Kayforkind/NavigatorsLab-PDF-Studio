@@ -34,7 +34,7 @@ import {
   decodePDFRawStream,
 } from 'pdf-lib';
 // (CropBox/MediaBox accessors come from PDFPageLeaf via page.node)
-import type { TextHit } from '../types';
+import type { TextHit } from '../types.js';
 
 /* ------------------------------------------------------------------ */
 /* Content-stream tokenizer                                            */
@@ -825,7 +825,9 @@ export function planDeepEdit(lib: PDFDocument, pageIndex: number, req: DeepEditR
   const replacement = req.newText ?? '';
   if (replacement.length === 0) {
     // deletion: remove the matched line (or cell substring) from the stream
-    const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: new Uint8Array(0) }]);
+    // NB: emit an EMPTY STRING, not nothing — a bare `Tj` with no operand is
+    // invalid PDF and breaks text extraction in strict parsers.
+    const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: bytesOf('()') }]);
     return { bytes, matched: target, lines: rec.lines, lineReplace: true };
   }
 
@@ -888,7 +890,19 @@ export function planDeepEdit(lib: PDFDocument, pageIndex: number, req: DeepEditR
   const segW = (txt.length * 500) / 1000 * seg.size;
   const op = subTjOperand(prefix, gap, replacement, size, segW, trailing);
   if (!op) return null;
-  const bytes = applySplices(rec.decoded, [{ start: seg.start, end: seg.end, bytes: op }]);
+  // subTjOperand emits a TJ ARRAY, but this branch handles a bare `Tj`
+  // string-show. Splicing `[<..>]` in place of the string while leaving the
+  // `Tj` operator produces invalid PDF (Tj takes a string, not an array)
+  // and silently kills the page's text — so the splice must also swap the
+  // operator token to `TJ`. Only `Tj` is safe to rewrite this way; quote /
+  // dquote carry line-positioning side effects, so bail on those.
+  if (seg.op !== 'Tj') return null;
+  const opTok = segToks.find((t) => t.kind === 'op' && t.start >= strTok.end);
+  if (!opTok || opTok.value !== 'Tj') return null;
+  const tj = new Uint8Array(op.length + 3);
+  tj.set(op, 0);
+  tj.set(bytesOf(' TJ'), op.length);
+  const bytes = applySplices(rec.decoded, [{ start: seg.start, end: opTok.end, bytes: tj }]);
   return { bytes, matched: target, lines: rec.lines, lineReplace: false };
 }
 
@@ -924,7 +938,8 @@ export function planVectorRedaction(lib: PDFDocument, pageIndex: number, rects: 
       else touches = true;
     }
     if (covered) {
-      splices.push({ start: ln.seg.start, end: ln.seg.end, bytes: new Uint8Array(0) });
+      // NB: `()` not empty — a bare `Tj` with no operand is invalid PDF.
+      splices.push({ start: ln.seg.start, end: ln.seg.end, bytes: bytesOf('()') });
       removed++;
     } else if (touches) partial++;
   }

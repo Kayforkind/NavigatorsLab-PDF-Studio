@@ -145,6 +145,67 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Agentic usage
+
+PDF Studio ships two agent native interfaces that reuse the exact same content stream engine as the app. No new parsing code, no network calls, document bytes never leave the machine.
+
+```bash
+npm install
+npm run build:packages
+```
+
+### CLI — `pdfstudio`
+
+```bash
+# inspect
+pdfstudio info contract.pdf
+pdfstudio extract-text contract.pdf -p 1-3
+pdfstudio search contract.pdf "termination clause"
+
+# true in place text editing (original bytes deleted, not overlaid)
+pdfstudio edit-text in.pdf --find "Acme Corp" --replace "Globex Inc" --all -o out.pdf
+cat in.pdf | pdfstudio edit-text - --find "draft" --replace "FINAL" -o - > out.pdf
+
+# burned in redaction (bytes deleted, unrecoverable)
+pdfstudio redact in.pdf --find "123-45-6789" -o clean.pdf
+pdfstudio redact in.pdf --rect "2:72,500,200,24" -o clean.pdf   # page:x,y,w,h in points
+
+# page ops
+pdfstudio merge a.pdf b.pdf -o combined.pdf
+pdfstudio split in.pdf --ranges 1-3 --ranges 4-6 -o "part-%d.pdf"
+pdfstudio rotate in.pdf --angle 90 -p 1-2 -o rotated.pdf
+pdfstudio pages in.pdf --delete 5 --order 3,1,2 -o reordered.pdf
+```
+
+Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exit codes: 0 ok, 1 error, 2 no matches / nothing changed. `--json` on read commands for scripting.
+
+### MCP server — `pdfstudio-mcp`
+
+Ten tools (`pdf_info`, `pdf_extract_text`, `pdf_search_text`, `pdf_edit_text`, `pdf_redact_text`, `pdf_redact_rect`, `pdf_merge`, `pdf_split`, `pdf_rotate`, `pdf_pages`). All paths resolve inside `--root` and escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted.
+
+Claude Code:
+
+```bash
+claude mcp add pdfstudio -- node /path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js --root /path/to/your/docs
+```
+
+Cursor / Cline / any MCP client (`mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "pdfstudio": {
+      "command": "node",
+      "args": ["/path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js", "--root", "/path/to/your/docs"]
+    }
+  }
+}
+```
+
+**Privacy guarantee for agents:** the CLI and MCP server make zero network calls. Same as the web app: parsing (pdf.js), editing (content stream rewriting), and writing (pdf-lib) all run in process. Redaction deletes the text operators from the file, and the output is rebuilt so orphaned bytes are gone too.
+
+**Prompt injection note:** PDF content is untrusted input. Extraction and search results are delimited and labeled as data. Agents should treat document text as data, never as instructions. If your agent framework echoes tool output into its context, keep that boundary in mind.
+
 ## Self-host with Docker
 
 Zero backend, so self-hosting is one command. Images publish to GHCR on every release:
