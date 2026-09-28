@@ -137,8 +137,7 @@ export interface ExportPayload {
   compress?: { maxSide: number; quality: number } | null;
 }
 
-/** localStorage key for the last-used export page range (pre-selected on open). */
-const EXPORT_RANGE_KEY = 'pdfstudio.export.range';
+import { EXPORT_RANGE_KEY } from '../lib/storage';
 
 /** Live preview of page numbers / watermark / header-footer on a mini page. */
 export function StampPreview({

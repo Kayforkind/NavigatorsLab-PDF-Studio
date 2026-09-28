@@ -27,8 +27,7 @@ import { Landing } from './components/Landing';
 
 let toastSeq = 0;
 
-const SESSION_KEY = 'nl-pdf-studio.session.v1';
-const SETTINGS_KEY = 'nl-pdf-studio.settings.v1';
+import { OCR_LANG_KEY, SESSION_KEY, SETTINGS_KEY, clearAppStorage } from './lib/storage';
 
 function loadSettings(): ToolSettings {
   try {
@@ -117,7 +116,7 @@ export default function App() {
   const [ocrBusy, setOcrBusy] = useState('');
   const [ocrLang, setOcrLang] = useState<OcrLang>(() => {
     try {
-      const v = localStorage.getItem('pdfstudio.ocrLang') ?? '';
+      const v = localStorage.getItem(OCR_LANG_KEY) ?? '';
       return isOcrLang(v) ? v : 'eng';
     } catch {
       return 'eng';
@@ -280,15 +279,15 @@ export default function App() {
   /* ---------------- session restore ---------------- */
   const [savedSession, setSavedSession] = useState<{ name: string; at: number } | null>(null);
 
-  /** Delete the locally saved session (document bytes, annotations, form values) from this device. */
+  /** Delete ALL locally saved PDF Studio data (session bytes, settings, prefs) from this device. */
   const forgetSession = useCallback(() => {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* ignore */
-    }
+    const removed = clearAppStorage();
     setSavedSession(null);
-    toast('Saved session deleted from this device.');
+    toast(
+      removed.length
+        ? 'All PDF Studio data deleted from this device.'
+        : 'No saved PDF Studio data on this device.',
+    );
   }, [toast]);
   useEffect(() => {
     try {
@@ -1161,7 +1160,7 @@ export default function App() {
             setOcrLang={(l) => {
               setOcrLang(l);
               try {
-                localStorage.setItem('pdfstudio.ocrLang', l);
+                localStorage.setItem(OCR_LANG_KEY, l);
               } catch {
                 /* private mode — default next time */
               }
