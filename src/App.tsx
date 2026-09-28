@@ -949,7 +949,7 @@ export default function App() {
               <Icon.open /> Open
             </button>
             <button className="tb-btn" onClick={() => mergeInputRef.current?.click()} title="Merge another PDF after the current page">
-              Merge PDF
+              <Icon.plus /> Merge PDF
             </button>
             <div className="tb-sep" />
             <button className="tb-btn icon" disabled={!undoCount} onClick={() => dispatch({ type: 'undo' })} title="Undo (Ctrl+Z)">
@@ -957,6 +957,12 @@ export default function App() {
             </button>
             <button className="tb-btn icon" disabled={!redoCount} onClick={() => dispatch({ type: 'redo' })} title="Redo (Ctrl+Y)">
               <Icon.redo />
+            </button>
+            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title="Zoom out">
+              −
+            </button>
+            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.min(400, Math.round(z * 1.25)))} title="Zoom in">
+              +
             </button>
             <span className="tb-spacer" />
             <input
@@ -981,32 +987,32 @@ export default function App() {
                 {searchState.busy ? '…' : searchState.matches.length ? `${searchState.idx + 1}/${searchState.matches.length}` : '0'}
               </span>
             )}
-            <button className="tb-btn" onClick={() => setModal('forms')} title="Detect and fill PDF form fields (AcroForm)">
+            <button className="tb-btn collapsible" onClick={() => setModal('forms')} title="Detect and fill PDF form fields (AcroForm)">
               <Icon.check /> Forms
             </button>
-            <button className="tb-btn" onClick={() => setModal('compare')} title="Compare the text of two PDFs side by side">
+            <button className="tb-btn collapsible" onClick={() => setModal('compare')} title="Compare the text of two PDFs side by side">
               <Icon.copy /> Compare
             </button>
-            <button className="tb-btn icon" onClick={() => setModal('ai')} title="Private on-device AI (ask / summarize this document)">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('ai')} title="Private on-device AI (ask / summarize this document)">
               <Icon.sparkle />
             </button>
-            <button className="tb-btn icon" onClick={() => setModal('help')} title="Help">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('help')} title="Help">
               <Icon.info />
             </button>
-            <button className="tb-btn icon" onClick={() => void printPdf()} title="Print the PDF with annotations (Ctrl+P)">
+            <button className="tb-btn icon collapsible" onClick={() => void printPdf()} title="Print the PDF with annotations (Ctrl+P)">
               <Icon.print />
             </button>
             <button
-              className={`tb-btn icon ${styleOpen ? 'active' : ''}`}
+              className={`tb-btn icon collapsible ${styleOpen ? 'active' : ''}`}
               onClick={() => setStyleOpen((v) => !v)}
               title="Colors, fonts & size (opens the style panel)"
             >
               <Icon.palette />
             </button>
-            <button className="tb-btn icon" onClick={() => setModal('export')} title="Export options & document properties">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('export')} title="Export options & document properties">
               <Icon.props />
             </button>
-            <button className="tb-btn icon" onClick={quickSave} title="Save a copy (Ctrl+S)">
+            <button className="tb-btn icon save-icon-btn" onClick={quickSave} title="Save a copy (Ctrl+S)">
               <Icon.download />
             </button>
             <button className="btn primary save-cta" onClick={quickSave}>

@@ -478,6 +478,9 @@ button {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  /* allow pan + pinch on touch, but kill double-tap-zoom; drawing tools
+     override to none below so strokes aren't hijacked by the browser */
+  touch-action: manipulation;
 }
 
 .sheet-current .sheet-inner {
@@ -531,6 +534,9 @@ button {
 .canvas-area[data-tool='sign'] .sheet-inner,
 .canvas-area[data-tool='image'] .sheet-inner {
   cursor: crosshair;
+  /* critical for touch: without this the browser steals the gesture for
+     scrolling (pointercancel) and no stroke is ever drawn */
+  touch-action: none;
 }
 
 .canvas-area[data-tool='text'] .sheet-inner,
@@ -1438,6 +1444,11 @@ a.mini-btn.suite-link:hover {
 }
 
 /* ---------------- mobile & touch ---------------- */
+/* compact zoom buttons for the mobile topbar (desktop uses the statusbar) */
+.topbar .zoom-mobile {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .app-body {
     flex-direction: column-reverse;
@@ -1481,7 +1492,8 @@ a.mini-btn.suite-link:hover {
 
   .tool-btn {
     min-width: 46px;
-    padding: 7px 6px 5px;
+    min-height: 46px;
+    padding: 8px 6px 6px;
   }
   .tool-btn svg {
     width: 20px;
@@ -1511,6 +1523,48 @@ a.mini-btn.suite-link:hover {
   .topbar::-webkit-scrollbar {
     display: none;
   }
+  /* the row overflows on mobile: items must keep their size and scroll,
+     never squash (flex-shrink would collapse the search box) */
+  .topbar > * {
+    flex: none;
+  }
+  .topbar > .tb-spacer {
+    flex: 1 0 4px;
+  }
+
+  /* keep Save reachable without scrolling: pull it up right after search,
+     push the secondary dialog buttons into the scrollable tail */
+  .topbar .search-box {
+    order: 1;
+    min-width: 0; /* let the widths below win over the input's intrinsic width */
+    width: 90px;
+  }
+  .topbar .zoom-mobile {
+    order: 2;
+  }
+  .topbar .tb-btn.collapsible {
+    order: 4;
+  }
+  /* the icon-only Save duplicates the Save CTA — hide it on mobile */
+  .topbar .save-icon-btn {
+    display: none;
+  }
+  /* zoom lives in the statusbar on desktop, which the bottom tool rail
+     covers on mobile — expose compact zoom buttons in the topbar instead */
+  .topbar .zoom-mobile {
+    display: inline-flex;
+  }
+  .statusbar {
+    display: none;
+  }
+
+  /* larger close target for the style drawer on touch */
+  .inspector.drawer-open .drawer-close {
+    width: 38px;
+    height: 38px;
+    top: 6px;
+    right: 6px;
+  }
 
   .brand-name small {
     display: none;
@@ -1518,10 +1572,6 @@ a.mini-btn.suite-link:hover {
 
   .docname {
     display: none;
-  }
-
-  .search-box {
-    width: 90px;
   }
 
   .sheet-meta {
@@ -1533,8 +1583,12 @@ a.mini-btn.suite-link:hover {
     display: none;
   }
 
-  .sheet-overlay {
-    touch-action: none;
+  /* touch-action for the page canvas lives on .sheet-inner (see above);
+     drawing tools use touch-action:none so strokes aren't hijacked */
+
+  /* export dialog: stack the two columns instead of overflowing */
+  .export-grid {
+    grid-template-columns: 1fr;
   }
 
   .modal {
@@ -1549,6 +1603,16 @@ a.mini-btn.suite-link:hover {
 
   .inline-input {
     font-size: 16px !important; /* prevent iOS zoom-on-focus */
+  }
+
+  /* prevent iOS auto-zoom on focus for every editable control */
+  .topbar .search-box,
+  .text-input,
+  .inspector select,
+  .modal select,
+  .modal textarea,
+  .note-edit textarea {
+    font-size: 16px;
   }
 
   .normalize-banner {
@@ -1573,12 +1637,17 @@ a.mini-btn.suite-link:hover {
     font-size: 0;
   }
 
+  /* reclaim ~80px so search + zoom + Save fit without scrolling */
+  .topbar .brand-name {
+    display: none;
+  }
+
   .save-cta {
     font-size: 13px !important;
     padding: 7px 10px;
   }
 
-  .search-box {
+  .topbar .search-box {
     width: 70px;
   }
 }
