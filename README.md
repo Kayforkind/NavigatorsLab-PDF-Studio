@@ -118,6 +118,24 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Self-host with Docker
+
+Zero backend, so self-hosting is one command. Images publish to GHCR on every release:
+
+```bash
+docker run -d -p 8080:80 --name pdf-studio ghcr.io/kayforkind/navigatorslab-pdf-studio:latest
+# → http://localhost:8080
+```
+
+Or build it yourself:
+
+```bash
+docker build -t pdf-studio .
+docker run -d -p 8080:80 pdf-studio
+```
+
+The container serves the static `dist/` build behind nginx — your documents still never leave the machine running it.
+
 ---
 
 ## Built by
