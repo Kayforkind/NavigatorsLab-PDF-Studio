@@ -60,6 +60,7 @@ export default defineConfig({
 
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'Compare', link: '/comparison' },
       { text: 'CLI', link: '/guide/cli' },
       { text: 'MCP', link: '/guide/mcp' },
       { text: 'Security', link: '/guide/security' },
@@ -96,6 +97,7 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
+          { text: 'Compare alternatives', link: '/comparison' },
           { text: 'Security & privacy', link: '/guide/security' },
           { text: 'Help translate', link: '/translating' },
           { text: 'FAQ', link: '/faq' },

@@ -2,21 +2,48 @@
 
 # PDF Studio
 
-**The free, open-source PDF editor that edits the text *inside* your PDF — entirely in your browser.**
+**The free PDF editor that edits your files without ever seeing them.** · [▶ Try it!](https://navigatorslab.com/pdf-studio/)
 
-**No uploads · No accounts · No watermarks · No page limits · No catch**
+**No uploads · No accounts · No watermarks · No page limits**
 
-[![Use it live](https://img.shields.io/badge/▶_USE_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/)
+[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-42_passing-brightgreen?style=for-the-badge)](#for-developers)
+[![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases)
+[![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio)
+[![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/)
+[![Tests: 60 passing](https://img.shields.io/badge/tests-60_passing-brightgreen?style=for-the-badge)](#for-developers)
 
-> ⭐ **If this saves you an Adobe subscription, a star helps others find it.**
+> ⭐ **Want to say thanks? Click the star at the top of the page.**
+
+🎬 **[Watch the redaction exposé](docs/redaction-expose.mp4)** — a competitor's "redaction" leaves your text selectable underneath. Ours deletes it for real. (2 min)
 
 ![Demo — open the demo document, press E, click any line of text, retype it](docs/demo.gif)
 
 *Real recording: the tagline above is retyped live — the original text operators are rewritten in the file, not overlaid.*
 
 </div>
+
+---
+
+## Quick start
+
+**In your browser, nothing to install:** [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/)
+
+**Self host with Docker, one command:**
+
+```bash
+docker run -p 8080:80 ghcr.io/kayforkind/navigatorslab-pdf-studio:latest
+# → http://localhost:8080
+```
+
+**CLI, from source (three commands):**
+
+```bash
+git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio && cd NavigatorsLab-PDF-Studio
+npm install && npm run build:packages
+npx pdfstudio info contract.pdf
+```
 
 ---
 
@@ -69,22 +96,31 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 
 ## How it compares
 
-Verified against public pricing/feature pages on 2026-09-27.
+Verified against public pricing and feature pages on 2026-09-27. [Full breakdown with the wider field](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
 
-| | **PDF Studio** | Adobe Acrobat | Smallpdf | Sejda | Stirling PDF |
-|---|---|---|---|---|---|
-| Price | **Free, MIT open source** | ~$19.99/user/mo | $10–15/mo | ~$7.50/mo | Free (self-hosted) |
-| True in-place text editing | **Yes** | Yes (paid) | Yes (paid) | Yes | Partial |
-| Your document leaves your device | **Never** | Uploads to Adobe | Uploads to Smallpdf | Uploads (web) | Never (your server) |
-| Daily / task caps | **None** | Paid tier | ~2 tasks/day | 3 tasks/day | None |
-| Watermark on free output | **None** | — | Reported on some tools | None reported | None |
-| Burned-in redaction | **Yes** | Yes (paid) | Paid | Whiteout-style | Yes |
-| OCR | **Yes, on-device** | Paid | Paid | Capped | Yes |
-| Revision diff | **Yes** | Yes (paid) | Paid | No | — |
-| On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No |
-| Zero-setup (no install, no server) | **Yes** | — | Yes | Yes | No (Docker) |
+| | **PDF Studio** | **Adobe Acrobat** | **Stirling-PDF** |
+|---|---|---|---|
+| Price | **Free, MIT open source** | ~$19.99/user/mo | Free, Apache 2.0, self hosted |
+| Your document leaves your device | **Never** | Uploads to Adobe | Never (your server) |
+| True in-place text editing | **Yes** | Yes (paid) | Partial |
+| Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Yes |
+| OCR | **Yes, on device** | Paid | Yes |
+| Zero setup (no install, no server) | **Yes** | No | No (Docker) |
+| Open source | **MIT** | No | Apache 2.0 |
 
-**The short version:** incumbents upload your files and meter your work. Self-hosted tools make you run infrastructure. PDF Studio is the zero-setup option that keeps the full feature list — free, no caps, no uploads.
+**The short version:** incumbents upload your files and meter your work. Self hosted tools make you run infrastructure. PDF Studio is the zero setup option that keeps the full feature list — free, no caps, no uploads.
+
+---
+
+## Honest caveats
+
+What PDF Studio does not do yet:
+
+* Text editing needs a real text layer. Scanned pages go through the on device OCR first.
+* Replacement text uses Helvetica metrics, so on exotic embedded fonts the match is near identical, not glyph perfect.
+* The on device AI runs small models (0.5B to 1B). It summarizes your document and answers questions about it well. It is not a frontier model.
+* There is no real time collaboration and no cloud sync. Autosave lives in the browser you used.
+* Signatures are drawn signatures placed on the page, not certified digital signatures.
 
 ---
 
@@ -102,8 +138,6 @@ Verified against public pricing/feature pages on 2026-09-27.
 ## Security
 
 [![Security: A-](https://img.shields.io/badge/security-A--brightgreen?style=for-the-badge)](./docs/SECURITY_ASSESSMENT.md)
-[![Audit: 2026-09-28](https://img.shields.io/badge/audit-2026--09--28-blue?style=for-the-badge)](./docs/SECURITY_ASSESSMENT.md)
-[![Vuln policy](https://img.shields.io/badge/vulnerability_policy-SECURITY.md-lightgrey?style=for-the-badge)](./SECURITY.md)
 
 **Independent security audit — 2026-09-28 — overall grade: A−.** Every claim below
 was verified against the source code, not asserted. [Full assessment with code
