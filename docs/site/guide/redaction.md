@@ -9,21 +9,36 @@ file with sensitive data.
 **Redaction permanently removes the covered content from the file.** Use it for
 anything sensitive: SSNs, account numbers, names, addresses.
 
-1. Pick the **Redact** tool (`B`) and drag over what must not be seen. The box
-   is opaque black on canvas.
-2. Export the PDF.
+1. Pick the **Redact** tool (`B`) and drag over what must not be seen. In the
+   editor the box is shown **hatched**, labeled as *marked for redaction* —
+   this is a promise, not a removal. Nothing is deleted yet.
+2. **Export the PDF.** The destruction happens at export, when the file is
+   rebuilt (see [How it works](/guide/how-it-works#redaction-marked-then-destroyed)).
 
-At export, redaction runs a two-pass process:
+At export, redaction runs a destructive pipeline:
 
-1. **Vector redaction** — every show-text operator fully covered by a redact box
-   is **deleted from the page's content stream**. The text is gone from the
-   file, not painted over.
-2. **Rasterization fallback** — for content that can't be proven removable
-   (scanned images, exotic fonts, complex vector art), the page is rendered to
-   pixels with the redact boxes burned in, so the region is truly destroyed.
+1. **Hidden copies cleared** — form field values, source annotations, and
+   accessibility-tree text (`/Alt`, `/ActualText`) under the boxes are wiped
+   first, because redacted text can survive in these places.
+2. **Vector removal** — every text-drawing operator fully covered by a redact
+   box is **deleted from the page's content stream**, recursively through
+   nested Form XObjects. Vector fills and strokes under the boxes are
+   removed too. Everything else stays as vector text: selectable, searchable,
+   print-crisp.
+3. **Pixel-burn fallback** — for content that can't be proven removable
+   (partially covered text, scanned images, exotic fonts, complex vector
+   effects), the page is rendered to pixels with the redact boxes burned in,
+   and the original content stream is discarded entirely.
+4. **Metadata scrubbed** — document info, XMP, embedded files, JavaScript,
+   and thumbnails are removed from redacted exports.
+5. **Verification gate** — the finished file is scanned for every covered
+   string across multiple encodings. If anything redacted is still
+   recoverable, **no file is delivered**: export fails with an error instead
+   of handing you a file that leaks.
 
-Either way, the covered content does not survive in the exported file. What was
-redacted cannot be recovered by selecting, copying, or inspecting the PDF.
+What was redacted cannot be recovered by selecting, copying, or inspecting
+the exported PDF — and the tool refuses to deliver a file where that isn't
+true.
 
 ::: warning Never use whiteout for sensitive data
 [Whiteout](#whiteout-visual-cover-only) only covers content visually. Use
@@ -43,9 +58,13 @@ Use whiteout for cosmetic fixes. Use redaction for sensitive data.
 
 ## Redaction checklist
 
-- Redact → export → **verify**: try selecting and copying the covered area in
-  the exported file; check that the text isn't searchable.
-- Prefer redacting whole lines/text blocks over partial words.
+- Redact → export → **verify**: after export the app shows a verification
+  report (regions redacted, strings checked, recoverable). Then try selecting
+  and copying the covered area in the exported file yourself; check that the
+  text isn't searchable.
+- Prefer redacting whole lines/text blocks over partial words. Partial
+  coverage forces the pixel-burn path, which turns the whole page into an
+  image.
 - When in doubt, re-open the exported file and inspect it before sharing.
 
 ## Automate it

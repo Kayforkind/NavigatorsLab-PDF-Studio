@@ -96,6 +96,23 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 
 ---
 
+## How it works
+
+Everything happens in your browser — your file is opened, edited, and saved on your own machine. The pipeline:
+
+1. **Open** — the PDF loads into browser memory. Nothing is uploaded.
+2. **Edit** — the Edit tool rewrites the page's content stream: the original text is deleted from the file and your replacement is written in as real vector text.
+3. **Fill & sign** — values go into the real AcroForm fields; signatures are drawn on the page. Flatten at export to lock them in.
+4. **OCR** — scanned pages get a text layer from on-device Tesseract, making them searchable, editable, and redactable.
+5. **Redact** — you draw boxes over what must disappear. In the editor these are **marked for redaction** (hatched): a promise, not a removal. Nothing is deleted yet.
+6. **Export** — the file is rebuilt from scratch. This is where redaction destroys content: fully covered text is deleted from the content streams (recursively through nested form objects); anything that can't be proven removable (partially covered text, images, exotic fonts) forces the page to be rendered to pixels with the boxes burned in and the original content discarded; form values, annotations, accessibility-tree text, metadata, XMP, attachments, JavaScript, and thumbnails under the boxes are scrubbed. Then the finished file is scanned for every covered string across multiple encodings — **if anything redacted is still recoverable, no file is delivered**; export fails loudly instead of handing you a file that leaks.
+
+After export the app shows a verification report (regions redacted, strings checked, recoverable: zero). Whiteout, by contrast, is visual-only — it covers content without removing it. Use redaction for sensitive data.
+
+Full detail: [How it works — docs](https://navigatorslab.com/pdf-studio/docs/guide/how-it-works.html)
+
+---
+
 ## How it compares
 
 Verified against public pricing and feature pages on 2026-09-27. [Full breakdown with the wider field](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)

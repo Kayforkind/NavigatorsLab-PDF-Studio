@@ -44,18 +44,21 @@ export default defineConfig({
       { name: 'twitter:image', content: 'https://navigatorslab.com/pdf-studio/social-preview.png' },
     ],
     ['meta', { name: 'theme-color', content: '#7c5cff' }],
+    // Absolute URL: VitePress prepends `base` to any href/src starting with
+    // '/', which would produce the broken /pdf-studio/docs/pdf-studio/... path.
     [
       'link',
       {
         rel: 'icon',
         type: 'image/svg+xml',
-        href: '/pdf-studio/favicon.svg',
+        href: 'https://navigatorslab.com/pdf-studio/favicon.svg',
       },
     ],
   ],
 
   themeConfig: {
-    logo: '/pdf-studio/favicon.svg',
+    // Absolute URL (see head icon comment): withBase() would double the prefix.
+    logo: 'https://navigatorslab.com/pdf-studio/favicon.svg',
     siteTitle: 'PDF Studio Docs',
 
     nav: [
@@ -71,6 +74,7 @@ export default defineConfig({
       {
         text: 'Getting started',
         items: [
+          { text: 'How it works', link: '/guide/how-it-works' },
           { text: 'Introduction', link: '/guide/getting-started' },
           { text: 'Installation', link: '/guide/installation' },
         ],
