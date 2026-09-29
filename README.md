@@ -107,7 +107,7 @@ Verified against public pricing/feature pages on 2026-09-27.
 
 **Independent security audit — 2026-09-28 — overall grade: A−.** Every claim below
 was verified against the source code, not asserted. [Full assessment with code
-references](./docs/SECURITY_ASSESSMENT.md) · [Vulnerability reporting policy](./SECURITY.md)
+references](./docs/SECURITY_ASSESSMENT.md) · [Agentic (CLI/MCP) audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md) · [Vulnerability reporting policy](./SECURITY.md)
 
 | Category | Grade | Verdict |
 |---|---|---|
@@ -117,6 +117,7 @@ references](./docs/SECURITY_ASSESSMENT.md) · [Vulnerability reporting policy](.
 | Dependencies | **A** | 0 known vulnerabilities in shipped dependencies (OSV scan of pinned versions). |
 | Local data | **A−** | Autosave lives only in your browser's localStorage; the one-click wipe deletes all of it (tested). |
 | Security headers | **A** | Strict Content-Security-Policy, HSTS, no-framing, no referrer leakage — stamped on every response. |
+| Agentic interfaces (CLI/MCP) | **A−** | Zero network calls in the CLI and MCP server; MCP paths are realpath-contained to `--root` (symlink escapes rejected); extracted text is delimited and marked untrusted; redaction deletes bytes, never covers them. [Agentic audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md) |
 
 **Residual risks (stated plainly):** autosave is plaintext on your disk, so wipe
 after use on a shared machine; AI model weights come from HuggingFace over TLS
@@ -183,7 +184,7 @@ Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exi
 
 ### MCP server — `pdfstudio-mcp`
 
-Ten tools (`pdf_info`, `pdf_extract_text`, `pdf_search_text`, `pdf_edit_text`, `pdf_redact_text`, `pdf_redact_rect`, `pdf_merge`, `pdf_split`, `pdf_rotate`, `pdf_pages`). All paths resolve inside `--root` and escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted.
+Ten tools (`pdf_info`, `pdf_extract_text`, `pdf_search_text`, `pdf_edit_text`, `pdf_redact_text`, `pdf_redact_rect`, `pdf_merge`, `pdf_split`, `pdf_rotate`, `pdf_pages`). All paths are realpath-resolved inside `--root` and symlink escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted. For least privilege, `--read-only` registers only the three read tools.
 
 Claude Code:
 

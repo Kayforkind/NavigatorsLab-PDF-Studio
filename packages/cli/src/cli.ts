@@ -220,6 +220,9 @@ program
   .requiredOption('--ranges <spec>', 'range spec (repeatable)', (v: string, acc: string[]) => [...acc, v], [] as string[])
   .requiredOption('-o, --output <template>', 'output template; %d = index, %s = spec (e.g. out-%d.pdf, "-" = stdout for single)')
   .action(async (input: string, o: { ranges: string[]; output: string }) => {
+    if (o.ranges.length > 1 && o.output === '-') {
+      fail('split: writing multiple outputs to stdout would concatenate PDFs; use a template like out-%d.pdf');
+    }
     const parts = await cmdSplit(await readInput(input), o.ranges);
     parts.forEach((p, i) => {
       const name = o.output.replace(/%d/g, String(i + 1)).replace(/%s/g, p.spec.replace(/[^0-9a-zA-Z-]+/g, '_'));
