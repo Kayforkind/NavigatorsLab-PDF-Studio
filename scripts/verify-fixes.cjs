@@ -142,9 +142,17 @@ const ok = (name, cond, extra = '') => {
   // Identify which PAGE the target hit lives on (pageTexts is page-indexed).
   const targetInfo = await page.evaluate(() => {
     const vh = window.innerHeight;
-    const vis = [...document.querySelectorAll('.hit-hint')].filter((h) => {
+    // The edit step earlier clicked `.hit-hint.first()` — redact a DIFFERENT
+    // line: export correctly drops annotations intersecting a redact rect, so
+    // redacting the edited line itself would (rightly) remove the edit
+    // annotation asserted on below. (Positional overlap can't be used: the
+    // edit overlay renders offset from its source hit.)
+    const allHits = [...document.querySelectorAll('.hit-hint')];
+    const editedHit = allHits[0];
+    const vis = allHits.filter((h) => {
+      const t = (h.getAttribute('data-text') || '').trim();
       const r = h.getBoundingClientRect();
-      return (h.getAttribute('data-text') || '').trim().length > 0 && r.top >= 40 && r.bottom <= vh - 40 && r.width > 20;
+      return t.length > 0 && h !== editedHit && r.top >= 40 && r.bottom <= vh - 40 && r.width > 20;
     });
     if (!vis.length) return null;
     const r = vis[0].getBoundingClientRect();
