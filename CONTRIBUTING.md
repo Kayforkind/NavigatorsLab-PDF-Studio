@@ -17,6 +17,10 @@ npm test         # 42 tests, all must pass
 npm run build    # production build
 ```
 
+## Response times
+
+We aim to respond to every issue and PR within 24 hours. Through October 2026 we're prioritizing Hacktoberfest contributors — expect same-day reviews on `good first issue` PRs.
+
 ## How to contribute
 
 1. **Issues first.** Check [open issues](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/issues) — `good first issue` is the on-ramp. If none fit, open an issue describing the problem before writing code.
