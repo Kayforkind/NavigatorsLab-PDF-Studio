@@ -1221,7 +1221,7 @@ export default function App() {
             {' · '}
             {t('app.marks', { count: doc.anns.length })}
             {' · '}
-            tool: <b>{t(`tools.${tool}`)}</b>
+            tool: <b>{t(`tools.${tool}.label`)}</b>
             {tool === 'edit' && (
               <button className="mini-btn ocr-mini" disabled={!!ocrBusy} onClick={() => void runOcrOnCurrent()}>
                 {ocrBusy ? '…' : t('app.ocrPage')}

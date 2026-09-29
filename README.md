@@ -16,7 +16,9 @@
 
 > ⭐ **Want to say thanks? Click the star at the top of the page.**
 
-🎬 **[Watch the redaction exposé](docs/redaction-expose.mp4)** — a competitor's "redaction" leaves your text selectable underneath. Ours deletes it for real. (2 min)
+🎬 **Watch the redaction exposé** (55 sec) — a black-box "redaction" leaves your text selectable underneath. Ours deletes it for real.
+
+<video src="docs/redaction-expose.mp4" width="100%" controls></video>
 
 ![Demo — open the demo document, press E, click any line of text, retype it](docs/demo.gif)
 
