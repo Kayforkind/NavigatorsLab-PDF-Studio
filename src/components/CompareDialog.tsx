@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DiffRow } from '../lib/compare';
 import { diffLines, extractLines, summarize, type CompareSummary } from '../lib/compare';
 import { Dialog } from './modals';
 import { Icon } from './icons';
 
 export function CompareDialog({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<DiffRow[] | null>(null);
   const [summary, setSummary] = useState<CompareSummary | null>(null);
   const [busy, setBusy] = useState('');
@@ -19,7 +21,7 @@ export function CompareDialog({ onClose }: { onClose: () => void }) {
   const pick = async (file: File | undefined, which: 'a' | 'b') => {
     if (!file) return;
     if (!/\.pdf$/i.test(file.name)) {
-      setError('Please choose PDF files.');
+      setError(t('compare.pickPdf'));
       return;
     }
     const buf = new Uint8Array(await file.arrayBuffer());
@@ -35,14 +37,14 @@ export function CompareDialog({ onClose }: { onClose: () => void }) {
 
   const run = async () => {
     if (!bytesA.current || !bytesB.current) {
-      setError('Choose both PDFs first.');
+      setError(t('compare.pickBoth'));
       return;
     }
-    setBusy('Reading documents…');
+    setBusy(t('compare.reading'));
     setError(null);
     try {
       const [la, lb] = await Promise.all([extractLines(bytesA.current), extractLines(bytesB.current)]);
-      setBusy('Diffing…');
+      setBusy(t('compare.diffing'));
       await new Promise((r) => setTimeout(r, 30)); // let the UI breathe
       const d = diffLines(la, lb);
       setRows(d);
@@ -57,16 +59,16 @@ export function CompareDialog({ onClose }: { onClose: () => void }) {
   const onlyChanges = () => onlyChangesRef.current?.checked ?? false;
 
   return (
-    <Dialog title="Compare two PDFs" onClose={onClose} wide>
+    <Dialog title={t('compare.title')} onClose={onClose} wide>
       <div className="cmp-pick">
         <button className="btn ghost" onClick={() => inputA.current?.click()}>
-          <Icon.open /> {names.a || 'Original PDF…'}
+          <Icon.open /> {names.a || t('compare.original')}
         </button>
         <button className="btn ghost" onClick={() => inputB.current?.click()}>
-          <Icon.open /> {names.b || 'Changed PDF…'}
+          <Icon.open /> {names.b || t('compare.changed')}
         </button>
         <button className="btn primary" onClick={() => void run()} disabled={!!busy}>
-          {busy ? busy : 'Compare'}
+          {busy ? busy : t('compare.compare')}
         </button>
         <input ref={inputA} type="file" accept="application/pdf,.pdf" hidden onChange={(e) => void pick(e.target.files?.[0], 'a')} />
         <input ref={inputB} type="file" accept="application/pdf,.pdf" hidden onChange={(e) => void pick(e.target.files?.[0], 'b')} />
@@ -74,11 +76,11 @@ export function CompareDialog({ onClose }: { onClose: () => void }) {
       {error && <p className="cmp-error">{error}</p>}
       {summary && (
         <p className="cmp-summary">
-          <b className="add">+{summary.added}</b> added · <b className="del">−{summary.removed}</b> removed · {summary.same} unchanged
+          <b className="add">+{summary.added}</b> {t('compare.added')} · <b className="del">−{summary.removed}</b> {t('compare.removed')} · {t('compare.unchanged', { count: summary.same })}
           <label className="check-row" style={{ marginLeft: 14 }}>
-            <input ref={onlyChangesRef} type="checkbox" defaultChecked /> only changes
+            <input ref={onlyChangesRef} type="checkbox" defaultChecked /> {t('compare.onlyChanges')}
           </label>
-          <span className="muted small"> — everything runs on this device.</span>
+          <span className="muted small">{t('compare.localNote')}</span>
         </p>
       )}
       {rows && (
@@ -96,13 +98,12 @@ export function CompareDialog({ onClose }: { onClose: () => void }) {
       )}
       {!rows && !busy && (
         <p className="muted small" style={{ marginTop: 10 }}>
-          Line-by-line text comparison of two PDFs, computed locally with a longest-common-subsequence diff. Scanned
-          pages without a text layer are skipped.
+          {t('compare.explainer')}
         </p>
       )}
       <div className="modal-actions">
         <button className="btn primary" onClick={onClose}>
-          Done
+          {t('common.done')}
         </button>
       </div>
     </Dialog>

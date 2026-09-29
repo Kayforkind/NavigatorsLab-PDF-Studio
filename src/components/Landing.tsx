@@ -1,4 +1,5 @@
 import { useState, type DragEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Icon } from './icons';
 import { ShortcutCheatsheet } from './Shortcuts';
 
@@ -21,31 +22,29 @@ export function Landing({
   onRestore?: () => void;
   onForget?: () => void;
 }) {
+  const { t } = useTranslation();
   const [over, setOver] = useState(false);
   return (
     <div className="landing">
       <div className="landing-hero">
         <h1>
-          PDF Studio.
+          {t('landing.title1')}
           <br />
-          <span>Private, free, open source.</span>
+          <span>{t('landing.title2')}</span>
         </h1>
-        <p className="landing-sub">
-          Edit the text that is already in your PDF, mark it up, sign it, organize the pages, merge and split — all inside your
-          browser. No account, no watermark, no uploads, no page limits.
-        </p>
+        <p className="landing-sub">{t('landing.sub')}</p>
         <div className="landing-features">
-          <span><Icon.edit /> Edit existing text</span>
-          <span><Icon.highlight /> Highlight &amp; comment</span>
-          <span><Icon.sign /> Sign &amp; stamp</span>
-          <span><Icon.redact /> Redact</span>
-          <span><Icon.copy /> Organize pages</span>
-          <span><Icon.split /> Merge &amp; split</span>
+          <span><Icon.edit /> {t('landing.featEdit')}</span>
+          <span><Icon.highlight /> {t('landing.featAnnotate')}</span>
+          <span><Icon.sign /> {t('landing.featSign')}</span>
+          <span><Icon.redact /> {t('landing.featRedact')}</span>
+          <span><Icon.copy /> {t('landing.featPages')}</span>
+          <span><Icon.split /> {t('landing.featMerge')}</span>
         </div>
         <p className="landing-brand">
-          Free &amp; open source (MIT) · <a href="https://navigatorslab.com" target="_blank" rel="noreferrer">by NavigatorsLab</a>
-          · <a href="https://navigatorslab.com/tools/" target="_blank" rel="noreferrer">🧭 23 free tools & projects</a>
-          · <a href="https://navigatorslab.com/reimagine/" target="_blank" rel="noreferrer">🎨 Reimagine</a>
+          {t('landing.ossNote')} · <a href="https://navigatorslab.com" target="_blank" rel="noreferrer">{t('landing.byNav')}</a>
+          · <a href="https://navigatorslab.com/tools/" target="_blank" rel="noreferrer">{t('landing.toolsLink')}</a>
+          · <a href="https://navigatorslab.com/reimagine/" target="_blank" rel="noreferrer">{t('landing.reimagineLink')}</a>
         </p>
       </div>
 
@@ -65,35 +64,32 @@ export function Landing({
         <div className="dz-icon">
           <Icon.file />
         </div>
-        <h2>Drop a PDF here</h2>
-        <p>…or</p>
+        <h2>{t('landing.dropTitle')}</h2>
+        <p>{t('landing.or')}</p>
         <button className="btn primary big" onClick={onOpen} disabled={busy}>
-          <Icon.open /> Choose a PDF file
+          <Icon.open /> {t('landing.chooseFile')}
         </button>
         <button className="btn ghost" onClick={onDemo} disabled={busy}>
-          No file handy? Open the demo document →
+          {t('landing.demo')}
         </button>
         <button className="btn ghost" onClick={onImages} disabled={busy}>
-          <Icon.image /> New PDF from images
+          <Icon.image /> {t('landing.fromImages')}
         </button>
         {saved && onRestore && (
           <button className="btn ghost restore-cta" onClick={onRestore} disabled={busy}>
-            <Icon.undo /> Resume “{saved.name}” — saved {new Date(saved.at).toLocaleString()} (on this device)
+            <Icon.undo /> {t('landing.resume', { name: saved.name, date: new Date(saved.at).toLocaleString() })}
           </button>
         )}
         {saved && onForget && (
-          <button className="btn ghost danger" onClick={onForget} disabled={busy} title="Deletes the saved document, annotations and form values from this device">
-            <Icon.trash /> Forget saved data on this device
+          <button className="btn ghost danger" onClick={onForget} disabled={busy} title={t('landing.forgetTitle')}>
+            <Icon.trash /> {t('landing.forget')}
           </button>
         )}
-        <p className="muted small">
-          Files never leave this device — no uploads, no attachments kept, no user information collected. Everything runs
-          locally in your browser.
-        </p>
+        <p className="muted small">{t('landing.privacyNote')}</p>
       </div>
 
       <div className="landing-shortcuts">
-        <h2>Keyboard shortcuts</h2>
+        <h2>{t('landing.shortcuts')}</h2>
         <ShortcutCheatsheet />
       </div>
     </div>

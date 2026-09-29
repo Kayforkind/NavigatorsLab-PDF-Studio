@@ -76,6 +76,36 @@ button {
   flex: 1 0 4px;
 }
 
+/* language selector in the top bar (always visible, with or without a document) */
+.lang-select {
+  flex: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  max-width: 128px;
+}
+.lang-select:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.lang-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.lang-select option {
+  color: #111;
+}
+@media (max-width: 760px) {
+  .lang-select {
+    max-width: 96px;
+    font-size: 12px;
+    padding: 5px 6px;
+  }
+}
+
 .brand {
   display: flex;
   align-items: center;

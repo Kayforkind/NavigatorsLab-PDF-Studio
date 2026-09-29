@@ -134,7 +134,7 @@ git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 42 passing tests
+npm test           # 60 passing tests
 npm run build      # → dist/ (relative base: works at domain root, subpath, or CDN)
 ```
 
@@ -142,9 +142,18 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 **The interesting engineering:** every mark lives in the page's PDF user space — the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport`, including offset MediaBox/CropBox origins that break most home-grown editors. Text edits go through a content-stream tokenizer: the original glyphs' show-text operators are deleted and replacements are written back with TJ kerning reproducing the original spacing. Tesseract, pdf.js workers, and WASM all run under a strict Content Security Policy with zero network calls for document data.
 
-**Test suite (42):** document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
+**Test suite (60):** i18n (language detection, switching, persistence, wipe, catalog completeness) · document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Help translate
+
+PDF Studio ships in English, Spanish, German, and French, and the whole UI is localizable — the app bundles its translations, so switching languages works fully offline. If you speak another language, you can help:
+
+- **No code needed:** translations are managed in Crowdin (link in the pinned issue) — translate or vote on strings in your browser.
+- **With code:** edit `src/locales/<lang>/translation.json` (copy the English keys from `src/locales/en/translation.json`, keep every `{{placeholder}}` and `<b>`/`<code>` tag intact), then run `npm test -- src/lib/i18n.test.ts` — the catalog-completeness tests verify your file key-for-key against English.
+
+New languages are picked up automatically once the JSON file exists and the language is registered in `src/i18n.ts` (`LANGUAGES`).
 
 ## Agentic usage
 

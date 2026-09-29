@@ -1,5 +1,6 @@
 import { PDFDocument } from 'pdf-lib';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import i18n from '../i18n';
 
 /** longest page side (px) when building a PDF from images */
 const MAX_SIDE = 2000;
@@ -11,7 +12,7 @@ const MAX_SIDE = 2000;
  */
 export async function imagesToPdf(files: File[]): Promise<{ bytes: Uint8Array; pages: number }> {
   const imgs = files.filter((f) => f.type.startsWith('image/'));
-  if (!imgs.length) throw new Error('Pick image files (PNG, JPG, WebP…).');
+  if (!imgs.length) throw new Error(i18n.t('lib.pickImages'));
   const out = await PDFDocument.create();
   for (const f of imgs) {
     const buf = new Uint8Array(await f.arrayBuffer());
@@ -30,7 +31,7 @@ export async function imagesToPdf(files: File[]): Promise<{ bytes: Uint8Array; p
         c.width = w;
         c.height = h;
         const ctx = c.getContext('2d');
-        if (!ctx) throw new Error('Could not decode image.');
+        if (!ctx) throw new Error(i18n.t('lib.decodeImage'));
         ctx.drawImage(bmp, 0, 0, w, h);
         const blob = await new Promise<Blob | null>((res) => c.toBlob(res, 'image/png'));
         if (!blob) throw new Error('Could not decode image.');
@@ -62,9 +63,9 @@ export async function pageToPng(
   canvas.width = Math.max(1, Math.floor(vp.width));
   canvas.height = Math.max(1, Math.floor(vp.height));
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not render page.');
+  if (!ctx) throw new Error(i18n.t('lib.renderPage'));
   await page.render({ canvasContext: ctx, viewport: vp }).promise;
   const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
-  if (!blob) throw new Error('Could not encode PNG.');
+  if (!blob) throw new Error(i18n.t('lib.encodePng'));
   return blob;
 }

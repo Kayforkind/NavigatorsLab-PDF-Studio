@@ -1,29 +1,33 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Annotation, ToolId, ToolSettings } from '../types';
 import { OCR_LANGS, isOcrLang, type OcrLang } from '../lib/ocr';
 import { Icon } from './icons';
 
 const COLORS = ['#ffd400', '#7cf29c', '#69c4ff', '#ff8fd0', '#ff7a5c', '#c4b5fd', '#ff5c5c', '#a8b3c0', '#17171b'];
 
-const TOOL_BLURBS: Record<ToolId, string> = {
-  select: 'Click an item to select it. Drag to move; drag the blue corner to resize. Delete removes it.',
-  edit: 'Click a line (or one table cell) of the original text and retype it. On export the original text is rewritten in place inside the PDF itself — tables keep their column positions, and the replacement becomes real selectable text.',
-  text: 'Click anywhere and type. Press Enter to place, Esc to cancel.',
-  highlight: 'Drag across text to highlight it. Adjust color and opacity below.',
-  underline: 'Drag across text to underline it.',
-  strike: 'Drag across text to strike it through.',
-  note: 'Click to drop a sticky-note marker. Double-click it or select it to edit the note text.',
-  ink: 'Draw freehand with the pointer (mouse, pen or finger).',
-  sign: 'Draw a signature once; it is remembered for this session and stamped where you click.',
-  image: 'Choose an image file; it is stamped at the click point. Drag to position, corner to scale.',
-  redact: 'Drag a box over sensitive content — at export the covered text is DELETED from the document itself (vector removal), with a pixel-level burn as the safety net for images and exotic fonts. The redaction fill color is yours to choose below.',
-  whiteout: 'Drag a box to cover content with the sampled page background — ideal for cleaning up a scan.',
-  arrow: 'Drag from tail to tip to point at something — the arrowhead lands where you release.',
-  rect: 'Drag an outlined rectangle. Color and line weight follow the style controls.',
-  ellipse: 'Drag an outlined ellipse to circle the important part.',
-  formtext: 'Drag a box to place a fillable text field. Exported as a real AcroForm field — readers can type into it.',
-  formcheck: 'Drag a box to place a fillable checkbox. Exported as a real AcroForm widget.',
-};
+function useToolBlurb(): Record<ToolId, string> {
+  const { t } = useTranslation();
+  return {
+    select: t('insp.blurb.select'),
+    edit: t('insp.blurb.edit'),
+    text: t('insp.blurb.text'),
+    highlight: t('insp.blurb.highlight'),
+    underline: t('insp.blurb.underline'),
+    strike: t('insp.blurb.strike'),
+    note: t('insp.blurb.note'),
+    ink: t('insp.blurb.ink'),
+    sign: t('insp.blurb.sign'),
+    image: t('insp.blurb.image'),
+    redact: t('insp.blurb.redact'),
+    whiteout: t('insp.blurb.whiteout'),
+    arrow: t('insp.blurb.arrow'),
+    rect: t('insp.blurb.rect'),
+    ellipse: t('insp.blurb.ellipse'),
+    formtext: t('insp.blurb.formtext'),
+    formcheck: t('insp.blurb.formcheck'),
+  };
+}
 
 function Field({
   label,
@@ -76,16 +80,17 @@ const FONT_OPTIONS: Array<[string, string]> = [
 const isHex = (c: string) => /^#[0-9a-fA-F]{6}$/.test(c);
 
 function SwatchRow({ current, onPick }: { current: string; onPick: (c: string) => void }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="swatches">
         {COLORS.map((c) => (
-          <button key={c} className={`swatch ${current === c ? 'active' : ''}`} style={{ background: c }} onClick={() => onPick(c)} aria-label={`color ${c}`} />
+          <button key={c} className={`swatch ${current === c ? 'active' : ''}`} style={{ background: c }} onClick={() => onPick(c)} aria-label={t('insp.colorAria', { color: c })} />
         ))}
       </div>
       <label className="swatch-custom">
-        <input type="color" value={isHex(current) ? current : '#17171b'} onChange={(e) => onPick(e.target.value)} aria-label="Custom color" />
-        <span>Custom</span>
+        <input type="color" value={isHex(current) ? current : '#17171b'} onChange={(e) => onPick(e.target.value)} aria-label={t('insp.customColor')} />
+        <span>{t('insp.custom')}</span>
       </label>
     </>
   );
@@ -119,6 +124,8 @@ export function Inspector({
   drawerOpen?: boolean;
   onDrawerClose?: () => void;
 }) {
+  const { t } = useTranslation();
+  const TOOL_BLURBS = useToolBlurb();
   const [noteText, setNoteText] = useState<string | null>(null);
   const colorable = selected && (selected.type === 'highlight' || selected.type === 'underline' || selected.type === 'strike' || selected.type === 'ink' || selected.type === 'text' || selected.type === 'edit' || selected.type === 'note' || selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse' || selected.type === 'redact');
   const resizable = selected && (selected.type === 'arrow' || selected.type === 'rect' || selected.type === 'ellipse');
@@ -127,18 +134,18 @@ export function Inspector({
   return (
     <aside className={`inspector ${drawerOpen ? 'drawer-open' : ''}`}>
       {drawerOpen && (
-        <button className="drawer-close" title="Close style panel" onClick={onDrawerClose}>
+        <button className="drawer-close" title={t('insp.closePanel')} onClick={onDrawerClose}>
           ✕
         </button>
       )}
       <section className="insp-sec">
-        <h3>Tool</h3>
+        <h3>{t('insp.tool')}</h3>
         <p className="tool-blurb">{TOOL_BLURBS[tool]}</p>
         {colorTools.has(tool) && (
           <>
             <SwatchRow current={settings.color} onPick={(c) => onSettings({ color: c })} />
             <div className="slider-row">
-              <span>Opacity</span>
+              <span>{t('insp.opacity')}</span>
               <input
                 type="range"
                 min={0.1}
@@ -153,14 +160,14 @@ export function Inspector({
         )}
         {widthTools.has(tool) && (
           <div className="slider-row">
-            <span>{tool === 'ink' ? 'Pen width' : 'Line width'}</span>
+            <span>{tool === 'ink' ? t('insp.penWidth') : t('insp.lineWidth')}</span>
             <input type="range" min={0.5} max={14} step={0.5} value={settings.width} onChange={(e) => onSettings({ width: parseFloat(e.target.value) })} />
             <b>{settings.width.toFixed(1)}pt</b>
           </div>
         )}
         {(tool === 'text' || tool === 'edit') && (
           <div className="slider-row">
-            <span>Font</span>
+            <span>{t('insp.font')}</span>
             <select value={settings.font ?? 'Helvetica'} onChange={(e) => onSettings({ font: e.target.value })}>
               {FONT_OPTIONS.map(([v, l]) => (
                 <option key={v} value={v}>
@@ -172,18 +179,18 @@ export function Inspector({
         )}
         {(tool === 'text' || tool === 'edit') && (
           <div className="slider-row">
-            <span>Size</span>
+            <span>{t('insp.size')}</span>
             <input type="range" min={6} max={48} step={0.5} value={settings.fontSize} onChange={(e) => onSettings({ fontSize: parseFloat(e.target.value) })} />
             <b>{settings.fontSize.toFixed(0)}pt</b>
           </div>
         )}
-        {tool === 'redact' && <p className="tool-blurb warn">Redactions remove content: covered text operators are deleted from the file and the area is burned into page pixels as a safety net. Pick the fill color below — black is standard, any color works.</p>}
-        {tool === 'whiteout' && <p className="tool-blurb">The cover color is sampled from the page under your drag, so whiteouts blend in on tinted or scanned pages.</p>}
-        {tool === 'note' && <p className="tool-blurb">Marker color:</p>}
+        {tool === 'redact' && <p className="tool-blurb warn">{t('insp.redactWarn')}</p>}
+        {tool === 'whiteout' && <p className="tool-blurb">{t('insp.whiteoutBlurb')}</p>}
+        {tool === 'note' && <p className="tool-blurb">{t('insp.markerColor')}</p>}
         {tool === 'edit' && (
           <>
             <div className="slider-row">
-              <span>OCR language</span>
+              <span>{t('insp.ocrLang')}</span>
               <select
                 className="text-input"
                 value={ocrLang}
@@ -192,18 +199,18 @@ export function Inspector({
                   const v = e.target.value;
                   if (isOcrLang(v)) setOcrLang(v);
                 }}
-                title="Language model used for on-device OCR"
+                title={t('insp.ocrTitle')}
               >
                 {OCR_LANGS.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.label} · {l.size} download
+                    {t('insp.ocrOption', { label: l.label, size: l.size })}
                   </option>
                 ))}
               </select>
             </div>
             <button className="btn ghost ocr-cta" onClick={onOcr} disabled={!!ocrBusy}>
               {ocrBusy ? <span className="spinner small" /> : null}
-              {ocrBusy ? ocrBusy : 'OCR this page → editable text'}
+              {ocrBusy ? ocrBusy : t('insp.ocrCta')}
             </button>
           </>
         )}
@@ -211,8 +218,8 @@ export function Inspector({
 
       <section className="insp-sec">
         <h3>
-          Selection
-          {selected ? <button className="mini-del" title="Delete (Del)" onClick={() => onDel(selected.id)}><Icon.trash /></button> : null}
+          {t('insp.selection')}
+          {selected ? <button className="mini-del" title={t('insp.deleteSel')} onClick={() => onDel(selected.id)}><Icon.trash /></button> : null}
         </h3>
         {selected ? (
           <div className="sel-detail">
@@ -230,7 +237,7 @@ export function Inspector({
                 <textarea
                   rows={3}
                   value={noteText ?? ('text' in selected ? (selected as { text: string }).text : '')}
-                  placeholder={selected.type === 'note' ? 'Write the note…' : 'Content…'}
+                  placeholder={selected.type === 'note' ? t('insp.notePlaceholder') : t('insp.contentPlaceholder')}
                   onChange={(e) => setNoteText(e.target.value)}
                   onBlur={() => {
                     if (noteText !== null) onUpd(selected.id, { text: noteText } as Partial<Annotation>);
@@ -241,7 +248,7 @@ export function Inspector({
             )}
             {selected.type === 'image' && (
               <div className="slider-row">
-                <span>Size</span>
+                <span>{t('insp.size')}</span>
                 <input
                   type="range"
                   min={24}
@@ -263,23 +270,23 @@ export function Inspector({
                 <button
                   className={`btn ghost tiny ${(selected as { flipH?: boolean }).flipH ? 'active' : ''}`}
                   onClick={() => onUpd(selected.id, { flipH: !(selected as { flipH?: boolean }).flipH } as Partial<Annotation>)}
-                  title="Mirror the stamp horizontally"
+                  title={t('insp.flipH')}
                 >
-                  ⇋ Flip H
+                  {t('insp.flipHLabel')}
                 </button>
                 <button
                   className={`btn ghost tiny ${(selected as { flipV?: boolean }).flipV ? 'active' : ''}`}
                   onClick={() => onUpd(selected.id, { flipV: !(selected as { flipV?: boolean }).flipV } as Partial<Annotation>)}
-                  title="Mirror the stamp vertically"
+                  title={t('insp.flipV')}
                 >
-                  ⇵ Flip V
+                  {t('insp.flipVLabel')}
                 </button>
               </div>
             )}
             {colorable && <SwatchRow current={(selected as { color: string }).color} onPick={(c) => onUpd(selected.id, { color: c } as Partial<Annotation>)} />}
             {(selected.type === 'text' || selected.type === 'edit') && (
               <div className="slider-row">
-                <span>Font</span>
+                <span>{t('insp.font')}</span>
                 <select
                   value={(selected as { font?: string }).font ?? 'Helvetica'}
                   onChange={(e) => onUpd(selected.id, { font: e.target.value } as Partial<Annotation>)}
@@ -294,7 +301,7 @@ export function Inspector({
             )}
             {(selected.type === 'text' || selected.type === 'edit') && (
               <div className="slider-row">
-                <span>Size</span>
+                <span>{t('insp.size')}</span>
                 <input
                   type="range"
                   min={6}
@@ -308,7 +315,7 @@ export function Inspector({
             )}
             {resizable && (
               <div className="slider-row">
-                <span>Line width</span>
+                <span>{t('insp.lineWidth')}</span>
                 <input
                   type="range"
                   min={0.5}
@@ -320,16 +327,16 @@ export function Inspector({
                 <b>{(selected as { width: number }).width.toFixed(1)}pt</b>
               </div>
             )}
-            <p className="hint muted">Double-click text or a note marker to edit its content in place.</p>
+            <p className="hint muted">{t('insp.editHint')}</p>
           </div>
         ) : (
-          <p className="hint muted">Nothing selected. Use the Select tool and click a mark, or drag with a tool to create one.</p>
+          <p className="hint muted">{t('insp.nothingSelected')}</p>
         )}
       </section>
 
       <section className="insp-sec privacy">
-        <h3>Privacy</h3>
-        <p>All processing happens in this browser tab. Files are never uploaded; export is generated locally.</p>
+        <h3>{t('insp.privacy')}</h3>
+        <p>{t('insp.privacyNote')}</p>
       </section>
     </aside>
   );

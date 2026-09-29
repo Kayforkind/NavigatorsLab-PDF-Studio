@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PDFDocument } from 'pdf-lib';
 import type { PageRec, Source } from '../types';
 import { listFields, type FieldDesc } from '../lib/forms';
@@ -14,13 +15,6 @@ interface SourceForms {
   fields: FieldDesc[];
   error?: string;
 }
-
-const KIND_LABEL: Record<FieldDesc['kind'], string> = {
-  text: 'Text',
-  checkbox: 'Check',
-  radio: 'Radio',
-  dropdown: 'Choice',
-};
 
 export function FormsDialog({
   docName,
@@ -49,6 +43,13 @@ export function FormsDialog({
   focusedField: string | null;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+  const KIND_LABEL: Record<FieldDesc['kind'], string> = {
+    text: t('forms.kindText'),
+    checkbox: t('forms.kindCheck'),
+    radio: t('forms.kindRadio'),
+    dropdown: t('forms.kindChoice'),
+  };
   const [forms, setForms] = useState<SourceForms[]>([]);
   const [loading, setLoading] = useState(true);
   const [pulse, setPulse] = useState<string | null>(null);
@@ -106,27 +107,27 @@ export function FormsDialog({
   };
 
   return (
-    <Dialog title={`Fill form fields — ${docName}`} onClose={onClose} wide>
+    <Dialog title={t('forms.title', { name: docName })} onClose={onClose} wide>
       <p className="modal-sub">
         {loading
-          ? 'Reading form fields…'
+          ? t('forms.reading')
           : totalFields === 0
-            ? 'No fillable form fields found in this document. Use the text tool to type onto the page instead.'
-            : `${totalFields} field${totalFields === 1 ? '' : 's'} · ${filledCount} filled. Values are written into the real form fields on export — or flattened so they can no longer be changed.`}
+            ? t('forms.none')
+            : t('forms.summary', { total: totalFields, filled: filledCount, count: totalFields })}
       </p>
       {totalFields > 0 && (
         <label className="check-row" style={{ marginBottom: 8 }}>
           <input type="checkbox" checked={showOnPages} onChange={(e) => onToggleShow(e.target.checked)} />
-          Show field boxes on the pages (click a box to focus its field here)
+          {t('forms.showBoxes')}
         </label>
       )}
       <div className="forms-list">
         {forms.map((sf) => (
           <div key={sf.source.id} className="forms-src">
             {sf.error ? (
-              <p className="muted">Could not read fields: {sf.error}</p>
+              <p className="muted">{t('forms.readError', { error: sf.error })}</p>
             ) : sf.fields.length === 0 ? (
-              <p className="muted small">{sf.source.name}: no fillable fields.</p>
+              <p className="muted small">{t('forms.noFields', { name: sf.source.name })}</p>
             ) : (
               sf.fields.map((f) => {
                 const v = values[sf.source.id]?.[f.name];
@@ -139,18 +140,18 @@ export function FormsDialog({
                       {f.name}
                       <small>
                         {' '}
-                        · page {f.pageIndex + 1}
+                        {t('forms.page', { n: f.pageIndex + 1 })}
                         <button className="linklike" onClick={() => jump(f.pageIndex)}>
-                          view
+                          {t('forms.view')}
                         </button>
-                        {f.readOnly ? ' · read-only' : ''}
+                        {f.readOnly ? t('forms.readOnly') : ''}
                       </small>
                     </label>
                     {f.kind === 'text' && (
                       <input
                         className="text-input"
                         value={str || (typeof f.value === 'string' ? f.value : '')}
-                        placeholder={typeof f.value === 'string' && f.value ? f.value : 'Type…'}
+                        placeholder={typeof f.value === 'string' && f.value ? f.value : t('forms.typePlaceholder')}
                         onChange={(e) => onChange(sf.source.id, f.name, e.target.value)}
                       />
                     )}
@@ -198,10 +199,10 @@ export function FormsDialog({
       </div>
       <div className="modal-actions">
         <button className="btn ghost" onClick={onClose}>
-          Close
+          {t('common.close')}
         </button>
         <button className="btn primary" onClick={onExport} disabled={totalFields === 0}>
-          <Icon.download /> Export filled (flatten fields)
+          <Icon.download /> {t('forms.export')}
         </button>
       </div>
     </Dialog>

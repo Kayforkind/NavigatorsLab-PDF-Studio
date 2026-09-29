@@ -1,6 +1,7 @@
 import { getDocument } from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
 import { pdfjsLoadOptions } from './pdfio';
+import i18n from '../i18n';
 
 export interface CompressOptions {
   /** longest page side in pixels of the rasterized output */
@@ -49,7 +50,7 @@ export async function compressPdfBytes(
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Could not rasterize page for compression.');
+    if (!ctx) throw new Error(i18n.t('lib.rasterize'));
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
     await page.render({ canvasContext: ctx, viewport: vp }).promise;

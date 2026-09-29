@@ -11,8 +11,9 @@ export const SESSION_KEY = 'nl-pdf-studio.session.v1'; // autosaved document byt
 export const SETTINGS_KEY = 'nl-pdf-studio.settings.v1'; // tool settings (color, width, opacity, font size)
 export const OCR_LANG_KEY = 'pdfstudio.ocrLang'; // last-used OCR language
 export const EXPORT_RANGE_KEY = 'pdfstudio.export.range'; // last-used export page range
+export const LANG_KEY = 'pdfstudio-lang'; // UI language choice (see src/i18n.ts)
 
-export const APP_STORAGE_KEYS = [SESSION_KEY, SETTINGS_KEY, OCR_LANG_KEY, EXPORT_RANGE_KEY] as const;
+export const APP_STORAGE_KEYS = [SESSION_KEY, SETTINGS_KEY, OCR_LANG_KEY, EXPORT_RANGE_KEY, LANG_KEY] as const;
 
 /**
  * Remove every PDF Studio key from localStorage.

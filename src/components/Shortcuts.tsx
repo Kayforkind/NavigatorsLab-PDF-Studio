@@ -1,17 +1,24 @@
+import { useTranslation } from 'react-i18next';
+
 /** Shared keyboard-shortcut cheatsheet: shown in the in-app Help modal and on the landing page. */
 export function ShortcutCheatsheet() {
+  const { t } = useTranslation();
   return (
     <ul className="shortcut-list">
-      <li><kbd>Ctrl/⌘ Z</kbd> undo · <kbd>Ctrl/⌘ Y</kbd> or <kbd>Ctrl/⌘⇧Z</kbd> redo</li>
-      <li><kbd>Ctrl/⌘ O</kbd> open · <kbd>Ctrl/⌘ S</kbd> save a copy · <kbd>Ctrl/⌘ P</kbd> print</li>
-      <li><kbd>Del</kbd> delete the selected mark · <kbd>Esc</kbd> cancel / deselect</li>
-      <li><kbd>+</kbd> / <kbd>−</kbd> zoom · <kbd>0</kbd> reset zoom to 100%</li>
+      <li><kbd>Ctrl/⌘ Z</kbd> {t('shortcuts.undo')} · <kbd>Ctrl/⌘ Y</kbd> {t('shortcuts.or')} <kbd>Ctrl/⌘⇧Z</kbd> {t('shortcuts.redo')}</li>
+      <li><kbd>Ctrl/⌘ O</kbd> {t('shortcuts.open')} · <kbd>Ctrl/⌘ S</kbd> {t('shortcuts.saveCopy')} · <kbd>Ctrl/⌘ P</kbd> {t('shortcuts.print')}</li>
+      <li><kbd>Del</kbd> {t('shortcuts.deleteMark')} · <kbd>Esc</kbd> {t('shortcuts.cancelDeselect')}</li>
+      <li><kbd>+</kbd> / <kbd>−</kbd> {t('shortcuts.zoom')} · <kbd>0</kbd> {t('shortcuts.resetZoom')}</li>
       <li>
-        Tools: <kbd>V</kbd> select · <kbd>E</kbd> edit · <kbd>T</kbd> text · <kbd>H</kbd> highlight ·{' '}
-        <kbd>U</kbd> underline · <kbd>X</kbd> strike · <kbd>N</kbd> note · <kbd>D</kbd> pen ·{' '}
-        <kbd>A</kbd> arrow · <kbd>R</kbd> rect · <kbd>O</kbd> ellipse · <kbd>G</kbd> sign ·{' '}
-        <kbd>I</kbd> image · <kbd>F</kbd> text field · <kbd>C</kbd> checkbox · <kbd>B</kbd> redact ·{' '}
-        <kbd>W</kbd> whiteout
+        {t('shortcuts.tools')}: <kbd>V</kbd> {t('shortcuts.toolSelect')} · <kbd>E</kbd> {t('shortcuts.toolEdit')} ·{' '}
+        <kbd>T</kbd> {t('shortcuts.toolText')} · <kbd>H</kbd> {t('shortcuts.toolHighlight')} ·{' '}
+        <kbd>U</kbd> {t('shortcuts.toolUnderline')} · <kbd>X</kbd> {t('shortcuts.toolStrike')} ·{' '}
+        <kbd>N</kbd> {t('shortcuts.toolNote')} · <kbd>D</kbd> {t('shortcuts.toolPen')} ·{' '}
+        <kbd>A</kbd> {t('shortcuts.toolArrow')} · <kbd>R</kbd> {t('shortcuts.toolRect')} ·{' '}
+        <kbd>O</kbd> {t('shortcuts.toolEllipse')} · <kbd>G</kbd> {t('shortcuts.toolSign')} ·{' '}
+        <kbd>I</kbd> {t('shortcuts.toolImage')} · <kbd>F</kbd> {t('shortcuts.toolField')} ·{' '}
+        <kbd>C</kbd> {t('shortcuts.toolCheckbox')} · <kbd>B</kbd> {t('shortcuts.toolRedact')} ·{' '}
+        <kbd>W</kbd> {t('shortcuts.toolWhiteout')}
       </li>
     </ul>
   );

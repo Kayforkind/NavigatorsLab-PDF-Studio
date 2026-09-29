@@ -1,49 +1,50 @@
 import type { ComponentType, SVGProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ToolId } from '../types';
 import { Icon } from './icons';
 
 interface ToolDef {
   id: ToolId;
-  label: string;
-  hint: string;
+  /** i18n key prefix under `tools`, e.g. "select" -> tools.select.label */
+  key: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   /** single-key keyboard shortcut shown in the tooltip */
-  key?: string;
+  shortcut?: string;
 }
 
 const GROUPS: ToolDef[][] = [
   [
-    { id: 'select', label: 'Select & move', hint: 'Click to select, drag to move, corner to resize', icon: Icon.select, key: 'V' },
-    { id: 'edit', label: 'Edit text', hint: 'Click existing text on the page to rewrite it', icon: Icon.edit, key: 'E' },
-    { id: 'text', label: 'Add text', hint: 'Click the page and type', icon: Icon.text, key: 'T' },
+    { id: 'select', key: 'select', icon: Icon.select, shortcut: 'V' },
+    { id: 'edit', key: 'edit', icon: Icon.edit, shortcut: 'E' },
+    { id: 'text', key: 'text', icon: Icon.text, shortcut: 'T' },
   ],
   [
-    { id: 'highlight', label: 'Highlight', hint: 'Drag a box over text', icon: Icon.highlight, key: 'H' },
-    { id: 'underline', label: 'Underline', hint: 'Drag over text to underline it', icon: Icon.underline, key: 'U' },
-    { id: 'strike', label: 'Strikethrough', hint: 'Drag over text to strike it out', icon: Icon.strike, key: 'X' },
-    { id: 'note', label: 'Sticky note', hint: 'Click to drop a note marker', icon: Icon.note, key: 'N' },
+    { id: 'highlight', key: 'highlight', icon: Icon.highlight, shortcut: 'H' },
+    { id: 'underline', key: 'underline', icon: Icon.underline, shortcut: 'U' },
+    { id: 'strike', key: 'strike', icon: Icon.strike, shortcut: 'X' },
+    { id: 'note', key: 'note', icon: Icon.note, shortcut: 'N' },
   ],
   [
-    { id: 'ink', label: 'Pen / draw', hint: 'Freehand drawing', icon: Icon.ink, key: 'D' },
-    { id: 'arrow', label: 'Arrow / pointer', hint: 'Drag to point at something — arrowhead at the far end', icon: Icon.arrow, key: 'A' },
-    { id: 'rect', label: 'Rectangle', hint: 'Outlined box — great for circling regions of interest', icon: Icon.rect, key: 'R' },
-    { id: 'ellipse', label: 'Ellipse', hint: 'Outlined ellipse — circle content in style', icon: Icon.ellipse, key: 'O' },
-    { id: 'sign', label: 'Signature', hint: 'Draw a signature and stamp it on the page', icon: Icon.sign, key: 'G' },
-    { id: 'image', label: 'Image stamp', hint: 'Place a PNG / JPG / logo on the page', icon: Icon.image, key: 'I' },
+    { id: 'ink', key: 'ink', icon: Icon.ink, shortcut: 'D' },
+    { id: 'arrow', key: 'arrow', icon: Icon.arrow, shortcut: 'A' },
+    { id: 'rect', key: 'rect', icon: Icon.rect, shortcut: 'R' },
+    { id: 'ellipse', key: 'ellipse', icon: Icon.ellipse, shortcut: 'O' },
+    { id: 'sign', key: 'sign', icon: Icon.sign, shortcut: 'G' },
+    { id: 'image', key: 'image', icon: Icon.image, shortcut: 'I' },
   ],
   [
-    { id: 'formtext', label: 'Text field', hint: 'Drag a box to place a fillable text field (real AcroForm)', icon: Icon.formtext, key: 'F' },
-    { id: 'formcheck', label: 'Checkbox', hint: 'Drag a box to place a fillable checkbox (real AcroForm)', icon: Icon.formcheck, key: 'C' },
+    { id: 'formtext', key: 'formtext', icon: Icon.formtext, shortcut: 'F' },
+    { id: 'formcheck', key: 'formcheck', icon: Icon.formcheck, shortcut: 'C' },
   ],
   [
-    { id: 'redact', label: 'Redact', hint: 'Permanently black out content', icon: Icon.redact, key: 'B' },
-    { id: 'whiteout', label: 'Whiteout', hint: 'Cover content with the page background', icon: Icon.whiteout, key: 'W' },
+    { id: 'redact', key: 'redact', icon: Icon.redact, shortcut: 'B' },
+    { id: 'whiteout', key: 'whiteout', icon: Icon.whiteout, shortcut: 'W' },
   ],
 ];
 
 /** single-key shortcut → tool id, derived from the rail definitions above */
 export const TOOL_SHORTCUTS: Record<string, ToolId> = Object.fromEntries(
-  GROUPS.flat().flatMap((t) => (t.key ? [[t.key.toLowerCase(), t.id]] : [])),
+  GROUPS.flat().flatMap((t) => (t.shortcut ? [[t.shortcut.toLowerCase(), t.id]] : [])),
 );
 
 export function ToolRail({
@@ -53,23 +54,28 @@ export function ToolRail({
   tool: ToolId;
   onTool: (t: ToolId) => void;
 }) {
+  const { t } = useTranslation();
   return (
-    <aside className="tool-rail" aria-label="Tools">
+    <aside className="tool-rail" aria-label={t('tools.railLabel')}>
       {GROUPS.map((group, gi) => (
         <div className="tool-group" key={gi}>
-          {group.map((t) => (
-            <button
-              key={t.id}
-              className={`tool-btn ${tool === t.id ? 'active' : ''}`}
-              onClick={() => onTool(t.id)}
-              title={t.key ? `${t.label} (${t.key})` : t.label}
-              data-hint={t.key ? `${t.hint} — press ${t.key}` : t.hint}
-            >
-              <t.icon />
-              <span className="tool-name">{t.label}</span>
-              {t.key && <kbd className="tool-key">{t.key}</kbd>}
-            </button>
-          ))}
+          {group.map((td) => {
+            const label = t(`tools.${td.key}.label`);
+            const hint = t(`tools.${td.key}.hint`);
+            return (
+              <button
+                key={td.id}
+                className={`tool-btn ${tool === td.id ? 'active' : ''}`}
+                onClick={() => onTool(td.id)}
+                title={td.shortcut ? `${label} (${td.shortcut})` : label}
+                data-hint={td.shortcut ? `${hint} — ${t('tools.pressKey', { key: td.shortcut })}` : hint}
+              >
+                <td.icon />
+                <span className="tool-name">{label}</span>
+                {td.shortcut && <kbd className="tool-key">{td.shortcut}</kbd>}
+              </button>
+            );
+          })}
         </div>
       ))}
     </aside>

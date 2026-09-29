@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { Annotation, PageRec, Point, RectAnn, TextHit, ToolId, ToolSettings } from '../types';
 import { uid } from '../types';
@@ -196,6 +197,7 @@ const NOTE_SIZE = 16; // content points
 let inlineOpenedAt = 0;
 
 export const PageSheet = memo(function PageSheet(props: SheetProps) {
+  const { t } = useTranslation();
   const { page, proxy, scale, settings, rotation } = props;
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -784,7 +786,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
           <div className="blank-paper" style={{ width: cssDims.w, height: cssDims.h }}>
             <div className="blank-mark">
               <div>＋</div>
-              <p>Blank page</p>
+              <p>{t('sheet.blankPage')}</p>
               <small>
                 {Math.round(page.w)} × {Math.round(page.h)} pt
               </small>
@@ -1123,7 +1125,7 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
               }
             }}
             onBlur={() => commitInline()}
-            placeholder={inline.mode === 'new-text' ? 'Type and press Enter…' : inline.mode === 'new-edit' ? 'Replace text, press Enter' : inline.mode === 'note' ? 'Note…' : ''}
+            placeholder={inline.mode === 'new-text' ? t('sheet.typeEnter') : inline.mode === 'new-edit' ? t('sheet.replaceEnter') : inline.mode === 'note' ? t('sheet.notePh') : ''}
             spellCheck={false}
           />
         )}

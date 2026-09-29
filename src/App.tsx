@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
+import { LANGUAGES, setLanguage } from './i18n';
 import { PDFDocument } from 'pdf-lib';
 import type { Annotation, DocModel, PageRec, Point, ToolId, ToolSettings } from './types';
 import { BLANK_SIZES, uid } from './types';
@@ -64,6 +66,13 @@ function b64ToBytes(b64: string): Uint8Array {
 }
 
 export default function App() {
+  const { t, i18n } = useTranslation();
+  const [lang, setLang] = useState(i18n.language);
+  useEffect(() => {
+    const onLang = (l: string) => setLang(l);
+    i18n.on('languageChanged', onLang);
+    return () => i18n.off('languageChanged', onLang);
+  }, [i18n]);
   const [model, dispatch] = useReducer(docModelReducer, emptyModel);
   const { doc } = model;
   const proxiesRef = useRef<Map<string, PDFDocumentProxy>>(new Map());
@@ -176,7 +185,7 @@ export default function App() {
 
   const openBytes = useCallback(
     async (bytes: Uint8Array, name: string, isSample = false) => {
-      setBusy(`Opening ${name}…`);
+      setBusy(t('app.busyOpening', { name }));
       try {
         proxiesRef.current.clear();
         clearFieldCache();
@@ -196,9 +205,9 @@ export default function App() {
           keywords: (await lib.getKeywords()) ?? '',
         });
         if (!isSample) setZoom(100);
-        toast(`Opened “${name}” — ${ls.source.pages.length} page${ls.source.pages.length === 1 ? '' : 's'}`);
+        toast(t('app.opened', { name, count: ls.source.pages.length }));
       } catch (err) {
-        toast(`Could not open ${name} — it may be encrypted or not a valid PDF.`);
+        toast(t('app.openFailed', { name }));
         console.error(err);
       } finally {
         setBusy('');
@@ -217,7 +226,7 @@ export default function App() {
 
   const loadDemo = useCallback(async () => {
     if (busy) return;
-    setBusy('Building demo document…');
+    setBusy(t('app.busyDemo'));
     try {
       const bytes = await makeSamplePdf();
       await openBytes(bytes, 'PDF-Studio-demo.pdf', true);
@@ -230,13 +239,13 @@ export default function App() {
   const openImages = useCallback(
     async (files: File[]) => {
       if (busy) return;
-      setBusy('Building PDF from images…');
+      setBusy(t('app.busyImages'));
       try {
         const { bytes, pages } = await imagesToPdf(files);
         await openBytes(bytes, 'images.pdf');
-        toast(`Created a ${pages}-page PDF from your images.`);
+        toast(t('app.imagesCreated', { count: pages }));
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Could not build a PDF from those images.');
+        toast(err instanceof Error ? err.message : t('app.imagesFailed'));
       } finally {
         setBusy('');
       }
@@ -249,15 +258,15 @@ export default function App() {
     const idx = currentPageId ? doc.pages.findIndex((p) => p.id === currentPageId) : 0;
     const rec = doc.pages[idx];
     if (!rec || rec.src === null) {
-      toast('Pick a page first.');
+      toast(t('app.pickPage'));
       return;
     }
     const proxy = proxiesRef.current.get(rec.src);
     if (!proxy) {
-      toast('Page is still loading — try again in a moment.');
+      toast(t('app.pageLoading'));
       return;
     }
-    setBusy('Rendering PNG…');
+    setBusy(t('app.busyPng'));
     try {
       const blob = await pageToPng(proxy, idx, rotationFor(rec));
       const url = URL.createObjectURL(blob);
@@ -268,9 +277,9 @@ export default function App() {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast(`Downloaded page ${idx + 1} as PNG.`);
+      toast(t('app.pagePngDone', { n: idx + 1 }));
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not render PNG.');
+      toast(err instanceof Error ? err.message : t('app.pngFailed'));
     } finally {
       setBusy('');
     }
@@ -284,9 +293,7 @@ export default function App() {
     const removed = clearAppStorage();
     setSavedSession(null);
     toast(
-      removed.length
-        ? 'All PDF Studio data deleted from this device.'
-        : 'No saved PDF Studio data on this device.',
+      removed.length ? t('app.wipeDone') : t('app.wipeEmpty'),
     );
   }, [toast]);
   useEffect(() => {
@@ -301,7 +308,7 @@ export default function App() {
   }, []);
 
   const restoreSession = useCallback(async () => {
-    setBusy('Restoring your session…');
+    setBusy(t('app.busyRestore'));
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       if (!raw) return;
@@ -322,10 +329,10 @@ export default function App() {
       setCurrentPageId(blob.pages[0]?.id ?? null);
       setMeta(blob.meta ?? { title: '', author: '', subject: '', keywords: '' });
       setFormValues(blob.formValues ?? {});
-      toast(`Restored “${blob.name}” from this device.`);
+      toast(t('app.sessionRestored', { name: blob.name }));
     } catch (e) {
       console.error(e);
-      toast('Could not restore the saved session.');
+      toast(t('app.sessionRestoreFailed'));
     } finally {
       setBusy('');
     }
@@ -337,16 +344,16 @@ export default function App() {
         await openFile(file);
         return;
       }
-      setBusy(`Merging ${file.name}…`);
+      setBusy(t('app.busyMerging', { name: file.name }));
       try {
         const buf = await file.arrayBuffer();
         const ls = await adoptSource(new Uint8Array(buf), file.name);
         proxiesRef.current.set(ls.source.id, ls.js);
         const pages = pagesForSource(ls.source);
         dispatch({ type: 'merge', sources: [ls.source], pages, afterPageId: currentPageId });
-        toast(`Merged ${file.name} (${pages.length} page${pages.length === 1 ? '' : 's'}) after the current page.`);
+        toast(t('app.merged', { name: file.name, count: pages.length }));
       } catch {
-        toast(`Could not merge ${file.name}.`);
+        toast(t('app.mergeFailed', { name: file.name }));
       } finally {
         setBusy('');
       }
@@ -358,19 +365,19 @@ export default function App() {
   const doExport = useCallback(
     async (payload: ExportPayload) => {
       setMeta(payload.meta);
-      setBusy('Building PDF…');
+      setBusy(t('app.busyBuilding'));
       try {
         const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
         let out = bytes;
         let note = '';
         if (payload.compress) {
-          const r = await compressPdfBytes(bytes, payload.compress, (d, t) => setBusy(`Compressing… ${d}/${t}`));
+          const r = await compressPdfBytes(bytes, payload.compress, (d, total) => setBusy(t('app.busyCompressing', { d, total })));
           out = r.bytes;
-          note = ` Compressed ${Math.max(0, Math.round((1 - r.ratio) * 100))}% smaller.`;
+          note = t('app.compressedNote', { pct: Math.max(0, Math.round((1 - r.ratio) * 100)) });
         }
         const base = niceFileName(doc.name, payload.range.trim() ? 'extract' : 'edited');
         downloadBytes(out, base);
-        toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}).${note}`);
+        toast(`${t('app.downloaded', { base, count: pages })}${note}`);
       } finally {
         setBusy('');
       }
@@ -390,7 +397,7 @@ export default function App() {
         downloadBytes(bytes, fn);
         names.push(fn);
       }
-      toast(`Split into ${names.length} file${names.length === 1 ? '' : 's'}.`);
+      toast(t('app.splitDone', { count: names.length }));
     },
     [doc, toast, formValues],
   );
@@ -403,7 +410,7 @@ export default function App() {
    *  window.print() would screenshot the whole editor; instead we render the
    *  final PDF into a hidden iframe and print that, exactly like a viewer. */
   const printPdf = useCallback(async () => {
-    setBusy('Preparing print…');
+    setBusy(t('app.busyPrint'));
     try {
       const { bytes } = await buildPdf({ doc, meta, range: '', formValues, proxies: proxiesRef.current });
       const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
@@ -436,12 +443,12 @@ export default function App() {
 
   /** export with the form values burned into the pages (fields become static) */
   const exportFlattenedForms = useCallback(async () => {
-    setBusy('Exporting filled form…');
+    setBusy(t('app.busyForm'));
     try {
       const { bytes, pages } = await buildPdf({ doc, meta, range: '', formValues, flattenForms: true, proxies: proxiesRef.current });
       const base = niceFileName(doc.name, 'filled');
       downloadBytes(bytes, base);
-      toast(`Downloaded ${base} (${pages} page${pages === 1 ? '' : 's'}) with form values flattened in.`);
+      toast(t('app.formSaved', { base, count: pages }));
       setModal(null);
     } finally {
       setBusy('');
@@ -515,7 +522,7 @@ export default function App() {
       const p = doc.pages.find((pg) => pg.id === id);
       if (!p || p.src === null) return;
       dispatch({ type: 'flipPage', pageId: id, mode });
-      toast(`Page mirrored ${mode === 'h' ? 'horizontally' : 'vertically'} (undo anytime).`);
+      toast(t(mode === 'h' ? 'app.mirroredH' : 'app.mirroredV'));
     },
     [doc.pages, toast],
   );
@@ -533,7 +540,7 @@ export default function App() {
     if (!n) return;
     dispatch({ type: 'setPageRots', rots });
     setRotNoticeDismissed(true);
-    toast(`Turned ${n} rotated page${n === 1 ? '' : 's'} upright (undo anytime).`);
+    toast(t('app.upright', { count: n }));
   }, [doc.pages, doc.sources, toast]);
 
   /** plain-text context of every page (used by the private AI panel) */
@@ -563,7 +570,7 @@ export default function App() {
     (afterId: string | null, size: keyof typeof BLANK_SIZES = 'Letter') => {
       const { w, h } = BLANK_SIZES[size];
       dispatch({ type: 'insertBlank', afterPageId: afterId, w, h });
-      toast('Blank page inserted.');
+      toast(t('app.blankInserted'));
     },
     [toast],
   );
@@ -572,20 +579,20 @@ export default function App() {
   const runOcrOnCurrent = useCallback(async () => {
     const page = doc.pages.find((p) => p.id === currentPageId);
     if (!page || page.src === null) {
-      toast('Pick a page first (it needs rendered content).');
+      toast(t('app.pickPageContent'));
       return;
     }
     if (rotationFor(page) % 180 !== 0) {
-      toast('Rotate the page upright first — OCR reads horizontal text.');
+      toast(t('app.ocrRotate'));
       return;
     }
     const el = document.querySelector(`[data-page-id="${page.id}"] .sheet-canvas`) as HTMLCanvasElement | null;
     if (!el) return;
-    setOcrBusy('OCR starting…');
+    setOcrBusy(t('app.ocrStarting'));
     try {
-      const lines = await runOcr(el, ocrLang, (m) => setOcrBusy(`OCR: ${m}`));
+      const lines = await runOcr(el, ocrLang, (m) => setOcrBusy(t('app.ocrProgress', { m })));
       if (!lines.length) {
-        toast('OCR found no confident text — try again with a larger zoom.');
+        toast(t('app.ocrNoText'));
         return;
       }
       const dpr = window.devicePixelRatio || 1;
@@ -639,7 +646,7 @@ export default function App() {
         dispatch({ type: 'annAdd', ann });
         added++;
       }
-      toast(`OCR rewrote ${added} line${added === 1 ? '' : 's'} into editable text (fully local — undo anytime).`);
+      toast(t('app.ocrDone', { count: added }));
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e));
     } finally {
@@ -657,7 +664,7 @@ export default function App() {
         setCurrentPageId(next?.id ?? null);
       }
       if (selectedId && doc.anns.some((a) => a.pageId === id && a.id === selectedId)) setSelectedId(null);
-      toast('Page deleted.');
+      toast(t('app.pageDeleted'));
     },
     [doc.pages, currentPageId, selectedId, doc.anns, toast],
   );
@@ -665,7 +672,7 @@ export default function App() {
   const dupPage = useCallback(
     (id: string) => {
       dispatch({ type: 'duplicatePage', pageId: id });
-      toast('Page duplicated.');
+      toast(t('app.pageDuplicated'));
     },
     [toast],
   );
@@ -673,7 +680,7 @@ export default function App() {
   const onReorder = useCallback(
     (fromId: string, toId: string) => {
       dispatch({ type: 'reorder', fromId, toId });
-      toast('Pages reordered.');
+      toast(t('app.pagesReordered'));
     },
     [toast],
   );
@@ -730,10 +737,10 @@ export default function App() {
       if (isSign) {
         signRef.current = { dataUrl, w, h };
         setSignOpen(false);
-        toast('Signature stamped. Drag to position it.');
+        toast(t('app.signStamped'));
         setTool('select');
       } else {
-        toast('Image placed — drag to position, corner handle to scale.');
+        toast(t('app.imagePlaced'));
       }
     },
     [doc.pages],
@@ -908,7 +915,7 @@ export default function App() {
       const file = e.dataTransfer.files?.[0];
       if (!file) return;
       if (!/\.pdf$/i.test(file.name)) {
-        toast('Please drop a PDF file.');
+        toast(t('app.dropPdfOnly'));
         return;
       }
       if (mode === 'open') await openFile(file);
@@ -941,33 +948,33 @@ export default function App() {
             <div className="docname" title={doc.name}>
               <Icon.file />
               <span>{doc.name}</span>
-              <b>{doc.pages.length} p.</b>
+              <b>{t('app.pagesShort', { count: doc.pages.length })}</b>
             </div>
             <div className="tb-sep" />
-            <button className="tb-btn" onClick={() => openInputRef.current?.click()} title="Open PDF (Ctrl+O)">
-              <Icon.open /> Open
+            <button className="tb-btn" onClick={() => openInputRef.current?.click()} title={t('app.openTitle')}>
+              <Icon.open /> {t('app.open')}
             </button>
-            <button className="tb-btn" onClick={() => mergeInputRef.current?.click()} title="Merge another PDF after the current page">
-              <Icon.plus /> Merge PDF
+            <button className="tb-btn" onClick={() => mergeInputRef.current?.click()} title={t('app.mergeTitle')}>
+              <Icon.plus /> {t('app.merge')}
             </button>
             <div className="tb-sep" />
-            <button className="tb-btn icon" disabled={!undoCount} onClick={() => dispatch({ type: 'undo' })} title="Undo (Ctrl+Z)">
+            <button className="tb-btn icon" disabled={!undoCount} onClick={() => dispatch({ type: 'undo' })} title={t('app.undo')}>
               <Icon.undo />
             </button>
-            <button className="tb-btn icon" disabled={!redoCount} onClick={() => dispatch({ type: 'redo' })} title="Redo (Ctrl+Y)">
+            <button className="tb-btn icon" disabled={!redoCount} onClick={() => dispatch({ type: 'redo' })} title={t('app.redo')}>
               <Icon.redo />
             </button>
-            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title="Zoom out">
+            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title={t('app.zoomOut')}>
               −
             </button>
-            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.min(400, Math.round(z * 1.25)))} title="Zoom in">
+            <button className="tb-btn icon zoom-mobile" onClick={() => setZoom((z) => Math.min(400, Math.round(z * 1.25)))} title={t('app.zoomIn')}>
               +
             </button>
             <span className="tb-spacer" />
             <input
               className="search-box"
               type="search"
-              placeholder="Search document…"
+              placeholder={t('app.searchPh')}
               value={searchState?.q ?? ''}
               onChange={(e) => {
                 const q = e.target.value;
@@ -986,46 +993,59 @@ export default function App() {
                 {searchState.busy ? '…' : searchState.matches.length ? `${searchState.idx + 1}/${searchState.matches.length}` : '0'}
               </span>
             )}
-            <button className="tb-btn collapsible" onClick={() => setModal('forms')} title="Detect and fill PDF form fields (AcroForm)">
-              <Icon.check /> Forms
+            <button className="tb-btn collapsible" onClick={() => setModal('forms')} title={t('app.formsTitle')}>
+              <Icon.check /> {t('app.forms')}
             </button>
-            <button className="tb-btn collapsible" onClick={() => setModal('compare')} title="Compare the text of two PDFs side by side">
-              <Icon.copy /> Compare
+            <button className="tb-btn collapsible" onClick={() => setModal('compare')} title={t('app.compareTitle')}>
+              <Icon.copy /> {t('app.compare')}
             </button>
-            <button className="tb-btn icon collapsible" onClick={() => setModal('ai')} title="Private on-device AI (ask / summarize this document)">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('ai')} title={t('app.aiTitle')}>
               <Icon.sparkle />
             </button>
-            <button className="tb-btn icon collapsible" onClick={() => setModal('help')} title="Help">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('help')} title={t('app.help')}>
               <Icon.info />
             </button>
-            <button className="tb-btn icon collapsible" onClick={() => void printPdf()} title="Print the PDF with annotations (Ctrl+P)">
+            <button className="tb-btn icon collapsible" onClick={() => void printPdf()} title={t('app.printTitle')}>
               <Icon.print />
             </button>
             <button
               className={`tb-btn icon collapsible ${styleOpen ? 'active' : ''}`}
               onClick={() => setStyleOpen((v) => !v)}
-              title="Colors, fonts & size (opens the style panel)"
+              title={t('app.styleTitle')}
             >
               <Icon.palette />
             </button>
-            <button className="tb-btn icon collapsible" onClick={() => setModal('export')} title="Export options & document properties">
+            <button className="tb-btn icon collapsible" onClick={() => setModal('export')} title={t('app.exportTitle')}>
               <Icon.props />
             </button>
-            <button className="tb-btn icon save-icon-btn" onClick={quickSave} title="Save a copy (Ctrl+S)">
+            <button className="tb-btn icon save-icon-btn" onClick={quickSave} title={t('app.saveTitle')}>
               <Icon.download />
             </button>
             <button className="btn primary save-cta" onClick={quickSave}>
-              <Icon.download /> Save
+              <Icon.download /> {t('app.save')}
             </button>
           </>
         ) : (
           <>
             <span className="tb-spacer" />
-            <button className="tb-btn" onClick={() => setModal('help')} title="Help">
-              <Icon.info /> Help
+            <button className="tb-btn" onClick={() => setModal('help')} title={t('app.help')}>
+              <Icon.info /> {t('app.help')}
             </button>
           </>
         )}
+        <select
+          className="lang-select"
+          value={lang}
+          onChange={(e) => setLanguage(e.target.value)}
+          title={t('app.language')}
+          aria-label={t('app.language')}
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
       </header>
 
       {!hasDoc ? (
@@ -1180,12 +1200,12 @@ export default function App() {
               onClick={() => setDropState('none')}
             >
               <div className="drop-card" onClick={(e) => e.stopPropagation()}>
-                <h2>Drop to merge into the current document</h2>
-                <p>Dropping merges the file after the current page · everything stays on this device.</p>
-                <p className="muted small">(To replace instead, cancel and choose <b>Open</b> in the toolbar.)</p>
+                <h2>{t('app.dropTitle')}</h2>
+                <p>{t('app.dropBody')}</p>
+                <p className="muted small"><Trans i18nKey="app.dropReplace" components={{ b: <b /> }} /></p>
                 <div className="drop-actions">
                   <button className="btn ghost" onClick={() => setDropState('none')}>
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </div>
@@ -1197,35 +1217,35 @@ export default function App() {
       {hasDoc && (
         <footer className="statusbar">
           <span className="st-left">
-            {currentIndex >= 0 ? `Page ${currentIndex + 1} of ${doc.pages.length}` : `${doc.pages.length} pages`}
+            {currentIndex >= 0 ? t('app.pageOf', { a: currentIndex + 1, b: doc.pages.length }) : t('app.pagesCount', { count: doc.pages.length })}
             {' · '}
-            {doc.anns.length} mark{doc.anns.length === 1 ? '' : 's'}
+            {t('app.marks', { count: doc.anns.length })}
             {' · '}
-            tool: <b>{tool}</b>
+            tool: <b>{t(`tools.${tool}`)}</b>
             {tool === 'edit' && (
               <button className="mini-btn ocr-mini" disabled={!!ocrBusy} onClick={() => void runOcrOnCurrent()}>
-                {ocrBusy ? '…' : '⇪ OCR page'}
+                {ocrBusy ? '…' : t('app.ocrPage')}
               </button>
             )}
           </span>
           <span className="st-right">
-            <span className="privacy-chip">● private · nothing leaves this device</span>
+            <span className="privacy-chip">{t('app.privateChip')}</span>
             <a
               className="mini-btn suite-link"
               href="https://navigatorslab.com/reimagine/"
               target="_blank"
               rel="noreferrer"
-              title="Reimagine — redesign any HTML page from its own content (opens in a new tab)"
+              title={t('app.reimagineTitle')}
             >
-              🎨 Reimagine
+              {t('app.reimagine')}
             </a>
-            <button className="mini-btn" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title="Zoom out">
+            <button className="mini-btn" onClick={() => setZoom((z) => Math.max(20, Math.round(z * 0.8)))} title={t('app.zoomOut')}>
               −
             </button>
-            <button className="mini-btn pct" onClick={() => setZoom(100)} title="Fit to width (0)">
+            <button className="mini-btn pct" onClick={() => setZoom(100)} title={t('app.fitWidth')}>
               {Math.round(zoom)}%
             </button>
-            <button className="mini-btn" onClick={() => setZoom((z) => Math.min(400, Math.round(z * 1.25)))} title="Zoom in">
+            <button className="mini-btn" onClick={() => setZoom((z) => Math.min(400, Math.round(z * 1.25)))} title={t('app.zoomIn')}>
               +
             </button>
           </span>

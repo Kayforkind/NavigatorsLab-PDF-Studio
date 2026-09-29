@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { PageRec } from '../types';
 import { beginRender } from '../lib/pdfio';
@@ -47,6 +48,7 @@ function Thumb({
   onDuplicate: (id: string) => void;
   onInsertBlank: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const taskRef = useRef<import('pdfjs-dist').RenderTask | null>(null);
   const genRef = useRef(0);
@@ -137,26 +139,26 @@ function Thumb({
             ref={canvasRef}
             style={{ width: thumbW, height: thumbH, display: isBlank || !ready ? 'none' : 'block' }}
           />
-          {isBlank && <div className="thumb-blank">Blank</div>}
+          {isBlank && <div className="thumb-blank">{t('thumbs.blank')}</div>}
         </div>
       </div>
       <div className="thumb-actions">
-        <button title="Insert blank page after" onClick={() => onInsertBlank(page.id)}>
+        <button title={t('thumbs.insertBlank')} onClick={() => onInsertBlank(page.id)}>
           <Icon.plus />
         </button>
-        <button title="Duplicate page" onClick={() => onDuplicate(page.id)}>
+        <button title={t('thumbs.duplicate')} onClick={() => onDuplicate(page.id)}>
           <Icon.copy />
         </button>
-        <button title="Rotate clockwise" disabled={page.src === null} onClick={() => onRotate(page.id, true)}>
+        <button title={t('thumbs.rotate')} disabled={page.src === null} onClick={() => onRotate(page.id, true)}>
           <Icon.rotateCw />
         </button>
-        <button title="Mirror page horizontally" disabled={page.src === null} className={flip & 1 ? 'active' : ''} onClick={() => onFlip(page.id, 'h')}>
+        <button title={t('thumbs.flipH')} disabled={page.src === null} className={flip & 1 ? 'active' : ''} onClick={() => onFlip(page.id, 'h')}>
           ⇋
         </button>
-        <button title="Mirror page vertically" disabled={page.src === null} className={flip & 2 ? 'active' : ''} onClick={() => onFlip(page.id, 'v')}>
+        <button title={t('thumbs.flipV')} disabled={page.src === null} className={flip & 2 ? 'active' : ''} onClick={() => onFlip(page.id, 'v')}>
           ⇵
         </button>
-        <button title="Delete page" className="danger" onClick={() => onDelete(page.id)}>
+        <button title={t('thumbs.delete')} className="danger" onClick={() => onDelete(page.id)}>
           <Icon.trash />
         </button>
       </div>
@@ -165,11 +167,12 @@ function Thumb({
 }
 
 export function ThumbStrip(props: ThumbsProps) {
+  const { t } = useTranslation();
   const { pages, proxies, rotationFor, onFlip } = props;
   return (
-    <aside className="thumb-strip" aria-label="Pages">
+    <aside className="thumb-strip" aria-label={t('thumbs.label')}>
       <div className="thumb-strip-head">
-        <span>Pages</span>
+        <span>{t('thumbs.label')}</span>
         <b>{pages.length}</b>
       </div>
       <div className="thumb-list">
@@ -192,7 +195,7 @@ export function ThumbStrip(props: ThumbsProps) {
         ))}
       </div>
       <button className="thumb-add" onClick={props.onAddBlankAtEnd}>
-        <Icon.plus /> Add blank page
+        <Icon.plus /> {t('thumbs.addBlank')}
       </button>
     </aside>
   );

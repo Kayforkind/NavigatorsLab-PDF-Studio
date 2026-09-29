@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import type { DocMeta, StampOptions } from '../lib/exportPdf';
 import { expandTokens, hasStamps } from '../lib/exportPdf';
 import { COMPRESS_PRESETS } from '../lib/compress';
 import { Icon } from './icons';
 import { ShortcutCheatsheet } from './Shortcuts';
+import { TRANSLATE_URL } from '../i18n';
 
 export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
+  const { t } = useTranslation();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -18,7 +21,7 @@ export function Dialog({ title, onClose, children, wide }: { title: string; onCl
       <div className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal>
         <div className="modal-head">
           <h2>{title}</h2>
-          <button className="icon-btn" onClick={onClose} title="Close (Esc)">
+          <button className="icon-btn" onClick={onClose} title={t('dlg.closeTitle')}>
             <Icon.x />
           </button>
         </div>
@@ -31,6 +34,7 @@ export function Dialog({ title, onClose, children, wide }: { title: string; onCl
 /* ------------------------------------------------------------------ */
 
 export function SignPadModal({ onSave, onClose }: { onSave: (dataUrl: string) => void; onClose: () => void }) {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
@@ -64,8 +68,8 @@ export function SignPadModal({ onSave, onClose }: { onSave: (dataUrl: string) =>
   }, []);
 
   return (
-    <Dialog title="Draw your signature" onClose={onClose}>
-      <p className="modal-sub">Sign with mouse, trackpad, or touch. It stays on your device and is only stamped onto this document.</p>
+    <Dialog title={t('sign.title')} onClose={onClose}>
+      <p className="modal-sub">{t('sign.sub')}</p>
       <canvas
         ref={canvasRef}
         className="sign-pad"
@@ -96,10 +100,10 @@ export function SignPadModal({ onSave, onClose }: { onSave: (dataUrl: string) =>
           setup();
           setDirty(false);
         }}>
-          Clear
+          {t('common.clear')}
         </button>
         <span className="spacer" />
-        <button className="btn ghost" onClick={onClose}>Cancel</button>
+        <button className="btn ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn primary"
           disabled={!dirty}
@@ -120,7 +124,7 @@ export function SignPadModal({ onSave, onClose }: { onSave: (dataUrl: string) =>
             onSave(tmp.toDataURL('image/png'));
           }}
         >
-          Use this signature
+          {t('sign.use')}
         </button>
       </div>
     </Dialog>
@@ -152,6 +156,7 @@ export function StampPreview({
   pageCount: number;
   title: string;
 }) {
+  const { t } = useTranslation();
   const W = 200;
   const H = Math.max(120, Math.min(320, W / Math.max(0.2, aspect)));
   const k = W / 612; // css px per PDF point at ~letter width
@@ -195,7 +200,7 @@ export function StampPreview({
           <span>{fr}</span>
         </div>
       )}
-      <div className="sp-caption">preview · page 1 of {pageCount}</div>
+      <div className="sp-caption">{t('export.previewCaption', { count: pageCount })}</div>
     </div>
   );
 }
@@ -224,6 +229,7 @@ export function ExportDialog({
   onPagePng: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [range, setRange] = useState(() => {
     try {
       return localStorage.getItem(EXPORT_RANGE_KEY) ?? '';
@@ -252,28 +258,27 @@ export function ExportDialog({
   };
 
   return (
-    <Dialog title="Export PDF" onClose={onClose} wide>
+    <Dialog title={t('export.title')} onClose={onClose} wide>
       <div className="export-grid">
         <section>
-          <h3>Pages</h3>
+          <h3>{t('export.pages')}</h3>
           <p className="muted">
-            Leave blank for all {pageCount} pages, or enter a range such as <code>1-3, 5</code> to extract only those pages into a new
-            file (split/extract).
+            <Trans i18nKey="export.pagesExplainer" values={{ count: pageCount }} components={{ code: <code /> }} />
           </p>
-          <input className="text-input" value={range} onChange={(e) => setRange(e.target.value)} placeholder={`All ${pageCount} pages`} />
+          <input className="text-input" value={range} onChange={(e) => setRange(e.target.value)} placeholder={t('export.allPages', { count: pageCount })} />
           <div className="modal-actions" style={{ marginTop: 10 }}>
             <button className="btn primary" onClick={() => { rememberRange(); onExport(payload()); }}>
-              <Icon.download /> {range.trim() ? 'Download these pages' : 'Download PDF'}
+              <Icon.download /> {range.trim() ? t('export.downloadRange') : t('export.download')}
             </button>
-            <button className="btn ghost" onClick={() => onSplit(payload())} title="Creates one PDF file per page">
-              <Icon.split /> Split — one file per page
+            <button className="btn ghost" onClick={() => onSplit(payload())} title={t('export.splitTitle')}>
+              <Icon.split /> {t('export.split')}
             </button>
-            <button className="btn ghost" onClick={onPagePng} title="Download the current page as a PNG image">
-              <Icon.image /> Page as PNG
+            <button className="btn ghost" onClick={onPagePng} title={t('export.pagePngTitle')}>
+              <Icon.image /> {t('export.pagePng')}
             </button>
           </div>
           <details className="stamp-box">
-            <summary>Page numbers, watermark &amp; header/footer</summary>
+            <summary>{t('export.stampsSummary')}</summary>
             <div className="stamp-grid">
               <label className="check-row">
                 <input
@@ -281,7 +286,7 @@ export function ExportDialog({
                   checked={stamps.pageNumbers}
                   onChange={(e) => setStamps({ ...stamps, pageNumbers: e.target.checked })}
                 />
-                Page numbers
+                {t('export.pageNumbers')}
               </label>
               {stamps.pageNumbers && (
                 <>
@@ -291,15 +296,15 @@ export function ExportDialog({
                       value={stamps.pnPosition}
                       onChange={(e) => setStamps({ ...stamps, pnPosition: e.target.value as StampOptions['pnPosition'] })}
                     >
-                      <option value="bottom-center">bottom center</option>
-                      <option value="bottom-left">bottom left</option>
-                      <option value="bottom-right">bottom right</option>
+                      <option value="bottom-center">{t('export.posBottomCenter')}</option>
+                      <option value="bottom-left">{t('export.posBottomLeft')}</option>
+                      <option value="bottom-right">{t('export.posBottomRight')}</option>
                     </select>
                     <input
                       className="text-input"
                       value={stamps.pnFormat}
                       onChange={(e) => setStamps({ ...stamps, pnFormat: e.target.value })}
-                      title="Tokens: {page} {pages}"
+                      title={t('export.tokensTitle')}
                     />
                     <input
                       className="text-input num"
@@ -307,11 +312,11 @@ export function ExportDialog({
                       min={0}
                       value={stamps.pnStart}
                       onChange={(e) => setStamps({ ...stamps, pnStart: parseInt(e.target.value || '1', 10) })}
-                      title="First page number"
+                      title={t('export.firstPageNum')}
                     />
                     <label className="check-row">
                       <input type="checkbox" checked={stamps.pnSkipFirst} onChange={(e) => setStamps({ ...stamps, pnSkipFirst: e.target.checked })} />
-                      skip cover
+                      {t('export.skipCover')}
                     </label>
                   </div>
                 </>
@@ -319,7 +324,7 @@ export function ExportDialog({
               <div className="stamp-row">
                 <input
                   className="text-input"
-                  placeholder="Watermark text (blank = none)"
+                  placeholder={t('export.wmPlaceholder')}
                   value={stamps.watermark}
                   onChange={(e) => setStamps({ ...stamps, watermark: e.target.value })}
                 />
@@ -332,7 +337,7 @@ export function ExportDialog({
                       max={200}
                       value={stamps.wmSize}
                       onChange={(e) => setStamps({ ...stamps, wmSize: parseInt(e.target.value || '56', 10) })}
-                      title="Watermark size"
+                      title={t('export.wmSize')}
                     />
                     <input
                       className="text-input num"
@@ -342,40 +347,40 @@ export function ExportDialog({
                       step={0.02}
                       value={stamps.wmOpacity}
                       onChange={(e) => setStamps({ ...stamps, wmOpacity: parseFloat(e.target.value || '0.12') })}
-                      title="Watermark opacity"
+                      title={t('export.wmOpacity')}
                     />
                     <input
                       type="color"
                       value={stamps.wmColor}
                       onChange={(e) => setStamps({ ...stamps, wmColor: e.target.value })}
-                      title="Watermark color"
+                      title={t('export.wmColor')}
                     />
                   </>
                 )}
               </div>
               <div className="stamp-row">
-                <input className="text-input" placeholder="Header left — tokens: {title} {page} {date}" value={stamps.headerLeft} onChange={(e) => setStamps({ ...stamps, headerLeft: e.target.value })} />
-                <input className="text-input" placeholder="Header right" value={stamps.headerRight} onChange={(e) => setStamps({ ...stamps, headerRight: e.target.value })} />
+                <input className="text-input" placeholder={t('export.headerLeftPh')} value={stamps.headerLeft} onChange={(e) => setStamps({ ...stamps, headerLeft: e.target.value })} />
+                <input className="text-input" placeholder={t('export.headerRightPh')} value={stamps.headerRight} onChange={(e) => setStamps({ ...stamps, headerRight: e.target.value })} />
               </div>
               <div className="stamp-row">
-                <input className="text-input" placeholder="Footer left" value={stamps.footerLeft} onChange={(e) => setStamps({ ...stamps, footerLeft: e.target.value })} />
-                <input className="text-input" placeholder="Footer right — {date}" value={stamps.footerRight} onChange={(e) => setStamps({ ...stamps, footerRight: e.target.value })} />
+                <input className="text-input" placeholder={t('export.footerLeftPh')} value={stamps.footerLeft} onChange={(e) => setStamps({ ...stamps, footerLeft: e.target.value })} />
+                <input className="text-input" placeholder={t('export.footerRightPh')} value={stamps.footerRight} onChange={(e) => setStamps({ ...stamps, footerRight: e.target.value })} />
               </div>
             </div>
           </details>
-          <p className="muted small">Rotation, reordering, blank pages and all marks are applied. Sticky-note text stays in the app (markers are stamped).</p>
+          <p className="muted small">{t('export.note')}</p>
           {hasStamps(stamps) ? (
             <div className="preview-wrap">
               <StampPreview stamps={stamps} aspect={pageAspect} pageCount={pageCount} title={title.trim() || fileName} />
             </div>
           ) : (
-            <p className="muted small">Tip: enable page numbers, a watermark or header/footer above to see a live preview here.</p>
+            <p className="muted small">{t('export.tip')}</p>
           )}
           <details className="stamp-box">
-            <summary>Reduce file size</summary>
+            <summary>{t('export.reduceSize')}</summary>
             <label className="check-row">
               <input type="checkbox" checked={compressKey !== ''} onChange={(e) => setCompressKey(e.target.checked ? 'medium' : '')} />
-              Compress the exported PDF
+              {t('export.compress')}
             </label>
             {compressKey !== '' && (
               <>
@@ -389,29 +394,28 @@ export function ExportDialog({
                   </select>
                 </div>
                 <p className="muted small">
-                  Pages are rasterized to images — the file gets much smaller, but text is no longer selectable or searchable.
-                  Annotations and stamps are burned in first.
+                  {t('export.compressNote')}
                 </p>
               </>
             )}
           </details>
         </section>
         <section>
-          <h3>Document properties</h3>
+          <h3>{t('export.docProps')}</h3>
           <label className="stack-field">
-            Title
+            {t('export.metaTitle')}
             <input className="text-input" value={title} onChange={(e) => setTitle(e.target.value)} />
           </label>
           <label className="stack-field">
-            Author
+            {t('export.metaAuthor')}
             <input className="text-input" value={author} onChange={(e) => setAuthor(e.target.value)} />
           </label>
           <label className="stack-field">
-            Subject
+            {t('export.metaSubject')}
             <input className="text-input" value={subject} onChange={(e) => setSubject(e.target.value)} />
           </label>
           <label className="stack-field">
-            Keywords
+            {t('export.metaKeywords')}
             <input className="text-input" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
           </label>
         </section>
@@ -423,44 +427,46 @@ export function ExportDialog({
 /* ------------------------------------------------------------------ */
 
 export function HelpModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   return (
-    <Dialog title="How PDF Studio works" onClose={onClose} wide>
+    <Dialog title={t('help.title')} onClose={onClose} wide>
       <div className="help-grid">
         <section>
-          <h3>Editing</h3>
+          <h3>{t('help.editing')}</h3>
           <ul>
-            <li><b>Edit text</b> — switch to the edit tool and click a line (or one table cell) of the original PDF. On export the original text is rewritten in place inside the PDF content stream — tables keep their column positions, and the replacement becomes real selectable text. Scanned images need the OCR tool (same toolbar).</li>
-            <li><b>Add text</b>, <b>highlight</b>, <b>underline</b>, <b>strikethrough</b>, <b>notes</b>, <b>freehand pen</b>, <b>arrows &amp; pointers</b>, <b>rectangles</b> and <b>ellipses</b> all layer on top and are flattened into the exported file.</li>
-            <li><b>Redact</b> paints permanent black boxes — nothing sensitive remains visible in the exported file; <b>whiteout</b> samples the page background so it blends in.</li>
-            <li><b>Search</b> — the box in the top bar finds text across the whole document; Enter / Shift+Enter jump between matches.</li>
+            <li><Trans i18nKey="help.editingEdit" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.editingLayers" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.editingRedact" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.editingSearch" components={{ b: <b /> }} /></li>
           </ul>
         </section>
         <section>
-          <h3>Pages &amp; files</h3>
+          <h3>{t('help.pagesFiles')}</h3>
           <ul>
-            <li>Drag thumbnails to reorder, use hover buttons to rotate / duplicate / delete / insert blank pages.</li>
-            <li><b>Merge</b>: while a document is open, choose <b>Merge PDF</b> (or drop a file and pick “Merge”).</li>
-            <li><b>Split / extract</b>: Export &gt; enter a page range, or “one file per page”.</li>
-            <li><b>Forms</b>: the Forms button lists fillable AcroForm fields (text, checkboxes, radios, dropdowns). Values are written into the real fields on Save, or flattened from the dialog.</li>
-            <li><b>Stamps</b>: in Export, add page numbers, a diagonal watermark, and header/footer text (tokens: <code>{'{page}'}</code> <code>{'{pages}'}</code> <code>{'{date}'}</code> <code>{'{title}'}</code>).</li>
-            <li><b>Autosave</b>: your working session (including annotations and form values) is kept on this device and offered on the start screen after a refresh or crash.</li>
+            <li><Trans i18nKey="help.pagesReorder" /></li>
+            <li><Trans i18nKey="help.pagesMerge" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.pagesSplit" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.pagesForms" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.pagesStamps" components={{ b: <b />, code: <code /> }} /></li>
+            <li><Trans i18nKey="help.pagesAutosave" components={{ b: <b /> }} /></li>
           </ul>
         </section>
         <section>
-          <h3>Privacy</h3>
+          <h3>{t('help.privacy')}</h3>
           <ul>
-            <li><b>No uploads</b> — documents are opened, edited and saved entirely on this device.</li>
-            <li><b>No attachments kept, no user information retained</b> — there is no account, no tracking of your files, and nothing is stored on any server. Your session autosaves locally in your browser and only you can read it.</li>
-            <li>Optional AI/OCR models download public weights once; your <i>documents</i> never touch the network.</li>
+            <li><Trans i18nKey="help.privacyNoUploads" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.privacyNoTracking" components={{ b: <b /> }} /></li>
+            <li><Trans i18nKey="help.privacyModels" components={{ i: <i /> }} /></li>
+            <li><Trans i18nKey="help.translateCta" components={{ a: <a href={TRANSLATE_URL} target="_blank" rel="noreferrer" /> }} /></li>
           </ul>
         </section>
         <section>
-          <h3>Shortcuts</h3>
+          <h3>{t('help.shortcuts')}</h3>
           <ShortcutCheatsheet />
         </section>
       </div>
       <div className="modal-actions">
-        <button className="btn primary" onClick={onClose}>Got it</button>
+        <button className="btn primary" onClick={onClose}>{t('help.gotIt')}</button>
       </div>
     </Dialog>
   );

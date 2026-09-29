@@ -1,0 +1,18 @@
+# Crowdin configuration for PDF Studio UI translations.
+#
+# Setup (one time, needs a Crowdin account — see docs/plans/translations-and-docs-site.md):
+#   1. Create a Crowdin project (open-source) and grab the project ID.
+#   2. Create a fine-grained API token with project scope.
+#   3. Export CROWDIN_PROJECT_ID and CROWDIN_API_TOKEN, then run:
+#        crowdin upload sources
+#        crowdin download
+#
+# The English catalog is the source of truth. Translators work in Crowdin;
+# `crowdin download` writes each language back to src/locales/<lang>/translation.json.
+# The app bundles these files — no runtime fetching, translations work offline.
+"project_id_env": "CROWDIN_PROJECT_ID"
+"api_token_env": "CROWDIN_API_TOKEN"
+preserve_hierarchy: true
+files:
+  - source: /src/locales/en/translation.json
+    translation: /src/locales/%two_letters_code%/translation.json

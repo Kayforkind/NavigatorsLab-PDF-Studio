@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 export interface AISettings {
   model: string;
   onProgress?: (stage: string, progress: number) => void;
@@ -35,7 +36,7 @@ export async function loadEngine(model: string, onProgress?: (text: string) => v
       const msg = err instanceof Error ? err.message : String(err);
       const friendly =
         /fetch|network|load failed|offline/i.test(msg)
-          ? 'Could not download the model — this needs a network connection the first time. The model is cached on your device afterwards; your document itself never leaves this machine.'
+          ? i18n.t('lib.aiDownload')
           : msg;
       throw new Error(friendly);
     }

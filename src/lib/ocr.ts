@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 export interface OcrWord {
   text: string;
   /** coordinates in the input canvas pixel space */
@@ -43,7 +44,7 @@ export async function runOcr(canvas: HTMLCanvasElement, lang: OcrLang = 'eng', o
   try {
     Tesseract = await import('tesseract.js');
   } catch (e) {
-    throw new Error(`Could not load the OCR engine: ${e instanceof Error ? e.message : e}`);
+    throw new Error(i18n.t('lib.ocrLoad', { msg: e instanceof Error ? e.message : String(e) }));
   }
   // Resolve engine asset roots against the deployed base (works at a site
   // root AND under a sub-path like GitHub Pages /repo/).
@@ -62,7 +63,7 @@ export async function runOcr(canvas: HTMLCanvasElement, lang: OcrLang = 'eng', o
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    throw new Error(`OCR engine failed to start: ${msg}`);
+    throw new Error(i18n.t('lib.ocrStart', { msg }));
   }
   try {
     // tesseract.js v7 defaults `blocks: false` — without this override
