@@ -121,7 +121,8 @@ const ok = (name, cond, extra = '') => {
     red?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
   await page.waitForTimeout(300);
-  ok('redact tool active', (await page.evaluate(() => (document.querySelector('.st-left')?.textContent || '').match(/tool: \w+/)?.[0])) === 'tool: redact');
+  const toolWord = ((await page.evaluate(() => (document.querySelector('.st-left')?.textContent || '').match(/tool: (\w+)/)?.[1])) || '').toLowerCase();
+  ok('redact tool active', toolWord === 'redact');
   await page.waitForTimeout(300);
   const sheetEl = page.locator('.sheet-inner').first();
   await sheetEl.scrollIntoViewIfNeeded();
