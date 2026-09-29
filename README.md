@@ -154,6 +154,8 @@ npm install
 npm run build:packages
 ```
 
+Run the CLI from the repo root with `npx pdfstudio …`, or make it global with `npm link -w packages/cli` and then call `pdfstudio` anywhere. The MCP server lives at `packages/mcp/dist/index.js` after the build.
+
 ### CLI — `pdfstudio`
 
 ```bash
