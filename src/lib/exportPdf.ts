@@ -1,13 +1,18 @@
 import {
   LineCapStyle,
+  PDFArray,
+  PDFDict,
   PDFDocument,
   PDFFont,
   PDFImage,
   PDFName,
   PDFNumber,
+  PDFObject,
   PDFPage,
   PDFOperator,
   PDFOperatorNames,
+  PDFRawStream,
+  PDFRef,
   StandardFonts,
   degrees,
   rgb,
@@ -16,7 +21,17 @@ import type { Annotation, DocState, FormFieldAnn, PageRec, Source } from '../typ
 import { parseRanges } from './ranges';
 import { applyFieldValues } from './forms';
 import { rasterizePage, transformAnnsToDisplaySpace, type RasterResult } from './rasterize';
-import { planDeepEdit, planVectorRedaction, installStream } from './textRewrite';
+import {
+  planDeepEdit,
+  planVectorRedaction,
+  installStream,
+  classifyCoveredText,
+  sanitizeAcroFormUnderRects,
+  sanitizeStructureTree,
+  purgeAnnotAppearances,
+  redactRectsInAnnotSpace,
+} from './textRewrite';
+import { gateRedactedExport, type RedactionReport } from './redactVerify';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 export interface DocMeta {
@@ -172,6 +187,249 @@ function redactRectsFor(anns: Annotation[] | undefined): Array<{ x: number; y: n
 }
 
 /**
+ * Remove source-document annotations (/Annots) that intersect any redact
+ * rect — an annotation sitting under a redact box would otherwise survive
+ * in the exported file with its text intact. Runs on the source lib BEFORE
+ * copyPages.
+ *
+ * The redact rects are crop-box-relative (y-up); source /Annots /Rect is in
+ * default user space, so the crop origin is added. Intersection is tested
+ * conservatively in both unrotated space and 90/180/270°-rotated variants
+ * of the rects (annotations live in default user space; over-removal is the
+ * safe direction).
+ *
+ * Returns false when an annotation's geometry cannot be determined — the
+ * caller must then force the raster path instead of trusting the vector
+ * path.
+ */
+function sanitizeSourceAnnots(lib: PDFDocument, pageIndex: number, rects: Array<{ x: number; y: number; w: number; h: number }>): boolean {
+  try {
+    const node = lib.getPage(pageIndex).node;
+    const annots = node.lookupMaybe(PDFName.of('Annots'), PDFArray);
+    if (!annots || annots.size() === 0 || rects.length === 0) return true;
+    const allRects = redactRectsInAnnotSpace(lib, pageIndex, rects);
+    const keep: PDFObject[] = [];
+    for (let i = 0; i < annots.size(); i++) {
+      const raw = annots.get(i);
+      const a = lib.context.lookup(raw);
+      const rArr = a instanceof PDFDict ? a.lookupMaybe(PDFName.of('Rect'), PDFArray) : undefined;
+      if (!rArr || rArr.size() < 4) return false; // undeterminable → force raster
+      const nums: number[] = [];
+      for (let k = 0; k < 4; k++) {
+        const n = lib.context.lookupMaybe(rArr.get(k), PDFNumber);
+        if (!n || !Number.isFinite(n.asNumber())) return false; // undeterminable → force raster
+        nums.push(n.asNumber());
+      }
+      const ax0 = Math.min(nums[0], nums[2]);
+      const ay0 = Math.min(nums[1], nums[3]);
+      const ax1 = Math.max(nums[0], nums[2]);
+      const ay1 = Math.max(nums[1], nums[3]);
+      let hit = false;
+      for (const q of allRects) {
+        if (ax0 < q.x + q.w && ax1 > q.x && ay0 < q.y + q.h && ay1 > q.y) { hit = true; break; }
+      }
+      if (hit) {
+        // Purge the appearance stream too: it renders the annotation's
+        // content, and pdf-lib serializes even unreferenced objects, so a
+        // merely-dropped annotation would leak its text as an orphan.
+        if (a instanceof PDFDict) purgeAnnotAppearances(lib.context, a);
+      } else {
+        keep.push(raw);
+      }
+    }
+    if (keep.length === 0) node.delete(PDFName.of('Annots'));
+    else {
+      const fresh = PDFArray.withContext(lib.context);
+      for (const k of keep) fresh.push(k);
+      node.set(PDFName.of('Annots'), lib.context.register(fresh));
+    }
+    return true;
+  } catch {
+    return false; // undeterminable → force raster
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Redacted-export scrub: metadata, attachments, JavaScript, thumbnails  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Recursively delete an indirect object and everything it references.
+ * pdf-lib's save() serializes ALL indirect objects in the context — even
+ * ones no longer referenced — so merely dropping the reference is NOT
+ * enough: the bytes would survive in the file. Cycle-safe via `seen`.
+ */
+function purgeTree(ctx: import('pdf-lib').PDFContext, obj: PDFObject, seen: Set<string>): void {
+  if (obj instanceof PDFRef) {
+    const key = obj.toString();
+    if (seen.has(key)) return;
+    seen.add(key);
+    const target = ctx.lookup(obj);
+    if (target) purgeTreeValue(ctx, target, seen);
+    ctx.delete(obj);
+    return;
+  }
+  purgeTreeValue(ctx, obj, seen);
+}
+
+function purgeTreeValue(ctx: import('pdf-lib').PDFContext, target: PDFObject, seen: Set<string>): void {
+  if (target instanceof PDFDict) {
+    for (const [, v] of target.entries()) purgeTree(ctx, v, seen);
+  } else if (target instanceof PDFArray) {
+    for (let i = 0; i < target.size(); i++) purgeTree(ctx, target.get(i), seen);
+  } else if (target instanceof PDFRawStream) {
+    for (const [, v] of target.dict.entries()) purgeTree(ctx, v, seen);
+  }
+}
+
+/** True when the object is a /JavaScript action (the only kind we purge). */
+function isJavaScriptAction(ctx: import('pdf-lib').PDFContext, obj: PDFObject): boolean {
+  const t = obj instanceof PDFRef ? ctx.lookup(obj) : obj;
+  if (!(t instanceof PDFDict)) return false;
+  const s = t.get(PDFName.of('S'));
+  return s instanceof PDFName && s.asString() === '/JavaScript';
+}
+
+/**
+ * Strip everything a redacted export must not carry: the whole document Info
+ * dict (Author/Creator/Producer/Title/Subject/Keywords), the XMP metadata
+ * stream, embedded files (/EmbeddedFiles name tree), document JavaScript
+ * (/OpenAction, /AA, /Names/JavaScript), and page thumbnails (/Thumb).
+ * Runs on the OUTPUT document, before save. Never throws — a scrub failure
+ * is logged, and the verification gate still guards delivery.
+ */
+export function scrubRedactionArtifacts(out: PDFDocument): void {
+  try {
+    const ctx = out.context;
+    const catalog = out.catalog;
+    const seen = new Set<string>();
+
+    // 1. Document Info dict — referenced from the TRAILER, not the catalog
+    // (catalog.get('Info') is always undefined in pdf-lib and a no-op).
+    const infoRaw = ctx.trailerInfo.Info;
+    if (infoRaw !== undefined) {
+      delete ctx.trailerInfo.Info;
+      purgeTree(ctx, infoRaw, seen);
+    }
+    // 2. XMP metadata stream.
+    const metaRaw = catalog.get(PDFName.of('Metadata'));
+    if (metaRaw !== undefined) {
+      catalog.delete(PDFName.of('Metadata'));
+      purgeTree(ctx, metaRaw, seen);
+    }
+    // 3. Embedded files + document-level JavaScript name trees.
+    const names = catalog.lookupMaybe(PDFName.of('Names'), PDFDict);
+    if (names) {
+      for (const key of ['EmbeddedFiles', 'JavaScript']) {
+        const raw = names.get(PDFName.of(key));
+        if (raw !== undefined) {
+          names.delete(PDFName.of(key));
+          purgeTree(ctx, raw, seen);
+        }
+      }
+      if (names.keys().length === 0) catalog.delete(PDFName.of('Names'));
+    }
+    // 4. Document JavaScript: /OpenAction and the catalog /AA dict. Only
+    // purge when the target is actually a JS action — a bare [page /Fit]
+    // OpenAction references the page itself and must not be deep-deleted.
+    const oaRaw = catalog.get(PDFName.of('OpenAction'));
+    if (oaRaw !== undefined) {
+      catalog.delete(PDFName.of('OpenAction'));
+      if (isJavaScriptAction(ctx, oaRaw)) purgeTree(ctx, oaRaw, seen);
+    }
+    const aaRaw = catalog.get(PDFName.of('AA'));
+    if (aaRaw !== undefined) {
+      catalog.delete(PDFName.of('AA'));
+      const aa = aaRaw instanceof PDFRef ? ctx.lookup(aaRaw) : aaRaw;
+      if (aa instanceof PDFDict) {
+        for (const [, v] of aa.entries()) {
+          if (isJavaScriptAction(ctx, v)) purgeTree(ctx, v, seen);
+        }
+      }
+      if (aaRaw instanceof PDFRef) ctx.delete(aaRaw);
+    }
+    // 5. Page level: additional actions and thumbnails.
+    for (const page of out.getPages()) {
+      const node = page.node;
+      const paaRaw = node.get(PDFName.of('AA'));
+      if (paaRaw !== undefined) {
+        node.delete(PDFName.of('AA'));
+        const paa = paaRaw instanceof PDFRef ? ctx.lookup(paaRaw) : paaRaw;
+        if (paa instanceof PDFDict) {
+          for (const [, v] of paa.entries()) {
+            if (isJavaScriptAction(ctx, v)) purgeTree(ctx, v, seen);
+          }
+        }
+        if (paaRaw instanceof PDFRef) ctx.delete(paaRaw);
+      }
+      const thumbRaw = node.get(PDFName.of('Thumb'));
+      if (thumbRaw !== undefined) {
+        node.delete(PDFName.of('Thumb'));
+        purgeTree(ctx, thumbRaw, seen);
+      }
+    }
+  } catch (e) {
+    console.warn('redaction scrub incomplete:', e);
+  }
+}
+
+/** Bounds of an app annotation in its own coordinate space. */
+function annBounds(a: Annotation): { x: number; y: number; w: number; h: number } | null {
+  switch (a.type) {
+    case 'text':
+      return { x: a.x, y: a.y, w: 0.01, h: 0.01 }; // point-in-rect test
+    case 'ink': {
+      if (a.pts.length === 0) return null;
+      const xs = a.pts.map((p) => p.x);
+      const ys = a.pts.map((p) => p.y);
+      const x0 = Math.min(...xs);
+      const x1 = Math.max(...xs);
+      const y0 = Math.min(...ys);
+      const y1 = Math.max(...ys);
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    }
+    case 'note': {
+      const s = Math.max(8, a.w ?? 16);
+      return { x: a.x, y: a.y, w: s, h: a.h ?? s };
+    }
+    case 'arrow': {
+      const x0 = Math.min(a.x1, a.x2);
+      const x1 = Math.max(a.x1, a.x2);
+      const y0 = Math.min(a.y1, a.y2);
+      const y1 = Math.max(a.y1, a.y2);
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    }
+    case 'highlight':
+    case 'underline':
+    case 'strike':
+    case 'redact':
+    case 'whiteout':
+    case 'rect':
+    case 'ellipse':
+    case 'image':
+    case 'edit':
+    case 'formfield':
+      return { x: a.x, y: a.y, w: a.w, h: a.h };
+    default:
+      return null;
+  }
+}
+
+/**
+ * True when an app annotation's bounds intersect any redact rect (same
+ * coordinate space for both). Unknown geometry counts as intersecting —
+ * the safe direction is to skip drawing it.
+ */
+function annIntersectsRedact(a: Annotation, rects: Array<{ x: number; y: number; w: number; h: number }>): boolean {
+  const b = annBounds(a);
+  if (!b) return true;
+  for (const r of rects) {
+    if (b.x < r.x + r.w && b.x + b.w > r.x && b.y < r.y + r.h && b.y + b.h > r.y) return true;
+  }
+  return false;
+}
+
+/**
  * Renders the page with pdf.js, burns the redact boxes into the pixels and
  * returns the raster — the ONLY path in which redacted content is truly
  * removed from the file (the original content stream is discarded). Returns
@@ -215,16 +473,35 @@ async function applyDeepContentPass(
   lib: import('pdf-lib').PDFDocument,
   p: PageRec,
   pageAnns: Annotation[],
-): Promise<boolean> {
+): Promise<{ vectorDone: boolean; clearedFieldValues: string[]; coveredText: string[] }> {
+  const none = { vectorDone: false, clearedFieldValues: [] as string[], coveredText: [] as string[] };
   try {
-    if (p.page === null) return false;
+    if (p.page === null) return none;
     const rects = redactRectsFor(pageAnns);
     let vectorDone = false;
+    const clearedFieldValues: string[] = [];
+    const coveredText: string[] = [];
     if (rects.length > 0) {
-      const vr = planVectorRedaction(lib, p.page, rects);
-      if (vr) {
-        installStream(lib, p.page, vr.bytes);
-        if (vr.removed > 0 && vr.partial === 0) vectorDone = true;
+      // Clear AcroForm field values under the rects FIRST: this reads its
+      // widget list from the page's /Annots, which the annotation sanitizer
+      // below then drops. (Value can survive via the catalog-level /Fields
+      // dict even when the widget annot is removed.)
+      const formRes = sanitizeAcroFormUnderRects(lib, p.page, rects);
+      clearedFieldValues.push(...formRes.cleared);
+      // Strip source-document annotations under the redact boxes: an
+      // annotation there would otherwise survive with its text intact.
+      // Undeterminable annotation geometry forces the raster path.
+      const annotsOk = sanitizeSourceAnnots(lib, p.page, rects);
+      // Sanitize structure-tree /Alt, /ActualText, /E under the rects.
+      const structOk = sanitizeStructureTree(lib, p.page, rects);
+      const vr = annotsOk && formRes.ok && structOk ? planVectorRedaction(lib, p.page, rects) : null;
+      if (vr && vr.partial === 0) {
+        // Vector analysis complete: everything under the rects was removed
+        // (or there was nothing in the content stream — e.g. a widget-only
+        // rect handled by the annot/AcroForm sanitizers above).
+        if (vr.changed) installStream(lib, p.page, vr.bytes);
+        coveredText.push(...vr.coveredText);
+        vectorDone = true;
       }
     }
     // True text edits (skip when the page will be rasterized — the raster
@@ -261,10 +538,10 @@ async function applyDeepContentPass(
         }
       }
     }
-    return vectorDone;
+    return { vectorDone, clearedFieldValues, coveredText };
   } catch (e) {
     console.warn('deep content pass skipped:', e);
-    return false;
+    return { vectorDone: false, clearedFieldValues: [], coveredText: [] };
   }
 }
 
@@ -492,7 +769,16 @@ export interface ExportInput {
   proxies?: ReadonlyMap<string, PDFDocumentProxy>;
 }
 
-export async function buildPdf({ doc, meta, range, formValues, flattenForms, stamps, proxies }: ExportInput): Promise<{ bytes: Uint8Array; pages: number }> {
+export interface BuildPdfResult {
+  bytes: Uint8Array;
+  pages: number;
+  /** present when the export carried redactions: the verification report */
+  verification?: RedactionReport;
+  /** decoded covered strings captured pre-export (for post-compress re-verification) */
+  coveredStrings: string[];
+}
+
+export async function buildPdf({ doc, meta, range, formValues, flattenForms, stamps, proxies }: ExportInput): Promise<BuildPdfResult> {
   const idxs = range.trim() ? parseRanges(range, doc.pages.length) : doc.pages.map((_, i) => i);
   const pagesToExport: PageRec[] = idxs.map((i) => doc.pages[i]);
 
@@ -539,6 +825,11 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
    *  real AcroForm widgets can be created after the page loop. */
   const formWidgets: Array<{ page: PDFPage; ann: FormFieldAnn }> = [];
 
+  /** Redaction-truth bookkeeping: rect count + covered strings for the
+   *  post-export verification gate. */
+  let redactionRegions = 0;
+  const coveredStrings: string[] = [];
+
   for (const p of pagesToExport) {
     let outPage: PDFPage;
     let pageAnns = annsByPage.get(p.id) ?? [];
@@ -548,14 +839,31 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
       if (!lib || p.page === null || p.page >= lib.getPageCount()) continue;
       const intrinsic = doc.sources.find((s) => s.id === p.src)?.pages[p.page]?.rot ?? 0;
       const total = ((intrinsic + p.rot) % 360 + 360) % 360;
+      // Capture the text sitting under the redact rects BEFORE the deep pass
+      // mutates the stream — the verification gate checks these strings are
+      // absent from the OUTPUT bytes.
+      const pageRects = redactRectsFor(pageAnns);
+      if (pageRects.length > 0) {
+        redactionRegions += pageRects.length;
+        const cov = classifyCoveredText(lib, p.page, pageRects);
+        if (cov) coveredStrings.push(...cov.covered);
+      }
       // Deep pass FIRST: delete covered text operators / edited lines from
       // the source lib so the copied page (vector, flip or raster) carries
-      // the removal. Returns true when rasterization can be skipped.
-      const vectorRedactDone = await applyDeepContentPass(lib, p, pageAnns);
+      // the removal. Returns vectorDone=true when rasterization can be skipped.
+      const deep = await applyDeepContentPass(lib, p, pageAnns);
+      coveredStrings.push(...deep.clearedFieldValues, ...deep.coveredText);
+      const vectorRedactDone = deep.vectorDone;
       // TRUE redaction: pages still carrying unremovable redact coverage are
       // REPLACED by a raster with the boxes burned into the pixels — the
       // original content stream is discarded entirely.
       raster = vectorRedactDone ? null : await maybeRasterForRedaction(p, pageAnns, proxies, total);
+      if (pageRects.length > 0 && !vectorRedactDone && !raster) {
+        // Neither vector nor raster redaction completed: the clip-path
+        // fallback below would only HIDE the content while leaving it in the
+        // file, which violates the redaction guarantee. Refuse loudly.
+        throw new Error(`redaction-failed: page ${p.page === null ? '?' : p.page + 1} could not be securely redacted`);
+      }
       if (raster) {
         outPage = out.addPage([raster.w, raster.h]); // rotation + flip baked into the bitmap
         const jpgB64 = raster.dataUrl.split(',')[1] ?? '';
@@ -608,15 +916,25 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
       // Clip-based fallback (only when rasterization is unavailable): the
       // region is excluded from all later painting. Content underneath may
       // still exist in the file — the raster path above is the real removal.
+      // NOTE: when redact rects exist this branch is unreachable: the hard
+      // refusal above throws instead of shipping a clip-path cover-up.
       burnRedactions(outPage, redactRectsFor(pageAnns));
     }
+    // App annotations intersecting a redact box are NOT drawn: re-painting
+    // them on top would re-expose the redacted content (the 'redact' boxes
+    // themselves are always drawn). In the raster branch both lists are in
+    // display space; otherwise both are in content space.
+    const drawRects = redactRectsFor(pageAnns);
     for (const a of pageAnns) {
       // User-placed fillable fields become real AcroForm widgets below —
-      // they are not drawn as vector annotations.
+      // they are not drawn as vector annotations. A field under a redact
+      // box is dropped entirely (its value could carry redacted content).
       if (a.type === 'formfield') {
+        if (drawRects.length > 0 && annIntersectsRedact(a, drawRects)) continue;
         formWidgets.push({ page: outPage, ann: a });
         continue;
       }
+      if (a.type !== 'redact' && drawRects.length > 0 && annIntersectsRedact(a, drawRects)) continue;
       await drawAnn(outPage, a, fonts, embedCache, out);
     }
     if (stamps) {
@@ -655,20 +973,33 @@ export async function buildPdf({ doc, meta, range, formValues, flattenForms, sta
     }
   }
 
-  const t = meta.title.trim() || doc.name;
-  if (t) out.setTitle(t);
-  if (meta.author.trim()) out.setAuthor(meta.author.trim());
-  if (meta.subject.trim()) out.setSubject(meta.subject.trim());
-  const kws = meta.keywords
-    .split(/[,\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (kws.length) out.setKeywords(kws);
-  out.setProducer('PDF Studio (client-side)');
-  out.setCreator('PDF Studio');
+  const redacted = redactionRegions > 0;
+  if (redacted) {
+    // Redacted export: strip metadata, attachments, JavaScript, thumbnails.
+    // The whole Info dict goes — no title/author/producer is re-applied.
+    scrubRedactionArtifacts(out);
+  } else {
+    const t = meta.title.trim() || doc.name;
+    if (t) out.setTitle(t);
+    if (meta.author.trim()) out.setAuthor(meta.author.trim());
+    if (meta.subject.trim()) out.setSubject(meta.subject.trim());
+    const kws = meta.keywords
+      .split(/[,\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (kws.length) out.setKeywords(kws);
+    out.setProducer('PDF Studio (client-side)');
+    out.setCreator('PDF Studio');
+  }
 
   const bytes = await out.save({ useObjectStreams: true });
-  return { bytes, pages: pagesToExport.length };
+  if (redacted) {
+    // Verification GATES delivery: throws `verification-failed` when any
+    // covered string is still recoverable — no file is delivered.
+    const verification = await gateRedactedExport(bytes, coveredStrings, redactionRegions);
+    return { bytes, pages: pagesToExport.length, verification, coveredStrings };
+  }
+  return { bytes, pages: pagesToExport.length, coveredStrings: [] };
 }
 
 export function downloadBytes(bytes: Uint8Array, filename: string) {

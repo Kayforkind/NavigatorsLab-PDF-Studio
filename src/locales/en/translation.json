@@ -296,7 +296,7 @@
     "reduceSize": "Reduce file size",
     "compress": "Compress the exported PDF",
     "compressNote": "Pages are rasterized to images — the file gets much smaller, but text is no longer selectable or searchable. Annotations and stamps are burned in first.",
-    "docProps": "Document properties",
+    "docProps": "Document properties", "redactScrubNote": "Redacted exports also strip document metadata, attachments, JavaScript and thumbnails, and are verified leak-free before download.",
     "metaTitle": "Title",
     "metaAuthor": "Author",
     "metaSubject": "Subject",
@@ -322,7 +322,11 @@
     "privacyNoTracking": "<b>No attachments kept, no user information retained</b> — there is no account, no tracking of your files, and nothing is stored on any server. Your session autosaves locally in your browser and only you can read it.",
     "privacyModels": "Optional AI/OCR models download public weights once; your <i>documents</i> never touch the network.",
     "shortcuts": "Shortcuts",
-    "translateCta": "Speak another language? <a>Help translate PDF Studio</a> — no code needed."
+    "translateCta": "Speak another language? <a>Help translate PDF Studio</a> — no code needed.",
+    "settings": "Privacy settings",
+    "privacyNote": "Documents autosave to this browser's local storage so you can resume. Nothing is ever sent to a server — there is no server. Memory-only mode disables even local saving.",
+    "memoryOnlyLabel": "Memory-only mode (don't save anything locally)",
+    "clearSavedData": "Clear saved data"
   },
   "app": {
     "busyOpening": "Opening {{name}}…",
@@ -349,6 +353,9 @@
     "pngFailed": "Could not render PNG.",
     "wipeDone": "All PDF Studio data deleted from this device.",
     "wipeEmpty": "No saved PDF Studio data on this device.",
+    "redactFailed": "Redaction failed: page {{page}} could not be securely redacted — the export was stopped.", "redactVerified": "{{regions}} regions redacted · {{strings}} strings checked · 0 recoverable", "verifyFailed": "Verification failed: redacted content was still recoverable in the exported file — the export was stopped.",
+    "exportFailed": "Export failed: {{message}}",
+    "printFailed": "Print failed: {{message}}",
     "sessionRestored": "Restored “{{name}}” from this device.",
     "sessionRestoreFailed": "Could not restore the saved session.",
     "merged_one": "Merged {{name}} ({{count}} page) after the current page.",

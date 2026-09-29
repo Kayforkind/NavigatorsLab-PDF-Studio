@@ -418,6 +418,7 @@ export function ExportDialog({
             {t('export.metaKeywords')}
             <input className="text-input" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
           </label>
+          <p className="muted small">{t('export.redactScrubNote')}</p>
         </section>
       </div>
     </Dialog>
@@ -426,11 +427,34 @@ export function ExportDialog({
 
 /* ------------------------------------------------------------------ */
 
-export function HelpModal({ onClose }: { onClose: () => void }) {
+export function HelpModal({
+  onClose,
+  memoryOnly,
+  onMemoryOnly,
+  onClearSaved,
+}: {
+  onClose: () => void;
+  memoryOnly: boolean;
+  onMemoryOnly: (on: boolean) => void;
+  onClearSaved: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <Dialog title={t('help.title')} onClose={onClose} wide>
       <div className="help-grid">
+        <section>
+          <h3>{t('help.settings')}</h3>
+          <p className="muted">{t('help.privacyNote')}</p>
+          <label className="check-row" style={{ marginBottom: 8 }}>
+            <input type="checkbox" checked={memoryOnly} onChange={(e) => onMemoryOnly(e.target.checked)} />
+            {t('help.memoryOnlyLabel')}
+          </label>
+          <div className="modal-actions" style={{ justifyContent: 'flex-start', padding: 0 }}>
+            <button className="btn ghost" onClick={onClearSaved}>
+              {t('help.clearSavedData')}
+            </button>
+          </div>
+        </section>
         <section>
           <h3>{t('help.editing')}</h3>
           <ul>

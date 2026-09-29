@@ -9,13 +9,15 @@ import {
   extractText,
   searchText,
   editText,
-  redactText,
   redactRects,
+  findTextRects,
+  buildRedactReport,
   mergePdfs,
   splitPdf,
   rotatePages,
   arrangePages,
   type RedactRect,
+  type RedactCliReport,
 } from 'pdfstudio-core';
 
 export interface TextOut {
@@ -89,34 +91,42 @@ export async function cmdEditText(
   };
 }
 
+export interface RedactCliResult {
+  bytes: Uint8Array;
+  /** machine-readable report (also the `--report` payload) */
+  report: RedactCliReport;
+  /** true when the op changed nothing (caller maps to exit code 2) */
+  noChange: boolean;
+}
+
+/**
+ * Burned-in redaction with a machine-readable report.
+ *
+ * --find and --rect are unioned into a SINGLE redaction pass: the find
+ * matches are resolved to rects on the input bytes first, then everything
+ * goes through one redactRects call (with one verification of the final
+ * bytes). Sequential passes are never composed — each pass's `()` splice
+ * ghosts would re-trip the engine's conservative undecodable-text flag.
+ *
+ * Any refusal-class skip (unprovable=true) makes report.pass false with
+ * exitCode 3 — the caller must NOT write `bytes` anywhere in that case.
+ */
 export async function cmdRedact(
   input: Uint8Array,
   opts: { find?: string; rects?: RedactRect[]; pages?: string; caseSensitive?: boolean },
-): Promise<MutatingResult> {
+): Promise<RedactCliResult> {
   if (!opts.find && !opts.rects?.length) {
     throw new Error('redact: need --find TEXT and/or --rect <page:x,y,w,h>');
   }
-  let bytes = input;
-  let removed = 0;
-  let partial = 0;
-  const skipped: Array<{ page: number; reason: string }> = [];
-  if (opts.find) {
-    const r = await redactText(bytes, { find: opts.find, pages: opts.pages, caseSensitive: opts.caseSensitive });
-    bytes = r.bytes;
-    removed += r.removed;
-    partial += r.partial;
-    skipped.push(...r.skipped);
-  }
-  if (opts.rects?.length) {
-    const r = await redactRects(opts.rects, bytes);
-    bytes = r.bytes;
-    removed += r.removed;
-    partial += r.partial;
-    skipped.push(...r.skipped);
-  }
-  const lines = [`removed ${removed} text line(s)${partial ? `, ${partial} partially covered (left intact)` : ''}`];
-  for (const s of skipped) lines.push(`p${s.page}: SKIPPED (${s.reason})`);
-  return { bytes, report: lines.join('\n'), json: { removed, partial, skipped }, noChange: removed === 0 };
+  const rects: RedactRect[] = [
+    ...(opts.find
+      ? await findTextRects(input, { find: opts.find, pages: opts.pages, caseSensitive: opts.caseSensitive })
+      : []),
+    ...(opts.rects ?? []),
+  ];
+  const r = await redactRects(rects, input);
+  const report = buildRedactReport(opts.find, r);
+  return { bytes: r.bytes, report, noChange: report.exitCode === 2 };
 }
 
 export async function cmdMerge(inputs: Uint8Array[]): Promise<MutatingResult> {

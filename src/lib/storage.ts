@@ -33,3 +33,47 @@ export function clearAppStorage(): string[] {
   }
   return removed;
 }
+
+/* ------------------------------------------------------------------ */
+/* Memory-only mode: when on, the session autosave never writes        */
+/* SESSION_KEY, so all document state lives in memory only.            */
+/* ------------------------------------------------------------------ */
+
+/** Read the persisted memory-only flag (false when unset or unreadable). */
+export function persistedMemoryOnly(): boolean {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return false;
+    return (JSON.parse(raw) as { memoryOnly?: unknown }).memoryOnly === true;
+  } catch {
+    /* private mode / corrupt */
+    return false;
+  }
+}
+
+/**
+ * Persist the memory-only flag inside SETTINGS_KEY, preserving the other
+ * settings. Enabling the mode deletes any saved session immediately, so no
+ * document bytes linger in localStorage.
+ */
+export function persistMemoryOnly(on: boolean): void {
+  if (on) {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* private mode / storage unavailable */
+    }
+  }
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    const prev = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...prev, memoryOnly: on }));
+  } catch {
+    /* private mode / storage unavailable */
+  }
+}
+
+/** Whether the session autosave may write SESSION_KEY (false in memory-only mode). */
+export function sessionAutosaveAllowed(): boolean {
+  return !persistedMemoryOnly();
+}

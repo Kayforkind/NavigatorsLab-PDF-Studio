@@ -48,6 +48,10 @@ export interface SheetProps {
   onDel: (id: string) => void;
   getNextNoteN: () => number;
   onPlaceSpecial: (kind: 'sign' | 'image', pt: Point, pageId: string) => void;
+  /** pinch-zoom cancel token: when the parent starts a two-finger pinch, this
+      counter bumps and any half-drawn single-finger gesture is discarded
+      WITHOUT committing (otherwise tap-then-pinch leaves a stray dot/rect) */
+  externalCancel?: number;
 }
 
 function rectOf(a: Point, b: Point) {
@@ -212,6 +216,17 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
   const [inline, setInline] = useState<InlineState | null>(null);
   const [inlineText, setInlineText] = useState('');
   const [loaded, setLoaded] = useState(false); // canvas painted
+
+  /* external gesture cancel (see SheetProps.externalCancel) */
+  const cancelToken = props.externalCancel ?? 0;
+  const cancelSeen = useRef(false);
+  useEffect(() => {
+    if (!cancelSeen.current) {
+      cancelSeen.current = true;
+      return;
+    }
+    setGesture(null);
+  }, [cancelToken]);
 
   useEffect(() => {
     if (inline) inlineOpenedAt = Date.now();

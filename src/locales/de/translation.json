@@ -296,7 +296,7 @@
     "reduceSize": "Dateigröße reduzieren",
     "compress": "Exportiertes PDF komprimieren",
     "compressNote": "Seiten werden zu Bildern gerastert — die Datei wird deutlich kleiner, aber Text ist nicht mehr markierbar oder durchsuchbar. Anmerkungen und Stempel werden zuerst eingebrannt.",
-    "docProps": "Dokumenteigenschaften",
+    "docProps": "Dokumenteigenschaften", "redactScrubNote": "Geschwärzte Exporte entfernen außerdem Dokument-Metadaten, Anhänge, JavaScript und Vorschaubilder und werden vor dem Download auf Lecks geprüft.",
     "metaTitle": "Titel",
     "metaAuthor": "Autor",
     "metaSubject": "Betreff",
@@ -322,7 +322,11 @@
     "privacyNoTracking": "<b>Keine gespeicherten Anhänge, keine Nutzerinformationen gespeichert</b> — es gibt kein Konto, keine Verfolgung Ihrer Dateien, und nichts wird auf einem Server gespeichert. Ihre Sitzung wird lokal in Ihrem Browser automatisch gespeichert und nur Sie können sie lesen.",
     "privacyModels": "Optionale AI/OCR-Modelle laden öffentliche Gewichte einmal herunter; Ihre <i>Dokumente</i> berühren nie das Netzwerk.",
     "shortcuts": "Tastaturkürzel",
-    "translateCta": "Sprechen Sie eine andere Sprache? <a>Helfen Sie, PDF Studio zu übersetzen</a> — keine Programmierkenntnisse nötig."
+    "translateCta": "Sprechen Sie eine andere Sprache? <a>Helfen Sie, PDF Studio zu übersetzen</a> — keine Programmierkenntnisse nötig.",
+    "settings": "Datenschutzeinstellungen",
+    "privacyNote": "Dokumente werden im lokalen Speicher dieses Browsers automatisch gespeichert, damit Sie nach einer Unterbrechung fortfahren können. Es wird niemals etwas an einen Server gesendet — es gibt keinen Server. Der Nur-Speicher-Modus deaktiviert sogar das lokale Speichern.",
+    "memoryOnlyLabel": "Nur-Speicher-Modus (nichts lokal speichern)",
+    "clearSavedData": "Gespeicherte Daten löschen"
   },
   "app": {
     "busyOpening": "{{name}} wird geöffnet…",
@@ -348,6 +352,9 @@
     "pagePngDone": "Seite {{n}} als PNG heruntergeladen.",
     "pngFailed": "PNG konnte nicht gerendert werden.",
     "wipeDone": "Alle PDF Studio-Daten von diesem Gerät gelöscht.",
+    "redactFailed": "Schwärzung fehlgeschlagen: Seite {{page}} konnte nicht sicher geschwärzt werden — der Export wurde abgebrochen.", "redactVerified": "{{regions}} Bereiche geschwärzt · {{strings}} Zeichenketten geprüft · 0 wiederherstellbar", "verifyFailed": "Prüfung fehlgeschlagen: Geschwärzte Inhalte waren in der exportierten Datei noch wiederherstellbar — der Export wurde gestoppt.",
+    "exportFailed": "Export fehlgeschlagen: {{message}}",
+    "printFailed": "Drucken fehlgeschlagen: {{message}}",
     "wipeEmpty": "Keine gespeicherten PDF Studio-Daten auf diesem Gerät.",
     "sessionRestored": "“{{name}}” von diesem Gerät wiederhergestellt.",
     "sessionRestoreFailed": "Die gespeicherte Sitzung konnte nicht wiederhergestellt werden.",

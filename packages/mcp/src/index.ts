@@ -27,6 +27,7 @@ import {
   editText,
   redactText,
   redactRects,
+  buildRedactReport,
   mergePdfs,
   splitPdf,
   rotatePages,
@@ -198,17 +199,29 @@ export const handlers = {
       pages: args.pages,
       caseSensitive: args.case_sensitive,
     });
-    if (r.removed === 0) {
+    const report = buildRedactReport(args.find, r);
+    if (report.exitCode === 3) {
+      // Refusal: nothing is written. The full machine-readable report rides
+      // along in the error so agents get the same JSON shape as the success
+      // path (pages, regions, strings checked, verification, refusal reason).
+      throw new Error(
+        (report.refusal ?? 'redaction refused: removal could not be proven') +
+          `\nREPORT:\n${JSON.stringify(report)}`,
+      );
+    }
+    if (report.exitCode === 2) {
       return ok(
         `NO CHANGES — nothing redacted for "${args.find}". ` +
-          r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; '),
+          r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; ') +
+          `\nREPORT:\n${JSON.stringify(report)}`,
       );
     }
     const out = writePdf(ctx.root, args.output, r.bytes);
     return ok(
       `wrote ${out}\nBURNED-IN redaction: removed ${r.removed} line(s)` +
         (r.partial ? `, ${r.partial} partially covered (left intact)` : '') +
-        (r.skipped.length ? '\nskipped: ' + r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; ') : ''),
+        (r.skipped.length ? '\nskipped: ' + r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; ') : '') +
+        `\nREPORT:\n${JSON.stringify(report)}`,
     );
   },
 
@@ -217,14 +230,28 @@ export const handlers = {
     args: { path: string; output: string; rects: Array<{ page: number; x: number; y: number; w: number; h: number }> },
   ) {
     const r = await redactRects(args.rects, readPdf(ctx.root, args.path));
-    if (r.removed === 0) {
+    const report = buildRedactReport(undefined, r);
+    if (report.exitCode === 3) {
+      // Refusal: nothing is written. The full machine-readable report rides
+      // along in the error so agents get the same JSON shape as the success
+      // path (pages, regions, strings checked, verification, refusal reason).
+      throw new Error(
+        (report.refusal ?? 'redaction refused: removal could not be proven') +
+          `\nREPORT:\n${JSON.stringify(report)}`,
+      );
+    }
+    if (report.exitCode === 2) {
       return ok(
         'NO CHANGES — no fully-covered text removed. ' +
-          r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; '),
+          r.skipped.map((s) => `p${s.page}: ${s.reason}`).join('; ') +
+          `\nREPORT:\n${JSON.stringify(report)}`,
       );
     }
     const out = writePdf(ctx.root, args.output, r.bytes);
-    return ok(`wrote ${out}\nBURNED-IN redaction: removed ${r.removed} line(s)`);
+    return ok(
+      `wrote ${out}\nBURNED-IN redaction: removed ${r.removed} line(s)` +
+        `\nREPORT:\n${JSON.stringify(report)}`,
+    );
   },
 
   async pdf_merge(ctx: Ctx, args: { inputs: string[]; output: string }) {
@@ -308,10 +335,10 @@ export function createServer(root: string, opts: { readOnly?: boolean } = {}): M
     { description: 'Find/replace REAL text in content streams — the original bytes are deleted, not overlaid. Use replace="" to delete. Reports skipped lines honestly.', inputSchema: { path: z.string(), find: z.string().min(1), replace: z.string(), output: z.string().describe('output PDF path'), pages: z.string().optional(), replace_all: z.boolean().optional(), case_sensitive: z.boolean().optional() } },
     async (a) => handlers.pdf_edit_text(ctx, a));
   reg('pdf_redact_text',
-    { description: 'BURNED-IN redaction of every line containing the text: bytes deleted, unrecoverable. Pages that cannot be proven removable are skipped, never faked.', inputSchema: { path: z.string(), find: z.string().min(1), output: z.string(), pages: z.string().optional(), case_sensitive: z.boolean().optional() } },
+    { description: 'BURNED-IN redaction of every line containing the text: bytes deleted, unrecoverable. The response includes the machine-readable redaction report (pages, regions, strings checked, byte-scan + extraction verification, pass/fail). Refuses (throws, nothing written) when removal cannot be proven — never faked.', inputSchema: { path: z.string(), find: z.string().min(1), output: z.string(), pages: z.string().optional(), case_sensitive: z.boolean().optional() } },
     async (a) => handlers.pdf_redact_text(ctx, a));
   reg('pdf_redact_rect',
-    { description: 'BURNED-IN redaction of rectangles [{page (1-based), x, y, w, h}] in PDF points, origin bottom-left. Fully-covered text lines are deleted from the file.', inputSchema: { path: z.string(), output: z.string(), rects: z.array(z.object({ page: z.number().int().positive(), x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() })).min(1) } },
+    { description: 'BURNED-IN redaction of rectangles [{page (1-based), x, y, w, h}] in PDF points, origin bottom-left. Fully-covered text lines are deleted from the file. The response includes the machine-readable redaction report (byte-scan + extraction verification, pass/fail). Refuses (throws, nothing written) when removal cannot be proven.', inputSchema: { path: z.string(), output: z.string(), rects: z.array(z.object({ page: z.number().int().positive(), x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() })).min(1) } },
     async (a) => handlers.pdf_redact_rect(ctx, a));
   reg('pdf_merge',
     { description: 'Merge PDFs in order.', inputSchema: { inputs: z.array(z.string()).min(1), output: z.string() } },

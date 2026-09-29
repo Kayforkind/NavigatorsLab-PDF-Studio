@@ -8,7 +8,9 @@
  * Conventions:
  * - <input> "-" reads the PDF from stdin.
  * - "-o -" writes binary output to stdout (pipe-friendly).
- * - Exit codes: 0 ok · 1 error · 2 no matches / nothing changed.
+ * - Exit codes: 0 ok · 1 error · 2 no matches / nothing changed · 3 redaction refused (unprovable removal).
+ * - `redact` prints its machine-readable JSON report on stdout by default
+ *   (or to --report <file>); on refusal it exits 3 and writes NO output PDF.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Command } from 'commander';
@@ -184,21 +186,51 @@ program
   .option('--rect <spec>', 'redact rectangle <page:x,y,w,h> in points (repeatable)', (v: string, acc: string[]) => [...acc, v], [] as string[])
   .option('-p, --pages <spec>', 'limit --find to these 1-based pages')
   .option('--case-sensitive', 'case-sensitive --find')
+  .option('--report <file>', 'write the machine-readable JSON redaction report to <file> instead of stdout')
   .requiredOption('-o, --output <file>', 'output PDF ("-" = stdout)')
   .action(
     async (
       input: string,
-      o: { find?: string; rect: string[]; pages?: string; caseSensitive?: boolean; output: string },
+      o: { find?: string; rect: string[]; pages?: string; caseSensitive?: boolean; output: string; report?: string },
     ) => {
-      emitMutating(
-        await cmdRedact(await readInput(input), {
-          find: o.find,
-          rects: o.rect.map(parseRect),
-          pages: o.pages,
-          caseSensitive: o.caseSensitive,
-        }),
-        o.output,
+      const r = await cmdRedact(await readInput(input), {
+        find: o.find,
+        rects: o.rect.map(parseRect),
+        pages: o.pages,
+        caseSensitive: o.caseSensitive,
+      });
+      const json = JSON.stringify(r.report, null, 2);
+      const emitReport = () => {
+        if (o.report) {
+          try {
+            writeFileSync(o.report, json + '\n');
+          } catch (e) {
+            fail(`cannot write "${o.report}": ${(e as Error).message}`);
+          }
+        } else {
+          process.stdout.write(json + '\n');
+        }
+      };
+      if (r.report.exitCode === 3) {
+        // Refusal: report is emitted, but NO output PDF is written.
+        emitReport();
+        process.stderr.write(`${r.report.refusal}\n`);
+        process.exit(3);
+      }
+      if (r.report.exitCode === 2) {
+        emitReport();
+        process.stderr.write('redact: nothing changed\n');
+        process.exit(2);
+      }
+      if (o.output === '-' && !o.report) {
+        fail('cannot mix the PDF bytes and the JSON report on stdout; use --report <file>');
+      }
+      emitReport();
+      const rep = r.report;
+      process.stderr.write(
+        `removed ${rep.removed} line(s), ${rep.annotationsRemoved} annotation(s), ${rep.imagesPixelRedacted} image(s) pixel-redacted; verification: ${rep.verification.pass ? 'PASS' : 'FAIL'}\n`,
       );
+      writeOut(r.bytes, o.output, true);
     },
   );
 

@@ -105,6 +105,9 @@
     "upright_one": "Enderezada {{count}} página girada (deshacer en cualquier momento).",
     "upright_other": "Enderezadas {{count}} páginas giradas (deshacer en cualquier momento).",
     "wipeDone": "Todos los datos de PDF Studio eliminados de este dispositivo.",
+    "redactFailed": "Redacción fallida: la página {{page}} no se pudo redactar de forma segura — la exportación se detuvo.", "redactVerified": "{{regions}} regiones redactadas · {{strings}} cadenas comprobadas · 0 recuperables", "verifyFailed": "Error de verificación: el contenido redactado seguía siendo recuperable en el archivo exportado — la exportación se detuvo.",
+    "exportFailed": "Error al exportar: {{message}}",
+    "printFailed": "Error al imprimir: {{message}}",
     "wipeEmpty": "No hay datos guardados de PDF Studio en este dispositivo.",
     "zoomIn": "Ampliar",
     "zoomOut": "Reducir"
@@ -144,7 +147,7 @@
     "allPages": "Todas las {{count}} páginas",
     "compress": "Comprimir el PDF exportado",
     "compressNote": "Las páginas se rasterizan a imágenes — el archivo queda mucho más pequeño, pero el texto deja de ser seleccionable o buscable. Las anotaciones y los sellos se integran primero.",
-    "docProps": "Propiedades del documento",
+    "docProps": "Propiedades del documento", "redactScrubNote": "Las exportaciones redactadas también eliminan los metadatos del documento, los archivos adjuntos, JavaScript y las miniaturas, y se verifican antes de la descarga.",
     "download": "Descargar PDF",
     "downloadRange": "Descargar estas páginas",
     "firstPageNum": "Número de la primera página",
@@ -218,7 +221,11 @@
     "privacyNoUploads": "<b>Sin subidas</b> — los documentos se abren, editan y guardan por completo en este dispositivo.",
     "shortcuts": "Atajos",
     "title": "Cómo funciona PDF Studio",
-    "translateCta": "¿Hablas otro idioma? <a>Ayuda a traducir PDF Studio</a> — no necesitas saber programar."
+    "translateCta": "¿Hablas otro idioma? <a>Ayuda a traducir PDF Studio</a> — no necesitas saber programar.",
+    "settings": "Ajustes de privacidad",
+    "privacyNote": "Los documentos se guardan automáticamente en el almacenamiento local de este navegador para que puedas continuar. Nunca se envía nada a un servidor — no hay servidor. El modo de solo memoria desactiva incluso el guardado local.",
+    "memoryOnlyLabel": "Modo de solo memoria (no guardar nada localmente)",
+    "clearSavedData": "Borrar datos guardados"
   },
   "insp": {
     "blurb": {

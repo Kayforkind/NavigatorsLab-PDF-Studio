@@ -11,6 +11,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { runOcr, OCR_LANGS, isOcrLang, type OcrLang } from './lib/ocr';
 import { buildPdf, downloadBytes, niceFileName, defaultStamps, type DocMeta, type StampOptions } from './lib/exportPdf';
 import { compressPdfBytes } from './lib/compress';
+import { verifyRedactedExport } from './lib/redactVerify';
 import { imagesToPdf, pageToPng } from './lib/images';
 import { makeSamplePdf } from './lib/sample';
 import { PageSheet } from './components/PageSheet';
@@ -29,16 +30,16 @@ import { Landing } from './components/Landing';
 
 let toastSeq = 0;
 
-import { OCR_LANG_KEY, SESSION_KEY, SETTINGS_KEY, clearAppStorage } from './lib/storage';
+import { OCR_LANG_KEY, SESSION_KEY, SETTINGS_KEY, clearAppStorage, persistMemoryOnly, sessionAutosaveAllowed } from './lib/storage';
 
 function loadSettings(): ToolSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14, ...JSON.parse(raw) };
+    if (raw) return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14, memoryOnly: false, ...JSON.parse(raw) };
   } catch {
     /* private mode / corrupt */
   }
-  return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14 };
+  return { color: '#ffd400', width: 2.5, opacity: 0.45, fontSize: 14, memoryOnly: false };
 }
 
 interface SessionBlob {
@@ -92,10 +93,21 @@ export default function App() {
     });
   }, []);
 
+  /** Flip memory-only mode. Enabling deletes any saved session bytes immediately,
+   *  so from that moment on all document state lives in memory only. */
+  const setMemoryOnly = useCallback((on: boolean) => {
+    persistMemoryOnly(on);
+    setSettingsState((p) => ({ ...p, memoryOnly: on }));
+    if (on) setSavedSession(null);
+  }, []);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100); // % of fit-to-width
   const [fitScale, setFitScale] = useState(1);
+  /** bumps whenever a two-finger pinch starts: PageSheet discards any
+      half-drawn single-finger gesture instead of committing it */
+  const [pinchCancel, setPinchCancel] = useState(0);
   const [meta, setMeta] = useState<DocMeta>({ title: '', author: '', subject: '', keywords: '' });
   const [modal, setModal] = useState<'export' | 'help' | 'ai' | 'forms' | 'compare' | null>(null);
   /** Export stamp options persist across dialog opens (the dialog unmounts on close). */
@@ -165,6 +177,28 @@ export default function App() {
     setToasts((t) => [...t, { id, msg }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);
+
+  /** User-facing message for an export/print failure. Redaction engine failures
+   *  (Error('redaction-failed: page N could not be securely redacted')) get a
+   *  dedicated string; anything else falls back to the raw message or a generic key. */
+  const exportErrorToast = useCallback(
+    (err: unknown, genericKey: string) => {
+      const msg = err instanceof Error ? err.message : '';
+      const m = /^redaction-failed:\s*page\s+(\d+)/i.exec(msg);
+      if (m) {
+        toast(t('app.redactFailed', { page: m[1] }));
+        return;
+      }
+      // The verification gate refused delivery: redacted content was still
+      // recoverable in the exported bytes. No file was delivered.
+      if (/^verification-failed:/i.test(msg)) {
+        toast(t('app.verifyFailed'));
+        return;
+      }
+      toast(msg ? t(genericKey, { message: msg }) : t(genericKey));
+    },
+    [toast, t],
+  );
 
   /* ---------------- document lifecycle ---------------- */
   const adoptSource = useCallback(async (bytes: Uint8Array, name: string) => {
@@ -292,6 +326,9 @@ export default function App() {
   const forgetSession = useCallback(() => {
     const removed = clearAppStorage();
     setSavedSession(null);
+    // The wipe deleted SETTINGS_KEY too — keep the in-memory settings in sync
+    // (use the raw setter: setSettings would immediately re-persist).
+    setSettingsState((p) => ({ ...p, memoryOnly: false }));
     toast(
       removed.length ? t('app.wipeDone') : t('app.wipeEmpty'),
     );
@@ -367,22 +404,35 @@ export default function App() {
       setMeta(payload.meta);
       setBusy(t('app.busyBuilding'));
       try {
-        const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
+        const { bytes, pages, verification, coveredStrings } = await buildPdf({ doc, meta: payload.meta, range: payload.range, formValues, stamps: payload.stamps, proxies: proxiesRef.current });
         let out = bytes;
         let note = '';
         if (payload.compress) {
           const r = await compressPdfBytes(bytes, payload.compress, (d, total) => setBusy(t('app.busyCompressing', { d, total })));
           out = r.bytes;
           note = t('app.compressedNote', { pct: Math.max(0, Math.round((1 - r.ratio) * 100)) });
+          if (verification) {
+            // Compression rebuilds the file — re-run the gate on the
+            // delivered bytes before the download happens.
+            const recheck = await verifyRedactedExport(out, coveredStrings);
+            if (recheck.recoverable > 0) {
+              throw new Error(`verification-failed: ${recheck.recoverable} redacted string(s) still recoverable after compression`);
+            }
+          }
         }
         const base = niceFileName(doc.name, payload.range.trim() ? 'extract' : 'edited');
         downloadBytes(out, base);
-        toast(`${t('app.downloaded', { base, count: pages })}${note}`);
+        const vnote = verification
+          ? ` ${t('app.redactVerified', { regions: verification.regions, strings: verification.stringsChecked })}`
+          : '';
+        toast(`${t('app.downloaded', { base, count: pages })}${note}${vnote}`);
+      } catch (err) {
+        exportErrorToast(err, 'app.exportFailed');
       } finally {
         setBusy('');
       }
     },
-    [doc, toast, formValues],
+    [doc, toast, formValues, exportErrorToast],
   );
 
   const doSplit = useCallback(
@@ -390,16 +440,27 @@ export default function App() {
       setMeta(payload.meta);
       const n = doc.pages.length;
       const names: string[] = [];
-      for (let i = 1; i <= n; i++) {
-        const { bytes, pages } = await buildPdf({ doc, meta: payload.meta, range: String(i), formValues, proxies: proxiesRef.current });
-        if (pages === 0) continue;
-        const fn = niceFileName(doc.name, 'page', i);
-        downloadBytes(bytes, fn);
-        names.push(fn);
+      let vRegions = 0;
+      let vStrings = 0;
+      try {
+        for (let i = 1; i <= n; i++) {
+          const { bytes, pages, verification } = await buildPdf({ doc, meta: payload.meta, range: String(i), formValues, proxies: proxiesRef.current });
+          if (pages === 0) continue;
+          if (verification) {
+            vRegions += verification.regions;
+            vStrings += verification.stringsChecked;
+          }
+          const fn = niceFileName(doc.name, 'page', i);
+          downloadBytes(bytes, fn);
+          names.push(fn);
+        }
+        const vnote = vRegions > 0 ? ` ${t('app.redactVerified', { regions: vRegions, strings: vStrings })}` : '';
+        toast(`${t('app.splitDone', { count: names.length })}${vnote}`);
+      } catch (err) {
+        exportErrorToast(err, 'app.exportFailed');
       }
-      toast(t('app.splitDone', { count: names.length }));
     },
-    [doc, toast, formValues],
+    [doc, toast, t, formValues, exportErrorToast],
   );
 
   const quickSave = useCallback(() => {
@@ -412,7 +473,7 @@ export default function App() {
   const printPdf = useCallback(async () => {
     setBusy(t('app.busyPrint'));
     try {
-      const { bytes } = await buildPdf({ doc, meta, range: '', formValues, proxies: proxiesRef.current });
+      const { bytes, verification } = await buildPdf({ doc, meta, range: '', formValues, proxies: proxiesRef.current });
       const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const frame = document.createElement('iframe');
@@ -436,24 +497,34 @@ export default function App() {
       };
       frame.src = url;
       document.body.appendChild(frame);
+      if (verification && verification.regions > 0) {
+        toast(t('app.redactVerified', { regions: verification.regions, strings: verification.stringsChecked }));
+      }
+    } catch (err) {
+      exportErrorToast(err, 'app.printFailed');
     } finally {
       setBusy('');
     }
-  }, [doc, meta, formValues]);
+  }, [doc, meta, formValues, toast, t, exportErrorToast]);
 
   /** export with the form values burned into the pages (fields become static) */
   const exportFlattenedForms = useCallback(async () => {
     setBusy(t('app.busyForm'));
     try {
-      const { bytes, pages } = await buildPdf({ doc, meta, range: '', formValues, flattenForms: true, proxies: proxiesRef.current });
+      const { bytes, pages, verification } = await buildPdf({ doc, meta, range: '', formValues, flattenForms: true, proxies: proxiesRef.current });
       const base = niceFileName(doc.name, 'filled');
       downloadBytes(bytes, base);
-      toast(t('app.formSaved', { base, count: pages }));
+      const vnote = verification
+        ? ` ${t('app.redactVerified', { regions: verification.regions, strings: verification.stringsChecked })}`
+        : '';
+      toast(`${t('app.formSaved', { base, count: pages })}${vnote}`);
       setModal(null);
+    } catch (err) {
+      exportErrorToast(err, 'app.exportFailed');
     } finally {
       setBusy('');
     }
-  }, [doc, meta, formValues, toast]);
+  }, [doc, meta, formValues, toast, exportErrorToast]);
 
   const setFormValue = useCallback((sourceId: string, field: string, v: string | boolean) => {
     setFormValues((prev) => ({ ...prev, [sourceId]: { ...(prev[sourceId] ?? {}), [field]: v } }));
@@ -803,11 +874,116 @@ export default function App() {
 
   const scale = fitScale * (zoom / 100);
 
+  /* ---------------- two-finger pinch-to-zoom (touch) ----------------
+     One-finger pan stays native (the canvas scrolls; `touch-action: pan-x pan-y`
+     in CSS keeps the browser from hijacking the gesture for page zoom while
+     still delivering both pointers' events to us). When a second touch pointer
+     lands we begin a pinch: zoom around the fingers' midpoint and keep the
+     content under the midpoint pinned by counter-scrolling. The second
+     pointerdown is stopped in the capture phase so the page sheets never see
+     it (no half-drawn mark), and PageSheet's in-progress single-finger gesture
+     is cancelled via pinchCancel. */
+  const pinchRef = useRef<{
+    pts: Map<number, { x: number; y: number }>;
+    lastDist: number;
+    lastZoom: number; // precise, unrounded — avoids rounding drift
+    startZoom: number;
+    startOx: number; // midpoint offset inside the page column (css px, start scale)
+    startOy: number;
+    mid: { x: number; y: number }; // last known midpoint, viewport px
+    active: boolean;
+  } | null>(null);
+
+  const pinchDist = (m: Map<number, { x: number; y: number }>) => {
+    const [a, b] = [...m.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+
+  const onCanvasPinchDown = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'touch') return;
+    let st = pinchRef.current;
+    if (!st) st = pinchRef.current = { pts: new Map(), lastDist: 0, lastZoom: zoom, startZoom: zoom, startOx: 0, startOy: 0, mid: { x: 0, y: 0 }, active: false };
+    if (st.pts.has(e.pointerId)) return;
+    st.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (st.pts.size === 2) {
+      e.stopPropagation();
+      e.preventDefault();
+      st.active = true;
+      st.lastDist = pinchDist(st.pts);
+      st.lastZoom = zoom;
+      st.startZoom = zoom;
+      // remember the content point under the midpoint (column css px at the
+      // start scale) so it can be pinned there for the whole gesture
+      const el = canvasAreaRef.current;
+      const col = el?.querySelector('.page-column');
+      const cr = col?.getBoundingClientRect();
+      const [a, b] = [...st.pts.values()];
+      st.startOx = cr ? (a.x + b.x) / 2 - cr.left : 0;
+      st.startOy = cr ? (a.y + b.y) / 2 - cr.top : 0;
+      st.mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      setPinchCancel((c) => c + 1);
+    }
+  };
+
+  /** closed-loop focal pinning: nudge the scroll so the content point recorded
+      at pinch start sits under the CURRENT midpoint. Measures the live layout
+      each call, so it self-corrects even when React hasn't committed the
+      latest zoom yet (pointermove outruns rendering). */
+  const pinPinchFocal = (st: NonNullable<typeof pinchRef.current>) => {
+    const el = canvasAreaRef.current;
+    if (!el || !(st.startZoom > 0)) return;
+    const col = el.querySelector('.page-column');
+    if (!col) return;
+    const appliedTotal = st.lastZoom / st.startZoom;
+    const cr = col.getBoundingClientRect();
+    const midXvp = st.mid.x;
+    const midYvp = st.mid.y;
+    // viewport-x where the column's left edge must sit for the recorded
+    // content point to land under the midpoint at the current logical zoom
+    el.scrollLeft -= midXvp - st.startOx * appliedTotal - cr.left;
+    el.scrollTop -= midYvp - st.startOy * appliedTotal - cr.top;
+  };
+
+  const onCanvasPinchMove = (e: React.PointerEvent<HTMLElement>) => {
+    const st = pinchRef.current;
+    if (!st || !st.active || !st.pts.has(e.pointerId)) return;
+    st.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (st.pts.size !== 2) return;
+    const dist = pinchDist(st.pts);
+    if (!(dist > 0) || !(st.lastDist > 0)) return;
+    const factor = dist / st.lastDist;
+    if (!Number.isFinite(factor) || factor === 1) return;
+    const clamped = Math.min(400, Math.max(20, st.lastZoom * factor));
+    st.lastDist = dist;
+    const [a, b] = [...st.pts.values()];
+    st.mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    if (clamped !== st.lastZoom) {
+      st.lastZoom = clamped;
+      setZoom(Math.round(clamped));
+    }
+    pinPinchFocal(st);
+  };
+
+  const onCanvasPinchUp = (e: React.PointerEvent<HTMLElement>) => {
+    const st = pinchRef.current;
+    if (!st || !st.pts.has(e.pointerId)) return;
+    st.pts.delete(e.pointerId);
+    if (st.pts.size < 2) st.active = false;
+    if (st.pts.size === 0) {
+      // settle: one last closed-loop pin after React commits the final zoom,
+      // fixing any residual from pointermoves that outran rendering
+      const snap = { ...st, pts: new Map() };
+      requestAnimationFrame(() => requestAnimationFrame(() => pinPinchFocal(snap)));
+      pinchRef.current = null;
+    }
+  };
+
   /* ---------------- autosave / session restore ---------------- */
   const saveSession = useRef<number | null>(null);
   const hasDocNow = doc.pages.length > 0;
   useEffect(() => {
     if (!hasDocNow) return;
+    if (!sessionAutosaveAllowed()) return; // memory-only mode: document state stays in memory
     if (saveSession.current) window.clearTimeout(saveSession.current);
     saveSession.current = window.setTimeout(() => {
       try {
@@ -828,7 +1004,7 @@ export default function App() {
     return () => {
       if (saveSession.current) window.clearTimeout(saveSession.current);
     };
-  }, [doc, meta, formValues, hasDocNow]);
+  }, [doc, meta, formValues, hasDocNow, settings.memoryOnly]);
   useEffect(() => {
     if (currentPageId && !doc.pages.some((p) => p.id === currentPageId)) setCurrentPageId(null);
   }, [doc.pages, currentPageId]);
@@ -1083,6 +1259,10 @@ export default function App() {
             className="canvas-area"
             data-tool={tool}
             ref={canvasAreaRef}
+            onPointerDownCapture={onCanvasPinchDown}
+            onPointerMove={onCanvasPinchMove}
+            onPointerUp={onCanvasPinchUp}
+            onPointerCancel={onCanvasPinchUp}
             onWheel={(e) => {
               if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
@@ -1158,6 +1338,7 @@ export default function App() {
                   onDel={delAnn}
                   getNextNoteN={getNextNoteN}
                   onPlaceSpecial={onPlaceSpecial}
+                  externalCancel={pinchCancel}
                 />
               ))}
               <button className="add-page-bottom" onClick={() => addBlankAfter(null)}>
@@ -1302,7 +1483,14 @@ export default function App() {
       {modal === 'export' && (
         <ExportDialog fileName={doc.name} pageCount={doc.pages.length} pageAspect={doc.pages[0] ? doc.pages[0].w / Math.max(1, doc.pages[0].h) : 8.5 / 11} meta={meta} stamps={exportStamps} setStamps={setExportStamps} onExport={(p) => void doExport(p)} onSplit={(p) => void doSplit(p)} onPagePng={() => void downloadPagePng()} onClose={() => setModal(null)} />
       )}
-      {modal === 'help' && <HelpModal onClose={() => setModal(null)} />}
+      {modal === 'help' && (
+        <HelpModal
+          onClose={() => setModal(null)}
+          memoryOnly={settings.memoryOnly === true}
+          onMemoryOnly={setMemoryOnly}
+          onClearSaved={forgetSession}
+        />
+      )}
       {modal === 'compare' && <CompareDialog onClose={() => setModal(null)} />}
       {modal === 'forms' && (
         <FormsDialog

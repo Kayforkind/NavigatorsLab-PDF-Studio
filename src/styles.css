@@ -463,6 +463,12 @@ button {
     radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.12) 1px, transparent 0) 0 0 / 22px 22px,
     linear-gradient(180deg, #0d1320, #0a0e16);
   position: relative;
+  /* one-finger pan stays native (smooth, momentum); the browser must NEVER
+     take a two-finger pinch for page-level zoom — pinch is handled in App.tsx
+     (onCanvasPinch*) and zooms the document instead. pan-x pan-y is the
+     intersection that allows scrolling but disables browser pinch-zoom and
+     double-tap-zoom for any gesture touching this container. */
+  touch-action: pan-x pan-y;
 }
 
 .page-column {
@@ -1675,6 +1681,237 @@ a.mini-btn.suite-link:hover {
 
   .landing-hero h1 {
     font-size: 30px;
+  }
+}
+
+/* ============ Phase 6: mobile production-ready (phone-first task flow) ============
+   Everything in this block is phone-only (<=720px): desktop/tablet untouched.
+   Goals: (1) the redaction workflow is one tap away, (2) every interactive
+   control is a >=44px touch target, (3) nothing important hides in a
+   scrollbar-less horizontal scroller without affordance, (4) toasts (incl. the
+   redaction verification report) never cover the tool rail. */
+@media (max-width: 720px) {
+  /* ---- toasts: full-width, pinned ABOVE the fixed bottom tool rail ----
+     The bottom rail is ~58px + safe-area; a toast at bottom:44px used to sit
+     on top of the tool buttons (z 300 > 60), blocking taps and burying the
+     "redacted export verified" report. */
+  .toasts {
+    left: 12px;
+    right: 12px;
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  }
+  .toast {
+    max-width: none;
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  /* ---- topbar: 44px targets + task-first order ----
+     Fresh-load visible set becomes: brand, undo, redo, zoom-, zoom+, Save,
+     then (scroll) language, search, dialog buttons, Open, Merge. Separators
+     and the spacer are dropped — they only wasted phone width. */
+  .topbar .tb-sep {
+    display: none;
+  }
+  .topbar > .tb-spacer {
+    display: none;
+  }
+  .topbar .tb-btn {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+  /* Open / Merge move to the scrollable tail — rare mid-task actions */
+  .topbar .tb-btn:not(.icon):not(.collapsible):not(.zoom-mobile) {
+    order: 6;
+  }
+  .topbar .zoom-mobile {
+    order: 0; /* back with undo/redo in DOM order */
+    min-width: 44px;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .topbar .save-cta {
+    order: 1;
+    min-height: 44px;
+  }
+  .topbar .lang-select {
+    order: 2;
+  }
+  .topbar .search-box {
+    order: 3;
+  }
+  .topbar .search-count {
+    order: 3;
+  }
+  /* scroll affordance: the scrollbar is hidden, so fade the right edge to
+     signal that more controls (search, dialogs, Open/Merge) live to the right */
+  .topbar {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+  }
+
+  /* ---- tool rail: redaction tools first ----
+     17 tools in a horizontal scroller buried Redact dead-last. On phones the
+     redact/whiteout group leads so the core workflow needs zero scrolling.
+     Divider fix: the moved group loses its leading divider; the new second
+     group gains one. */
+  .tool-rail > .tool-group:last-child {
+    order: -1;
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .tool-rail > .tool-group:first-child {
+    border-left: 1px solid var(--line);
+    margin-left: 8px;
+    padding-left: 8px;
+  }
+  /* keyboard shortcut letters are meaningless on touch — hide, enlarge label */
+  .tool-rail .tool-key {
+    display: none;
+  }
+  .tool-rail .tool-name {
+    font-size: 10px;
+  }
+
+  /* ---- dialogs: stack action buttons full-width, 44px targets ---- */
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .modal-actions .btn {
+    justify-content: center;
+    min-height: 44px;
+  }
+  .btn {
+    min-height: 44px;
+  }
+  /* modal close (x) */
+  .modal-head .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* inspector drawer close */
+  .inspector.drawer-open .drawer-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* the two text controls in the topbar were 28–35px tall */
+  .topbar .lang-select {
+    min-height: 44px;
+  }
+  .topbar .search-box {
+    min-height: 44px;
+  }
+
+  /* color swatches: 24px is a desktop mouse target — give fingers 40px */
+  .swatches {
+    gap: 10px;
+  }
+  .swatch {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* AI dialog: the ask row (textarea + button side by side) crushes the
+     textarea to ~40% width on phones — stack it vertically instead */
+  .ai-prompt {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ai-prompt .btn {
+    justify-content: center;
+  }
+}
+
+/* ============ Phase 6b: coarse-pointer (tablet + touch laptop) touch targets ============
+   The <=720px block above covers phones. Tablets (721–1100px) and touch-screen
+   laptops match (pointer: coarse) but not the phone widths — their controls were
+   still 21–34px mouse-sized targets (measured on a 768px touch viewport).
+   (pointer: coarse) never matches a mouse-driven desktop, so desktop is untouched. */
+@media (pointer: coarse) {
+  /* 44px minimum for every interactive control */
+  .topbar .tb-btn {
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+  .topbar .lang-select,
+  .topbar .search-box {
+    min-height: 44px;
+  }
+  .btn {
+    min-height: 44px;
+  }
+  .modal-head .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .mini-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 4px 10px;
+    justify-content: center;
+  }
+  .tool-rail .tool-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .thumb-actions button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 8px;
+  }
+  .inspector.drawer-open .drawer-close {
+    width: 44px;
+    height: 44px;
+  }
+  .swatches {
+    gap: 10px;
+  }
+  .swatch {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* keyboard-shortcut letters are meaningless without a keyboard */
+  .tool-rail .tool-key {
+    display: none;
+  }
+
+  /* iOS/iPadOS auto-zoom on focus: keep every editable control at 16px */
+  .search-box,
+  .text-input,
+  .field input,
+  .inspector select,
+  .modal select,
+  .modal textarea,
+  .note-edit textarea {
+    font-size: 16px;
+  }
+
+  /* checkboxes are comfortably tappable at 20px */
+  .form-row input[type='checkbox'],
+  .check-row input {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* 721–860px touch: the rail is icon-only at 56px here (labels hide <=860px).
+   On touch there are no hover tooltips, so restore the text labels with a
+   slightly wider rail — tools stay identifiable. Mouse desktops keep the
+   compact icon rail. */
+@media (pointer: coarse) and (min-width: 721px) and (max-width: 860px) {
+  .tool-rail {
+    width: 76px;
+  }
+  .tool-rail .tool-name {
+    display: block;
+    font-size: 8.5px;
+    overflow-wrap: anywhere;
   }
 }
 

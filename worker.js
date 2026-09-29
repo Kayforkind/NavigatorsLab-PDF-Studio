@@ -44,6 +44,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let path = url.pathname.replace(/^\/pdf-studio/, '') || '/';
+    // /pdf-studio/doc was the published launch-thread link for the
+    // comparison page — redirect it to the docs comparison page.
+    if (path === '/doc' || path === '/doc/') {
+      return Response.redirect(
+        'https://navigatorslab.com/pdf-studio/docs/comparison.html', 301);
+    }
     if (path === '/' || path.endsWith('/')) path += 'index.html';
     if (!path.startsWith('/')) path = '/' + path;
     const asset = await env.ASSETS.fetch(new Request(new URL(path, url.origin), request));

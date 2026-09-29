@@ -76,6 +76,22 @@ describe('mutating commands', () => {
     expect(back.text).toContain('keep');
   });
 
+  it('redact combines --find and --rect with one verification of the final bytes', async () => {
+    const r = await cmdRedact(await makePdf([['findme hunter2', 'rectme line']]), {
+      find: 'hunter2',
+      rects: [{ page: 1, x: 40, y: 722, w: 220, h: 30 }],
+    });
+    expect(r.noChange).toBe(false);
+    expect(r.report.pass).toBe(true);
+    expect(r.report.exitCode).toBe(0);
+    expect(r.report.removed).toBe(2);
+    expect(r.report.regions).toHaveLength(2);
+    expect(r.report.verification.pass).toBe(true);
+    const back = await cmdExtractText(r.bytes, undefined, false);
+    expect(back.text).not.toContain('hunter2');
+    expect(back.text).not.toContain('rectme');
+  });
+
   it('redact noChange when nothing matches', async () => {
     const r = await cmdRedact(await makePdf([['hello']]), { find: 'zzz' });
     expect(r.noChange).toBe(true);

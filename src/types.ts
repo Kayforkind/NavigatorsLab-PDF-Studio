@@ -253,6 +253,12 @@ export interface ToolSettings {
   opacity: number;
   /** standard font family for text stamps (export uses the matching built-in) */
   font?: string;
+  /**
+   * Memory-only mode: when true the document session is never persisted to
+   * localStorage — all document state lives in memory only. Persisted in
+   * SETTINGS_KEY so the choice survives reloads.
+   */
+  memoryOnly?: boolean;
 }
 
 export interface TextHit {

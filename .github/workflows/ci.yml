@@ -39,9 +39,11 @@ jobs:
           sleep 2
           node scripts/verify-fixes.cjs
           node scripts/review-e2e.cjs
+          node scripts/verify-mobile.cjs
         env:
           VERIFY_BASE: http://localhost:5198/pdf-studio/
           REVIEW_BASE: http://localhost:5198/pdf-studio/
+          MOBILE_BASE: http://localhost:5198/pdf-studio/
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
