@@ -732,7 +732,9 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
     const w = Math.abs(b.x - a.x);
     const h = Math.abs(b.y - a.y);
     let fill: string;
-    if (toolType === 'redact') fill = 'rgba(10,10,12,0.9)';
+    // Redact drag preview uses the same MARKED hatch as committed marks —
+    // never solid black in the editor (solid boxes exist only in the export).
+    if (toolType === 'redact') fill = 'url(#redact-hatch)';
     else if (toolType === 'whiteout') fill = 'rgba(255,255,255,0.95)';
     else {
       const c = cssHexToRgb(settings.color);
@@ -820,6 +822,13 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
             <marker id="arrow-head-sel" markerWidth="9" markerHeight="8" refX="7.5" refY="4" orient="auto">
               <path d="M0.5,0.5 L8,4 L0.5,7.5" fill="none" stroke="#2563eb" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </marker>
+            {/* Redact "MARKED" treatment: diagonal hatch + dashed outline. The editor
+                NEVER shows solid black — solid boxes exist only in the exported file,
+                so a marked region can't be mistaken for finished redaction. */}
+            <pattern id="redact-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="9" height="9" fill="rgba(18,18,22,0.68)" />
+              <line x1="0" y1="0" x2="0" y2="9" stroke="#e5484d" strokeWidth="2.6" strokeOpacity="0.5" />
+            </pattern>
           </defs>
           {props.tool === 'edit' &&
             hits &&
@@ -897,7 +906,24 @@ export const PageSheet = memo(function PageSheet(props: SheetProps) {
               case 'strike':
                 return <line key={ann.id} x1={css.x} y1={css.y + css.h * 0.5} x2={css.x + css.w} y2={css.y + css.h * 0.5} stroke={ann.color} strokeWidth={Math.max(1.4, css.h * 0.1)} strokeOpacity={ann.opacity} strokeLinecap="round" />;
               case 'redact':
-                return <rect key={ann.id} x={css.x} y={css.y} width={css.w} height={css.h} fill="#111114" />;
+                // MARKED-for-redaction treatment: hatched fill + dashed outline.
+                // Solid black appears ONLY in the exported file — the editor must
+                // never look like the job is done before export.
+                return (
+                  <rect
+                    key={ann.id}
+                    x={css.x}
+                    y={css.y}
+                    width={css.w}
+                    height={css.h}
+                    fill="url(#redact-hatch)"
+                    className="redact-mark"
+                    stroke="#e5484d"
+                    strokeWidth={Math.max(1.5, 1.2 * scale)}
+                    strokeDasharray="7 4"
+                    strokeOpacity={0.9}
+                  />
+                );
               case 'whiteout':
                 return <rect key={ann.id} x={css.x} y={css.y} width={css.w} height={css.h} fill={ann.color} />;
               case 'arrow': {

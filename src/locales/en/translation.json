@@ -43,7 +43,7 @@
       "label": "Rectangle"
     },
     "redact": {
-      "hint": "Permanently black out content",
+      "hint": "Mark content for permanent removal on export",
       "label": "Redact"
     },
     "select": {
@@ -296,7 +296,8 @@
     "reduceSize": "Reduce file size",
     "compress": "Compress the exported PDF",
     "compressNote": "Pages are rasterized to images — the file gets much smaller, but text is no longer selectable or searchable. Annotations and stamps are burned in first.",
-    "docProps": "Document properties", "redactScrubNote": "Redacted exports also strip document metadata, attachments, JavaScript and thumbnails, and are verified leak-free before download.",
+    "docProps": "Document properties",
+    "redactScrubNote": "Redacted exports also strip document metadata, attachments, JavaScript and thumbnails, and are verified leak-free before download.",
     "metaTitle": "Title",
     "metaAuthor": "Author",
     "metaSubject": "Subject",
@@ -308,7 +309,7 @@
     "editing": "Editing",
     "editingEdit": "<b>Edit text</b> — switch to the edit tool and click a line (or one table cell) of the original PDF. On export the original text is rewritten in place inside the PDF content stream — tables keep their column positions, and the replacement becomes real selectable text. Scanned images need the OCR tool (same toolbar).",
     "editingLayers": "<b>Add text</b>, <b>highlight</b>, <b>underline</b>, <b>strikethrough</b>, <b>notes</b>, <b>freehand pen</b>, <b>arrows & pointers</b>, <b>rectangles</b> and <b>ellipses</b> all layer on top and are flattened into the exported file.",
-    "editingRedact": "<b>Redact</b> paints permanent black boxes — nothing sensitive remains visible in the exported file; <b>whiteout</b> samples the page background so it blends in.",
+    "editingRedact": "<b>Redact</b> only <i>marks</i> regions for removal — the hatched boxes are markers, not the finished job. The text underneath is permanently deleted when you <b>export</b>; solid black boxes appear only in the exported file. <b>Whiteout</b> samples the page background so it blends in.",
     "editingSearch": "<b>Search</b> — the box in the top bar finds text across the whole document; Enter / Shift+Enter jump between matches.",
     "pagesFiles": "Pages & files",
     "pagesReorder": "Drag thumbnails to reorder, use hover buttons to rotate / duplicate / delete / insert blank pages.",
@@ -353,7 +354,9 @@
     "pngFailed": "Could not render PNG.",
     "wipeDone": "All PDF Studio data deleted from this device.",
     "wipeEmpty": "No saved PDF Studio data on this device.",
-    "redactFailed": "Redaction failed: page {{page}} could not be securely redacted — the export was stopped.", "redactVerified": "{{regions}} regions redacted · {{strings}} strings checked · 0 recoverable", "verifyFailed": "Verification failed: redacted content was still recoverable in the exported file — the export was stopped.",
+    "redactFailed": "Redaction failed: page {{page}} could not be securely redacted — the export was stopped.",
+    "redactVerified": "{{regions}} regions redacted · {{strings}} strings checked · 0 recoverable",
+    "verifyFailed": "Verification failed: redacted content was still recoverable in the exported file — the export was stopped.",
     "exportFailed": "Export failed: {{message}}",
     "printFailed": "Print failed: {{message}}",
     "sessionRestored": "Restored “{{name}}” from this device.",

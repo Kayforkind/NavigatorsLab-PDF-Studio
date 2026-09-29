@@ -105,7 +105,9 @@
     "upright_one": "Enderezada {{count}} página girada (deshacer en cualquier momento).",
     "upright_other": "Enderezadas {{count}} páginas giradas (deshacer en cualquier momento).",
     "wipeDone": "Todos los datos de PDF Studio eliminados de este dispositivo.",
-    "redactFailed": "Redacción fallida: la página {{page}} no se pudo redactar de forma segura — la exportación se detuvo.", "redactVerified": "{{regions}} regiones redactadas · {{strings}} cadenas comprobadas · 0 recuperables", "verifyFailed": "Error de verificación: el contenido redactado seguía siendo recuperable en el archivo exportado — la exportación se detuvo.",
+    "redactFailed": "Redacción fallida: la página {{page}} no se pudo redactar de forma segura — la exportación se detuvo.",
+    "redactVerified": "{{regions}} regiones redactadas · {{strings}} cadenas comprobadas · 0 recuperables",
+    "verifyFailed": "Error de verificación: el contenido redactado seguía siendo recuperable en el archivo exportado — la exportación se detuvo.",
     "exportFailed": "Error al exportar: {{message}}",
     "printFailed": "Error al imprimir: {{message}}",
     "wipeEmpty": "No hay datos guardados de PDF Studio en este dispositivo.",
@@ -147,7 +149,8 @@
     "allPages": "Todas las {{count}} páginas",
     "compress": "Comprimir el PDF exportado",
     "compressNote": "Las páginas se rasterizan a imágenes — el archivo queda mucho más pequeño, pero el texto deja de ser seleccionable o buscable. Las anotaciones y los sellos se integran primero.",
-    "docProps": "Propiedades del documento", "redactScrubNote": "Las exportaciones redactadas también eliminan los metadatos del documento, los archivos adjuntos, JavaScript y las miniaturas, y se verifican antes de la descarga.",
+    "docProps": "Propiedades del documento",
+    "redactScrubNote": "Las exportaciones redactadas también eliminan los metadatos del documento, los archivos adjuntos, JavaScript y las miniaturas, y se verifican antes de la descarga.",
     "download": "Descargar PDF",
     "downloadRange": "Descargar estas páginas",
     "firstPageNum": "Número de la primera página",
@@ -205,7 +208,7 @@
     "editing": "Edición",
     "editingEdit": "<b>Editar texto</b> — cambia a la herramienta de edición y haz clic en una línea (o en una celda de una tabla) del PDF original. Al exportar, el texto original se reescribe en su lugar dentro del flujo de contenido del PDF — las tablas conservan la posición de sus columnas y el reemplazo se convierte en texto real seleccionable. Las imágenes escaneadas necesitan la herramienta de OCR (misma barra).",
     "editingLayers": "<b>Añadir texto</b>, <b>resaltar</b>, <b>subrayar</b>, <b>tachar</b>, <b>notas</b>, <b>lápiz a mano alzada</b>, <b>flechas y punteros</b>, <b>rectángulos</b> y <b>elipses</b> se superponen en capas y se integran en el archivo exportado.",
-    "editingRedact": "<b>Redactar</b> pinta cuadros negros permanentes — nada sensible queda visible en el archivo exportado; el <b>corrector blanco</b> muestrea el fondo de la página para mezclarse.",
+    "editingRedact": "<b>Redactar</b> solo <i>marca</i> las regiones para eliminar — los cuadros rayados son marcadores, no el resultado final. El texto subyacente se elimina permanentemente al <b>exportar</b>; los cuadros negros permanentes aparecen solo en el archivo exportado. El <b>corrector blanco</b> muestrea el fondo de la página para mezclarse.",
     "editingSearch": "<b>Buscar</b> — la caja de la barra superior encuentra texto en todo el documento; Enter / Shift+Enter salta entre coincidencias.",
     "gotIt": "Entendido",
     "pagesAutosave": "<b>Autoguardado</b>: tu sesión de trabajo (incluidas anotaciones y valores de formulario) se conserva en este dispositivo y se ofrece en la pantalla inicial tras una actualización o un fallo.",
@@ -408,7 +411,7 @@
       "label": "Rectángulo"
     },
     "redact": {
-      "hint": "Tacha el contenido de forma permanente",
+      "hint": "Marca el contenido para eliminarlo permanentemente al exportar",
       "label": "Redactar"
     },
     "select": {

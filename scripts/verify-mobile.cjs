@@ -111,7 +111,7 @@ async function openDemo(page) {
     const cdp = await ctx.newCDPSession(page);
     await touchDrag(cdp, box.x + box.width * 0.25, box.y + box.height * 0.15, box.x + box.width * 0.7, box.y + box.height * 0.22);
     await page.waitForTimeout(700);
-    const rects = await page.evaluate(() => document.querySelectorAll('.sheet-overlay rect[fill="#111114"]').length);
+    const rects = await page.evaluate(() => document.querySelectorAll('.sheet-overlay .redact-mark').length);
     ok('touch drag draws a redact rect', rects > 0, `rects=${rects}`);
 
     // save -> download + verification toast
@@ -192,7 +192,7 @@ async function openDemo(page) {
     {
       await page.locator('.tool-rail button', { hasText: 'Redact' }).click();
       await page.waitForTimeout(300);
-      const before = await page.evaluate(() => document.querySelectorAll('.sheet-overlay rect[fill="#111114"]').length);
+      const before = await page.evaluate(() => document.querySelectorAll('.sheet-overlay .redact-mark').length);
       const cdpC = await ctx.newCDPSession(page);
       const cbox = await page.locator('.sheet-inner').first().boundingBox();
       const sx = cbox.x + cbox.width * 0.3, sy = cbox.y + cbox.height * 0.5;
@@ -205,7 +205,7 @@ async function openDemo(page) {
       }
       await cdpC.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
       await page.waitForTimeout(900);
-      const after = await page.evaluate(() => document.querySelectorAll('.sheet-overlay rect[fill="#111114"]').length);
+      const after = await page.evaluate(() => document.querySelectorAll('.sheet-overlay .redact-mark').length);
       ok('tap-then-pinch commits no stray mark', after === before, `marks ${before} -> ${after}`);
     }
     await ctx.close();

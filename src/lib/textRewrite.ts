@@ -1495,10 +1495,19 @@ function decodeSegmentText(seg: Segment, info: FontInfo): string | null {
 /**
  * Pre-export capture of the text sitting under redact rects, WITHOUT mutating
  * the page. Called BEFORE the deep content pass splices the stream. Returns
- * the decoded text of every FULLY covered line, plus `complete=false` when
- * the page carries text the engine cannot invert (such text can only survive
- * the raster path, which discards the whole stream — the flag lets the
- * verifier report honestly about what it checked).
+ * the decoded text of every line TOUCHING a redact rect — fully covered OR
+ * partially covered — plus `complete=false` when the page carries text the
+ * engine cannot invert (such text can only survive the raster path, which
+ * discards the whole stream — the flag lets the verifier report honestly
+ * about what it checked).
+ *
+ * Capturing partial lines is provably sound: the vector path requires
+ * partial===0 for vectorDone, so any partially-covered line captured here
+ * forces the raster fallback, which discards the ENTIRE content stream and
+ * replaces the page with pixels — the string cannot survive in the output
+ * bytes. Checking only fully-covered lines let the gate run vacuously
+ * ("0 strings checked · 0 recoverable") on pages where a rect merely
+ * clipped a line; now the report reflects everything the rects touched.
  */
 export function classifyCoveredText(
   lib: PDFDocument,
@@ -1509,7 +1518,8 @@ export function classifyCoveredText(
   if (!rec || rects.length === 0) return null;
   const covered: string[] = [];
   for (const ln of rec.lines) {
-    if (lineCoverage(ln.seg.tx, ln.seg.ty, ln.advance, ln.seg.size, rects, rec.cropX, rec.cropY) === 'full') {
+    const cov = lineCoverage(ln.seg.tx, ln.seg.ty, ln.advance, ln.seg.size, rects, rec.cropX, rec.cropY);
+    if (cov === 'full' || cov === 'partial') {
       covered.push(ln.text);
     }
   }

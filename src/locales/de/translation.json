@@ -43,7 +43,7 @@
       "label": "Rechteck"
     },
     "redact": {
-      "hint": "Inhalte dauerhaft schwärzen",
+      "hint": "Inhalte zum dauerhaften Entfernen beim Export markieren",
       "label": "Schwärzen"
     },
     "select": {
@@ -296,7 +296,8 @@
     "reduceSize": "Dateigröße reduzieren",
     "compress": "Exportiertes PDF komprimieren",
     "compressNote": "Seiten werden zu Bildern gerastert — die Datei wird deutlich kleiner, aber Text ist nicht mehr markierbar oder durchsuchbar. Anmerkungen und Stempel werden zuerst eingebrannt.",
-    "docProps": "Dokumenteigenschaften", "redactScrubNote": "Geschwärzte Exporte entfernen außerdem Dokument-Metadaten, Anhänge, JavaScript und Vorschaubilder und werden vor dem Download auf Lecks geprüft.",
+    "docProps": "Dokumenteigenschaften",
+    "redactScrubNote": "Geschwärzte Exporte entfernen außerdem Dokument-Metadaten, Anhänge, JavaScript und Vorschaubilder und werden vor dem Download auf Lecks geprüft.",
     "metaTitle": "Titel",
     "metaAuthor": "Autor",
     "metaSubject": "Betreff",
@@ -308,7 +309,7 @@
     "editing": "Bearbeiten",
     "editingEdit": "<b>Text bearbeiten</b> — wechseln Sie zum Bearbeitungswerkzeug und klicken Sie auf eine Zeile (oder eine Tabellenzelle) des Original-PDFs. Beim Export wird der Originaltext direkt im PDF-Inhaltsstrom neu geschrieben — Tabellen behalten ihre Spaltenpositionen, und der Ersatz wird zu echtem, markierbarem Text. Gescannte Bilder benötigen das OCR-Werkzeug (gleiche Symbolleiste).",
     "editingLayers": "<b>Text hinzufügen</b>, <b>Hervorheben</b>, <b>Unterstreichen</b>, <b>Durchstreichen</b>, <b>Notizen</b>, <b>Freihandstift</b>, <b>Pfeile & Zeiger</b>, <b>Rechtecke</b> und <b>Ellipsen</b> liegen alle darüber und werden in die exportierte Datei eingebrannt.",
-    "editingRedact": "<b>Schwärzen</b> malt dauerhafte schwarze Kästen — nichts Sensibles bleibt in der exportierten Datei sichtbar; <b>Abdecken</b> erfasst den Seitenhintergrund, sodass es sich einfügt.",
+    "editingRedact": "<b>Schwärzen</b> <i>markiert</i> nur Bereiche zur Entfernung — die schraffierten Kästen sind Markierungen, nicht das fertige Ergebnis. Der darunterliegende Text wird erst beim <b>Exportieren</b> dauerhaft gelöscht; dauerhafte schwarze Kästen erscheinen nur in der exportierten Datei. <b>Abdecken</b> erfasst den Seitenhintergrund, sodass es sich einfügt.",
     "editingSearch": "<b>Suche</b> — das Feld in der oberen Leiste findet Text im gesamten Dokument; Enter / Shift+Enter springt zwischen Treffern.",
     "pagesFiles": "Seiten & Dateien",
     "pagesReorder": "Ziehen Sie Miniaturansichten zum Neuordnen, verwenden Sie die Hover-Schaltflächen zum Drehen / Duplizieren / Löschen / Einfügen leerer Seiten.",
@@ -352,7 +353,9 @@
     "pagePngDone": "Seite {{n}} als PNG heruntergeladen.",
     "pngFailed": "PNG konnte nicht gerendert werden.",
     "wipeDone": "Alle PDF Studio-Daten von diesem Gerät gelöscht.",
-    "redactFailed": "Schwärzung fehlgeschlagen: Seite {{page}} konnte nicht sicher geschwärzt werden — der Export wurde abgebrochen.", "redactVerified": "{{regions}} Bereiche geschwärzt · {{strings}} Zeichenketten geprüft · 0 wiederherstellbar", "verifyFailed": "Prüfung fehlgeschlagen: Geschwärzte Inhalte waren in der exportierten Datei noch wiederherstellbar — der Export wurde gestoppt.",
+    "redactFailed": "Schwärzung fehlgeschlagen: Seite {{page}} konnte nicht sicher geschwärzt werden — der Export wurde abgebrochen.",
+    "redactVerified": "{{regions}} Bereiche geschwärzt · {{strings}} Zeichenketten geprüft · 0 wiederherstellbar",
+    "verifyFailed": "Prüfung fehlgeschlagen: Geschwärzte Inhalte waren in der exportierten Datei noch wiederherstellbar — der Export wurde gestoppt.",
     "exportFailed": "Export fehlgeschlagen: {{message}}",
     "printFailed": "Drucken fehlgeschlagen: {{message}}",
     "wipeEmpty": "Keine gespeicherten PDF Studio-Daten auf diesem Gerät.",
