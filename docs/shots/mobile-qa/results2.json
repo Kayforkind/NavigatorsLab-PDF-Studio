@@ -1,0 +1,291 @@
+{
+ "results": [
+  {
+   "item": "2. Load multi-page PDF (v2)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "pages=4"
+  },
+  {
+   "item": "3. Tool: ink (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-ink-390x844.png"
+  },
+  {
+   "item": "3. Tool: rect (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 2→3, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-rect-390x844.png"
+  },
+  {
+   "item": "3. Tool: ellipse (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 3→4, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-ellipse-390x844.png"
+  },
+  {
+   "item": "3. Tool: arrow (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 4→5, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-arrow-390x844.png"
+  },
+  {
+   "item": "3. Tool: redact (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 5→6, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-redact-390x844.png"
+  },
+  {
+   "item": "3. Tool: whiteout (touch-drag, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 6→7, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-whiteout-390x844.png"
+  },
+  {
+   "item": "3. Tool: note (tap, rail-scrolled)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 7→8, dialog=0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-note-390x844.png"
+  },
+  {
+   "item": "3. Tool: signature (pad+stamp)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, pad=true, canvas=[\"332x230\"], btns=4, clicked=true, anns 8→9, shots=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-sign-pad-390x844.png,/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-sign-stamped-390x844.png"
+  },
+  {
+   "item": "3. Tool: image stamp",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=false, file-inputs=4, anns 8→9, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-image-390x844.png"
+  },
+  {
+   "item": "3. Tool: textfield",
+   "viewport": "390x844",
+   "status": "FAIL",
+   "notes": "active=false, anns 8→8, widgets=0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-textfield-390x844.png"
+  },
+  {
+   "item": "3. Tool: checkbox",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "active=true, anns 8→10, widgets=0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-checkbox-390x844.png"
+  },
+  {
+   "item": "4. Select + inspector + color edit",
+   "viewport": "390x844",
+   "status": "FAIL",
+   "notes": "inspector={\"exists\":true,\"display\":\"none\",\"w\":0,\"h\":0,\"x\":0,\"y\":0,\"colorInputs\":1,\"buttons\":10}, color null→changed=false, shots=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-inspector-390x844.png,/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-inspector-colored-390x844.png"
+  },
+  {
+   "item": "5. Dialog: Export options & document …",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":374,\"sw\":372,\"cw\":372}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-dialog-export-390x844.png"
+  },
+  {
+   "item": "5. Dialog: Detect and fill PDF form f…",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":374,\"sw\":372,\"cw\":372}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-dialog-forms-390x844.png"
+  },
+  {
+   "item": "5. Dialog: Compare the text of two PD…",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":374,\"sw\":372,\"cw\":372}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-dialog-compare-390x844.png"
+  },
+  {
+   "item": "5. Dialog: Private on-device AI (ask …",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":374,\"sw\":372,\"cw\":372}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-dialog-ai-390x844.png"
+  },
+  {
+   "item": "5. Dialog: Help…",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":374,\"sw\":372,\"cw\":372}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-dialog-help-390x844.png"
+  },
+  {
+   "item": "5b. Export download",
+   "viewport": "390x844",
+   "status": "FAIL",
+   "notes": "exception: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waiting for locator('[role=\"dialog\"] button').filter({ hasText: /^Download PDF$/ }).first()\n"
+  },
+  {
+   "item": "6. Topbar: Save CTA",
+   "viewport": "390x844",
+   "status": "FAIL",
+   "notes": "visible=true, valid-pdf=false no download: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waiting for locator('button.save-cta').first()"
+  },
+  {
+   "item": "10. Touch pan scrolls document (select mode)",
+   "viewport": "390x844",
+   "status": "FAIL",
+   "notes": "scrollY 0→0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-pan-390x844.png"
+  },
+  {
+   "item": "9. Input font-size ≥16px (dialog)",
+   "viewport": "390x844",
+   "status": "PASS",
+   "notes": "bad=[], shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-inputs-390x844.png"
+  },
+  {
+   "item": "2. Load multi-page PDF (smoke)",
+   "viewport": "360x740",
+   "status": "PASS",
+   "notes": "pages=4"
+  },
+  {
+   "item": "3. Touch-draw rect (smoke)",
+   "viewport": "360x740",
+   "status": "PASS",
+   "notes": "anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s2-rect-360x740.png"
+  },
+  {
+   "item": "5. Export dialog fits (smoke)",
+   "viewport": "360x740",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":346,\"sw\":344,\"cw\":344}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-360x740.png"
+  },
+  {
+   "item": "2. Load multi-page PDF (smoke)",
+   "viewport": "414x896",
+   "status": "PASS",
+   "notes": "pages=4"
+  },
+  {
+   "item": "3. Touch-draw rect (smoke)",
+   "viewport": "414x896",
+   "status": "PASS",
+   "notes": "anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s2-rect-414x896.png"
+  },
+  {
+   "item": "5. Export dialog fits (smoke)",
+   "viewport": "414x896",
+   "status": "PASS",
+   "notes": "geom={\"x\":10,\"w\":397,\"sw\":395,\"cw\":395}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-414x896.png"
+  },
+  {
+   "item": "2. Load multi-page PDF (smoke)",
+   "viewport": "768x1024",
+   "status": "PASS",
+   "notes": "pages=4"
+  },
+  {
+   "item": "3. Touch-draw rect (smoke)",
+   "viewport": "768x1024",
+   "status": "PASS",
+   "notes": "anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s2-rect-768x1024.png"
+  },
+  {
+   "item": "5. Export dialog fits (smoke)",
+   "viewport": "768x1024",
+   "status": "FAIL",
+   "notes": "geom={\"x\":227,\"w\":737,\"sw\":735,\"cw\":735}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-768x1024.png"
+  },
+  {
+   "item": "2. Load multi-page PDF (smoke)",
+   "viewport": "844x390",
+   "status": "PASS",
+   "notes": "pages=4"
+  },
+  {
+   "item": "3. Touch-draw rect (smoke)",
+   "viewport": "844x390",
+   "status": "FAIL",
+   "notes": "anns 0→0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s2-rect-844x390.png"
+  },
+  {
+   "item": "5. Export dialog fits (smoke)",
+   "viewport": "844x390",
+   "status": "FAIL",
+   "notes": "geom={\"x\":191,\"w\":810,\"sw\":808,\"cw\":808}, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-844x390.png"
+  }
+ ],
+ "defects": [
+  {
+   "severity": "major",
+   "title": "textfield: drag does not place form widget",
+   "viewport": "390x844",
+   "repro": "Scroll rail to Text field (F), tap, touch-drag",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-tool-textfield-390x844.png"
+  },
+  {
+   "severity": "major",
+   "title": "Tap-to-select does not open inspector panel",
+   "viewport": "390x844",
+   "repro": "Draw rect → Select tool → tap annotation",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-inspector-390x844.png"
+  },
+  {
+   "severity": "major",
+   "title": "Save CTA does not produce a valid PDF",
+   "viewport": "390x844",
+   "repro": "Tap Save in topbar",
+   "evidence": ""
+  },
+  {
+   "severity": "major",
+   "title": "Touch-drag on page does not scroll document in Select mode",
+   "viewport": "390x844",
+   "repro": "Select tool → slow swipe up on empty page area",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-pan-390x844.png"
+  },
+  {
+   "severity": "major",
+   "title": "Export dialog broken (smoke)",
+   "viewport": "768x1024",
+   "repro": "Scroll topbar, tap Export",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-768x1024.png"
+  },
+  {
+   "severity": "critical",
+   "title": "Touch-drag creates no annotation (smoke)",
+   "viewport": "844x390",
+   "repro": "Rail-scroll to Rectangle, tap, touch-drag",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s2-rect-844x390.png"
+  },
+  {
+   "severity": "major",
+   "title": "Export dialog broken (smoke)",
+   "viewport": "844x390",
+   "repro": "Scroll topbar, tap Export",
+   "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/v2-s3-export-844x390.png"
+  }
+ ],
+ "errors": [
+  {
+   "viewport": "390x844",
+   "where": "CONSOLE",
+   "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wa"
+  },
+  {
+   "viewport": "390x844",
+   "where": "CONSOLE",
+   "text": "Error: Failed to parse PDF document (line:6 col:28 offset=179): No PDF header found\n    at t [as constructor] (https://navigatorslab.com/pdf-studio/assets/index-D5sBH5_j.js:62:194537)\n    at new t (ht"
+  },
+  {
+   "viewport": "360x740",
+   "where": "CONSOLE",
+   "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wa"
+  },
+  {
+   "viewport": "414x896",
+   "where": "CONSOLE",
+   "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wa"
+  },
+  {
+   "viewport": "768x1024",
+   "where": "CONSOLE",
+   "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wa"
+  },
+  {
+   "viewport": "844x390",
+   "where": "CONSOLE",
+   "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wa"
+  }
+ ]
+}

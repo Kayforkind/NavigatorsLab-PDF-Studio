@@ -1,0 +1,16 @@
+[2026-09-27 21:15:26] running shots3 (load 3.24)
+STAGE3 DONE
+[2026-09-27 21:16:00] running shots4 (load 3.24)
+FAIL: page.waitForFunction: Timeout 90000ms exceeded.
+[2026-09-27 21:17:39] still missing: 05b-signature-placed.png
+[2026-09-27 21:17:39] still missing: 09-ai.png
+[2026-09-27 21:17:39] still missing: 10-mobile.png
+[2026-09-27 21:17:39] cycle done (ran=1)
+[2026-09-27 21:19:16] running shots2 (load 4.35)
+FAIL: page.waitForFunction: Timeout 90000ms exceeded.
+[2026-09-27 21:20:55] running shots4 (load 4.35)
+renderGate: strict gate timed out, using fixed 8s render wait
+renderGate: strict gate timed out, using fixed 8s render wait
+STAGE4 DONE
+[2026-09-27 21:22:28] still missing: 05b-signature-placed.png
+[2026-09-27 21:22:28] cycle done (ran=1)

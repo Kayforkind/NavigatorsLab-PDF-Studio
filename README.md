@@ -2,17 +2,11 @@
 
 # PDF Studio
 
-**The free PDF editor that edits your files without ever seeing them.** · [▶ Try it!](https://navigatorslab.com/pdf-studio/)
+**The free PDF editor that edits your files without ever seeing them.**
 
-**No uploads · No accounts · No watermarks · No page limits**
+[▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
 
-[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases)
-[![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio)
-[![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/)
-[![Tests: 60 passing](https://img.shields.io/badge/tests-60_passing-brightgreen?style=for-the-badge)](#for-developers)
+[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 60 passing](https://img.shields.io/badge/tests-60_passing-brightgreen?style=for-the-badge)](#for-developers)
 
 > ⭐ **Want to say thanks? Click the star at the top of the page.**
 
@@ -80,16 +74,37 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 
 <br>
 
+**The full editor — free forever, private by design**
 ![PDF Studio — the full editor, free forever and private by design](docs/shots/01-hero.png)
+
+**Edit hints — every line of the original text is a clickable target**
 ![Edit hints — every line of the original text is a clickable target](docs/shots/02-edit-hints.png)
+
+**Annotate — underline tool with color and opacity controls**
 ![Underline tool with color and opacity controls](docs/shots/03-annotate.png)
+
+**True redaction — covered text is deleted from the file, not painted over**
 ![True redaction — covered text is deleted from the file, not painted over](docs/shots/04-redact.png)
+
+**Signature pad — draw with mouse, trackpad, or touch**
 ![Signature pad — draw with mouse, trackpad, or touch](docs/shots/05-signature-pad.png)
+
+**Signature — stamped onto the page**
 ![Signature stamped onto the page](docs/shots/05b-signature-placed.png)
+
+**Forms — values written into the real AcroForm fields**
 ![Fill form fields — values written into the real AcroForm fields](docs/shots/06-forms.png)
+
+**Compare — line-by-line diff of two versions**
 ![Compare two PDFs — line-by-line diff of two versions](docs/shots/07-compare.png)
+
+**Export — page ranges, split, stamps, document properties**
 ![Export dialog — page ranges, split, stamps, document properties](docs/shots/08-export.png)
+
+**On-device AI — ask questions about your document, nothing uploaded**
 ![On-device AI assistant — ask questions about your document, nothing uploaded](docs/shots/09-ai.png)
+
+**Mobile — bottom toolbar, full-width pages**
 ![Mobile layout — bottom toolbar, full-width pages](docs/shots/10-mobile.png)
 
 </details>
@@ -199,7 +214,7 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## Help translate
+### Help translate
 
 PDF Studio ships in English, Spanish, German, and French, and the whole UI is localizable — the app bundles its translations, so switching languages works fully offline. If you speak another language, you can help:
 
@@ -208,7 +223,7 @@ PDF Studio ships in English, Spanish, German, and French, and the whole UI is lo
 
 New languages are picked up automatically once the JSON file exists and the language is registered in `src/i18n.ts` (`LANGUAGES`).
 
-## Agentic usage
+### Agentic usage
 
 PDF Studio ships two agent native interfaces that reuse the exact same content stream engine as the app. No new parsing code, no network calls, document bytes never leave the machine.
 
@@ -219,34 +234,57 @@ npm run build:packages
 
 Run the CLI from the repo root with `npx pdfstudio …`, or make it global with `npm link -w packages/cli` and then call `pdfstudio` anywhere. The MCP server lives at `packages/mcp/dist/index.js` after the build.
 
-### CLI — `pdfstudio`
+#### CLI — `pdfstudio`
 
-```bash
-# inspect
-pdfstudio info contract.pdf
-pdfstudio extract-text contract.pdf -p 1-3
-pdfstudio search contract.pdf "termination clause"
+**Inspect**
 
-# true in place text editing (original bytes deleted, not overlaid)
-pdfstudio edit-text in.pdf --find "Acme Corp" --replace "Globex Inc" --all -o out.pdf
-cat in.pdf | pdfstudio edit-text - --find "draft" --replace "FINAL" -o - > out.pdf
+| Command | What it does |
+|---|---|
+| `pdfstudio info contract.pdf` | Show document properties |
+| `pdfstudio extract-text contract.pdf -p 1-3` | Extract text from pages 1–3 |
+| `pdfstudio search contract.pdf "termination clause"` | Search document text |
 
-# burned in redaction (bytes deleted, unrecoverable)
-pdfstudio redact in.pdf --find "123-45-6789" -o clean.pdf
-pdfstudio redact in.pdf --rect "2:72,500,200,24" -o clean.pdf   # page:x,y,w,h in points
+**Edit text** (original bytes deleted, not overlaid)
 
-# page ops
-pdfstudio merge a.pdf b.pdf -o combined.pdf
-pdfstudio split in.pdf --ranges 1-3 --ranges 4-6 -o "part-%d.pdf"
-pdfstudio rotate in.pdf --angle 90 -p 1-2 -o rotated.pdf
-pdfstudio pages in.pdf --delete 5 --order 3,1,2 -o reordered.pdf
-```
+| Command | What it does |
+|---|---|
+| `pdfstudio edit-text in.pdf --find "Acme Corp" --replace "Globex Inc" --all -o out.pdf` | Replace every match |
+| `cat in.pdf \| pdfstudio edit-text - --find "draft" --replace "FINAL" -o - > out.pdf` | Pipe in, pipe out |
+
+**Redact** (bytes deleted, unrecoverable)
+
+| Command | What it does |
+|---|---|
+| `pdfstudio redact in.pdf --find "123-45-6789" -o clean.pdf` | Redact matching text |
+| `pdfstudio redact in.pdf --rect "2:72,500,200,24" -o clean.pdf` | Redact a rectangle (page:x,y,w,h in points) |
+
+**Page ops**
+
+| Command | What it does |
+|---|---|
+| `pdfstudio merge a.pdf b.pdf -o combined.pdf` | Merge files |
+| `pdfstudio split in.pdf --ranges 1-3 --ranges 4-6 -o "part-%d.pdf"` | Split into parts |
+| `pdfstudio rotate in.pdf --angle 90 -p 1-2 -o rotated.pdf` | Rotate pages |
+| `pdfstudio pages in.pdf --delete 5 --order 3,1,2 -o reordered.pdf` | Delete and reorder pages |
 
 Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exit codes: 0 ok, 1 error, 2 no matches / nothing changed. `--json` on read commands for scripting.
 
-### MCP server — `pdfstudio-mcp`
+#### MCP server — `pdfstudio-mcp`
 
-Ten tools (`pdf_info`, `pdf_extract_text`, `pdf_search_text`, `pdf_edit_text`, `pdf_redact_text`, `pdf_redact_rect`, `pdf_merge`, `pdf_split`, `pdf_rotate`, `pdf_pages`). All paths are realpath-resolved inside `--root` and symlink escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted. For least privilege, `--read-only` registers only the three read tools.
+| Tool | What it does |
+|---|---|
+| `pdf_info` | Document properties |
+| `pdf_extract_text` | Extract text |
+| `pdf_search_text` | Search document text |
+| `pdf_edit_text` | In-place text edit |
+| `pdf_redact_text` | Redact matching text |
+| `pdf_redact_rect` | Redact a rectangle |
+| `pdf_merge` | Merge files |
+| `pdf_split` | Split into parts |
+| `pdf_rotate` | Rotate pages |
+| `pdf_pages` | Delete and reorder pages |
+
+All paths are realpath-resolved inside `--root` and symlink escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted. For least privilege, `--read-only` registers only the three read tools.
 
 Claude Code:
 
@@ -271,7 +309,7 @@ Cursor / Cline / any MCP client (`mcp.json`):
 
 **Prompt injection note:** PDF content is untrusted input. Extraction and search results are delimited and labeled as data. Agents should treat document text as data, never as instructions. If your agent framework echoes tool output into its context, keep that boundary in mind.
 
-## Self-host with Docker
+### Self-host with Docker
 
 Zero backend, so self-hosting is one command. Images publish to GHCR on every release:
 

@@ -1,0 +1,454 @@
+{
+  "results": [
+    {
+      "item": "1. Landing layout",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "no-h-overflow=true, dropzone-visible=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/01-landing-390x844.png"
+    },
+    {
+      "item": "2. Load multi-page PDF",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "pages=4, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/02-doc-390x844.png"
+    },
+    {
+      "item": "3. Tool: highlight (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-highlight-390x844.png"
+    },
+    {
+      "item": "3. Tool: underline (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 2→3, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-underline-390x844.png"
+    },
+    {
+      "item": "3. Tool: strike (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 3→4, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-strike-390x844.png"
+    },
+    {
+      "item": "3. Tool: ink (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 4→5, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-ink-390x844.png"
+    },
+    {
+      "item": "3. Tool: rect (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 5→6, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-rect-390x844.png"
+    },
+    {
+      "item": "3. Tool: ellipse (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 6→7, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-ellipse-390x844.png"
+    },
+    {
+      "item": "3. Tool: arrow (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 7→8, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-arrow-390x844.png"
+    },
+    {
+      "item": "3. Tool: redact (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 8→9, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-redact-390x844.png"
+    },
+    {
+      "item": "3. Tool: whiteout (touch-drag)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 9→10, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-whiteout-390x844.png"
+    },
+    {
+      "item": "3. Tool: text (tap+type)",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "inline-input=true, anns 10→11, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-text-390x844.png"
+    },
+    {
+      "item": "3. Tool: note (tap)",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "anns 11→11, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-note-390x844.png"
+    },
+    {
+      "item": "3. Tool: signature (pad+stamp)",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "pad=false, anns 11→11, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-sign-390x844.png"
+    },
+    {
+      "item": "3. Tool: image stamp",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "file-input=true, anns 11→11, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-image-390x844.png"
+    },
+    {
+      "item": "4. Select + inspector + color edit",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "drawer=false, color-changed=false (#ffd400), shots=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/04-inspector-390x844.png,/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/04-inspector-colored-390x844.png"
+    },
+    {
+      "item": "5. Dialog: Export options & documen… fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-export-390x844.png"
+    },
+    {
+      "item": "5. Dialog: Detect and fill PDF form… fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-forms-390x844.png"
+    },
+    {
+      "item": "5. Dialog: Compare the text of two … fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-compare-390x844.png"
+    },
+    {
+      "item": "5. Dialog: Private on-device AI (as… fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-ai-390x844.png"
+    },
+    {
+      "item": "5. Dialog: Help… fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-help-390x844.png"
+    },
+    {
+      "item": "5. Dialog: sign pad fits",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-signpad-390x844.png"
+    },
+    {
+      "item": "5b. Export downloads valid PDF",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "exception: locator.boundingBox: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.modal .btn.primary').first()\n"
+    },
+    {
+      "item": "6. Topbar: open",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: merge",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: undo",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: redo",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: zoomout",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: zoomin",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: forms2",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: compare2",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: ai2",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: help2",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: print",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: palette",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: export2",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "visible, new-errors=0"
+    },
+    {
+      "item": "6. Topbar: save",
+      "viewport": "390x844",
+      "status": "FAIL",
+      "notes": "button not visible"
+    },
+    {
+      "item": "6b. Undo/redo round-trip",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "anns 10→9→10"
+    },
+    {
+      "item": "7. Page navigation",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "thumb-strip-visible=false, page-jump-UI=true, scroll-works=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/07-pagenav-390x844.png"
+    },
+    {
+      "item": "9. Input font-size ≥16px",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "all visible inputs ≥16px"
+    },
+    {
+      "item": "10. Pinch-zoom + pan",
+      "viewport": "390x844",
+      "status": "PASS",
+      "notes": "alive=true, pan-scroll=false, new-errors=0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/10-pinch-390x844.png"
+    },
+    {
+      "item": "1. Landing layout",
+      "viewport": "360x740",
+      "status": "PASS",
+      "notes": "no-h-overflow=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s1-landing-360x740.png"
+    },
+    {
+      "item": "smoke",
+      "viewport": "360x740",
+      "status": "FAIL",
+      "notes": "exception: locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n  - waiting for locator('.sheet-inner').nth(3) to be visible\n"
+    },
+    {
+      "item": "1. Landing layout",
+      "viewport": "414x896",
+      "status": "PASS",
+      "notes": "no-h-overflow=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s1-landing-414x896.png"
+    },
+    {
+      "item": "2. Load multi-page PDF",
+      "viewport": "414x896",
+      "status": "PASS",
+      "notes": "pages=4, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s2-doc-414x896.png"
+    },
+    {
+      "item": "3. Touch-draw rect",
+      "viewport": "414x896",
+      "status": "FAIL",
+      "notes": "anns 0→0, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s3-rect-414x896.png"
+    },
+    {
+      "item": "5. Export dialog fits",
+      "viewport": "414x896",
+      "status": "FAIL",
+      "notes": "scrollW=undefined clientW=undefined, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s4-export-414x896.png"
+    },
+    {
+      "item": "1. Landing layout",
+      "viewport": "768x1024",
+      "status": "PASS",
+      "notes": "no-h-overflow=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s1-landing-768x1024.png"
+    },
+    {
+      "item": "2. Load multi-page PDF",
+      "viewport": "768x1024",
+      "status": "PASS",
+      "notes": "pages=4, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s2-doc-768x1024.png"
+    },
+    {
+      "item": "3. Touch-draw rect",
+      "viewport": "768x1024",
+      "status": "PASS",
+      "notes": "anns 0→2, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s3-rect-768x1024.png"
+    },
+    {
+      "item": "5. Export dialog fits",
+      "viewport": "768x1024",
+      "status": "PASS",
+      "notes": "scrollW=735 clientW=735, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s4-export-768x1024.png"
+    },
+    {
+      "item": "1. Landing layout",
+      "viewport": "844x390",
+      "status": "PASS",
+      "notes": "no-h-overflow=true, shot=/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s1-landing-844x390.png"
+    },
+    {
+      "item": "smoke",
+      "viewport": "844x390",
+      "status": "FAIL",
+      "notes": "exception: locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n  - waiting for locator('.sheet-inner').nth(3) to be visible\n"
+    }
+  ],
+  "defects": [
+    {
+      "severity": "major",
+      "title": "Note tool: tap does not drop marker",
+      "viewport": "390x844",
+      "repro": "Select Sticky note, tap page",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-note-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Sign pad dialog did not open",
+      "viewport": "390x844",
+      "repro": "Sign tool → tap page",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-sign-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Image stamp not placed",
+      "viewport": "390x844",
+      "repro": "Image tool → tap page → choose PNG",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/03-tool-image-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Tap-to-select does not open inspector drawer",
+      "viewport": "390x844",
+      "repro": "Select tool → tap annotation",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/04-inspector-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Dialog overflows horizontally (Export options & document prop)",
+      "viewport": "390x844",
+      "repro": "Open dialog at 390px",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-export-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Dialog overflows horizontally (Detect and fill PDF form field)",
+      "viewport": "390x844",
+      "repro": "Open dialog at 390px",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-forms-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Dialog overflows horizontally (Compare the text of two PDFs s)",
+      "viewport": "390x844",
+      "repro": "Open dialog at 390px",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-compare-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Dialog overflows horizontally (Private on-device AI (ask / su)",
+      "viewport": "390x844",
+      "repro": "Open dialog at 390px",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-ai-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Dialog overflows horizontally (Help)",
+      "viewport": "390x844",
+      "repro": "Open dialog at 390px",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-help-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Sign pad dialog overflows horizontally",
+      "viewport": "390x844",
+      "repro": "Sign tool → tap page",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/05-dialog-signpad-390x844.png"
+    },
+    {
+      "severity": "major",
+      "title": "Topbar button not visible on mobile: Save a copy (Ctrl+S)",
+      "viewport": "390x844",
+      "repro": "Load doc at 390x844",
+      "evidence": ""
+    },
+    {
+      "severity": "minor",
+      "title": "Touch-drag pan does not scroll document in select mode",
+      "viewport": "390x844",
+      "repro": "Select tool → drag on empty page area",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/10-pinch-390x844.png"
+    },
+    {
+      "severity": "critical",
+      "title": "Touch-drag creates no annotation",
+      "viewport": "414x896",
+      "repro": "Rect tool touch-drag at 414x896",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s3-rect-414x896.png"
+    },
+    {
+      "severity": "major",
+      "title": "Export dialog overflows horizontally",
+      "viewport": "414x896",
+      "repro": "Open export at 414x896",
+      "evidence": "/home/hatch/workspace/pdfstudio/docs/shots/mobile-qa/s4-export-414x896.png"
+    }
+  ],
+  "errors": [
+    {
+      "viewport": "390x844",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    },
+    {
+      "viewport": "360x740",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    },
+    {
+      "viewport": "414x896",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    },
+    {
+      "viewport": "768x1024",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    },
+    {
+      "viewport": "768x1024",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    },
+    {
+      "viewport": "844x390",
+      "where": "global",
+      "text": "CONSOLE: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' 'wasm-unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a f"
+    }
+  ]
+}

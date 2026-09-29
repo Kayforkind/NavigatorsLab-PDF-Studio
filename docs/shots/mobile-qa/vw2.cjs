@@ -1,0 +1,25 @@
+const { chromium } = require('playwright-core');
+const EXE = process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/chrome-linux/chrome-headless-shell';
+const PROXY = { server: 'http://127.0.0.1:18080' };
+(async () => {
+  const browser = await chromium.launch({ executablePath: EXE, args: ['--no-sandbox','--disable-dev-shm-usage'] });
+  const ctx = await browser.newContext({ viewport: {width:768,height:1024}, isMobile: true, hasTouch: true, proxy: PROXY });
+  const p = await ctx.newPage();
+  await p.goto('https://navigatorslab.com/pdf-studio/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await p.waitForTimeout(2500);
+  const iw0 = await p.evaluate(() => window.innerWidth);
+  const vp0 = await p.evaluate(() => document.querySelector('meta[name="viewport"]').getAttribute('content'));
+  console.log('landing: innerW=', iw0, 'viewport=', vp0);
+  const demo = p.getByRole('button', { name: /demo document/ });
+  await demo.waitFor({ state: 'visible', timeout: 20000 });
+  await demo.scrollIntoViewIfNeeded(); await p.waitForTimeout(300);
+  const db = await demo.boundingBox();
+  await p.touchscreen.tap(db.x + db.width/2, db.y + db.height/2);
+  await p.locator('.sheet-inner').nth(3).waitFor({ state: 'visible', timeout: 60000 });
+  await p.waitForTimeout(4000);
+  const iw1 = await p.evaluate(() => window.innerWidth);
+  const vp1 = await p.evaluate(() => document.querySelector('meta[name="viewport"]').getAttribute('content'));
+  const z = await p.evaluate(() => ({ zoom: getComputedStyle(document.documentElement).zoom, bodyZoom: getComputedStyle(document.body).zoom, tf: getComputedStyle(document.documentElement).transform }));
+  console.log('after doc: innerW=', iw1, 'viewport=', vp1, JSON.stringify(z));
+  await browser.close();
+})().catch(e => { console.error('ERR', e.message); process.exit(1); });
