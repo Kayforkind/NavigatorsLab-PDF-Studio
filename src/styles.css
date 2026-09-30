@@ -2296,13 +2296,15 @@ a.mini-btn.suite-link:hover {
    redaction verification report) never cover the tool rail. */
 @media (max-width: 720px) {
   /* ---- toasts: full-width, pinned ABOVE the fixed bottom tool rail ----
-     The bottom rail is ~58px + safe-area; a toast at bottom:44px used to sit
-     on top of the tool buttons (z 300 > 60), blocking taps and burying the
-     "redacted export verified" report. */
+     The bottom rail is ~98px tall on phones (44px buttons + labels + padding)
+     plus safe-area; a toast at bottom:44px used to sit on top of the tool
+     buttons (z 300 > 60), blocking taps and burying the "redacted export
+     verified" report. 120px clears the rail with margin to spare for the
+     12px toast-in entry dip, so the toast never overlaps the rail. */
   .toasts {
     left: 12px;
     right: 12px;
-    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(120px + env(safe-area-inset-bottom, 0px));
   }
   .toast {
     max-width: none;
