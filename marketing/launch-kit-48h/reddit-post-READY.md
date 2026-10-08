@@ -29,7 +29,7 @@ What's in v1.2.0:
 - UI in English, Spanish, German, and French
 - Edit existing text in place, forms, signatures, merge and split, annotations
 - Local OCR for scanned pages (the engine ships with the app and runs offline)
-- A CLI and an MCP server, so AI agents can work with PDFs. The MCP server got a security review that found and fixed a sandbox escape, and added a read-only mode.
+- A CLI and an MCP server, so AI agents can work with PDFs. The MCP server is stdio only, confines file paths to a root folder you choose, and has a read-only tier.
 - Docs site with the full CLI and MCP reference
 
 Honest limitations:
@@ -39,7 +39,7 @@ Honest limitations:
 - It's a young project, so expect rough edges.
 - The Docker image is amd64 only.
 
-If you're comparing with Stirling-PDF: it has a broader toolset and a large community. PDF Studio focuses on editing and on privacy you can check yourself in the browser's network tab.
+If you're comparing with Stirling-PDF: it has a broader toolset. PDF Studio focuses on editing and on privacy you can check yourself in the browser's network tab.
 
 Repo: https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 

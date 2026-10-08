@@ -66,6 +66,6 @@ Repo's here. Star it if you want software that respects you.
 https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 
 **12/12**
-Building in the open. Next up: the comparison page (PDF Studio vs Adobe vs Stirling-PDF, every cell verified) and more languages.
+Building in the open. Next up: the comparison page (PDF Studio vs Adobe vs Stirling-PDF, with competitor cells marked for vendor checks) and more languages.
 
 What should come first? 👇
