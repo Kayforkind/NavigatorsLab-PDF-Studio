@@ -7,8 +7,8 @@ plus a forward-looking threat model for the planned MCP server and CLI
 (`packages/mcp`, `packages/cli` — code not yet landed at audit time).
 
 **Method:** static analysis of every network call, DOM sink, storage write, and
-runtime dependency in the source tree; Content-Security-Policy review; OSV
-vulnerability scan of pinned dependency versions; service-worker caching review.
+runtime dependency in the source tree; Content-Security-Policy review; `npm audit`
+of pinned dependency versions; service-worker caching review.
 Every claim below cites the code that proves it. Nothing here is asserted on vibes.
 
 > **Bottom line:** the "private by design" claims check out. Document bytes have no
@@ -25,7 +25,7 @@ Every claim below cites the code that proves it. Nothing here is asserted on vib
 | Data exfiltration | **A** | No code path sends document bytes anywhere. Verified by exhaustive call-site audit. |
 | XSS / injection | **A** | Zero `innerHTML`-class sinks; React-escaped rendering; canvas-based pages; no PDF hyperlink rendering. |
 | Supply chain | **A−** | All runtime code self-hosted; CDN fallbacks overridden and CSP-blocked. Deduction: alt deploy configs lack header stamping. |
-| Dependencies | **A** | OSV scan: 0 known vulns in runtime deps; 1 dev-only advisory, not exploitable in the shipped app. |
+| Dependencies | **A** | `npm audit --omit=dev`: 0 known vulns in runtime deps (re-checked 2026-10-08); CI runs it on every push. |
 | Local data | **A−** | Autosave is local-only with a working one-click wipe (fixed + tested this audit). Plaintext-on-disk is inherent to the feature. |
 | Security headers / CSP | **A** | Strict CSP (`default-src 'none'`, no `unsafe-inline` scripts), HSTS, no-framing — stamped by the edge worker. |
 | Agentic usage (MCP/CLI) | **n/a — requirements set** | Code not yet landed; threat model + mandatory controls defined in §8. |
@@ -140,11 +140,13 @@ headers (and the CSP backstop in §1–2) would silently vanish. See finding F-0
 
 ## 4. Dependencies — A
 
-**Method:** `npm audit` was blocked by the sandbox egress proxy, so versions were
+**Method (2026-09-28):** `npm audit` was blocked by the sandbox egress proxy, so versions were
 resolved from `node_modules` and scanned against the OSV database
 (`api.osv.dev/v1/querybatch`), which aggregates GHSA, CVE, and friends.
 
-**Result: 0 known vulnerabilities** in `react`, `react-dom`, `pdf-lib`,
+**Update (2026-10-08):** `npm audit --omit=dev` and `npm audit` both report 0 vulnerabilities on the current lockfile. The Dependabot alerts (including the Playwright advisory below) are fixed.
+
+**Result (2026-09-28): 0 known vulnerabilities** in `react`, `react-dom`, `pdf-lib`,
 `pdfjs-dist`, `tesseract.js`, `@mlc-ai/web-llm`, `vite`, `vite-plugin-pwa`,
 `vitest`, `jsdom`, `typescript`.
 
@@ -153,7 +155,7 @@ downloads browsers without verifying SSL certificate authenticity. **Not exploit
 in the shipped app:** Playwright never ships to users; it only drives local test
 browsers. No action required beyond normal `npm update` hygiene.
 
-**Recommendation:** run `npm audit` / OSV scanning in CI so this stays continuously
+**Recommendation (done):** `npm audit --omit=dev` now runs in CI so this stays continuously
 verified rather than point-in-time (finding F-03).
 
 ---
@@ -324,7 +326,7 @@ the CLI/MCP must be opt-in and disclosed.
 |---|---|---|---|
 | F-01 | Low | **Fixed** | One-click wipe only cleared the session key, leaving settings/OCR/export prefs. Fixed: `src/lib/storage.ts` central registry, wipe clears all keys, 4 tests. |
 | F-02 | Low | Open | `netlify.toml` / `vercel.json` stamp no security headers. If ever deployed there, CSP/HSTS protections vanish. **Plan:** declare the Cloudflare worker canonical (done — it is), and either add `_headers`/vercel `headers` config or remove the stale configs. Owner decision needed. |
-| F-03 | Info | Open | `npm audit` not runnable from this sandbox (proxy blocks the audit endpoint); dependency verdict rests on an OSV scan. **Plan:** add OSV/`npm audit` to CI. Small task, no code risk. |
+| F-03 | Info | **Fixed** | `npm audit --omit=dev` runs in CI (`.github/workflows/ci.yml`); `npm audit` reports 0 vulnerabilities on 2026-10-08. |
 | F-04 | Info | Accepted | WebLLM doesn't verify weight-file hashes; trust is TLS+HuggingFace. Cannot exfiltrate even if weights were malicious (CSP binds the page). Accepted residual. |
 | F-05 | Info | Accepted | localStorage autosave is plaintext on disk — inherent to the feature; mitigated by one-click wipe + documented guidance. Accepted residual. |
 | — | — | Noted | Playwright GHSA-7mvr-c777-76hp is dev-only; not exploitable in the shipped app. No action. |
@@ -338,5 +340,5 @@ No medium, high, or critical findings. No finding contradicts the "private by de
 - Network audit: `grep -rnE '\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|EventSource' src/` → zero hits (2026-09-28).
 - DOM sinks: `grep -rnE 'innerHTML|dangerouslySetInnerHTML|outerHTML|insertAdjacentHTML|document\.write' src/` → zero hits.
 - Storage keys: `grep -rh 'localStorage' src/ --include='*.ts*'` → 4 keys, all in `src/lib/storage.ts`.
-- Deps: OSV `querybatch` over pinned `node_modules` versions → 0 vulns in shipped deps.
+- Deps: `npm audit --omit=dev` → 0 vulns (2026-10-08). Earlier OSV `querybatch` over pinned `node_modules` versions → 0 vulns in shipped deps (2026-09-28).
 - Headers: `curl -sI https://navigatorslab.com/pdf-studio/` should show the CSP/HSTS set above (worker-stamped).

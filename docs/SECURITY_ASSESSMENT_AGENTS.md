@@ -34,7 +34,7 @@ per-package `tsc -b`.
 | stdio transport / protocol | **A** | stdio only, no listeners; `console.log/info/debug` rerouted to stderr so a noisy dependency can never corrupt JSON-RPC; no env leakage. |
 | CLI input validation | **A** | No shell-outs (verified by grep); page ranges, angles, rects validated; exit codes 0/1/2; no document content in error output. |
 | Redaction honesty | **A** | Vector-only deletion; pages with image XObjects or non-invertible fonts are skipped with reasons, never covered; `rebuildClean` drops orphaned streams so redacted bytes are gone from the file. |
-| Dependencies (new in v1.1.0) | **A** | OSV: 0 known vulns in `commander@14.0.3`, `zod@3.25.76`, `@modelcontextprotocol/sdk@1.31.0`. (`pdf-lib`, `pdfjs-dist` covered in the parent assessment.) |
+| Dependencies (new in v1.1.0) | **A** | `npm audit`: 0 known vulns on the lockfile (re-checked 2026-10-08); the three new deps `commander@14.0.3`, `zod@3.25.76`, `@modelcontextprotocol/sdk@1.31.0` were OSV-clean on 2026-09-28. (`pdf-lib`, `pdfjs-dist` covered in the parent assessment.) |
 | Secrets | **A** | Architecture needs no secrets; zero `process.env` reads in the packages. |
 
 **Agentic interfaces overall: A−.** Consistent with the web app's A−; no change
@@ -86,7 +86,7 @@ No high or critical findings.
 - **Network grep:** `fetch(|XMLHttpRequest|WebSocket|sendBeacon|EventSource|http.get` across `packages/*/src` (excluding tests) → **zero hits**.
 - **Shell-out grep:** `child_process|exec(|spawn(|shell:` → zero hits (only regex `.exec(` matches).
 - **Eval/env grep:** `eval|new Function|process.env` → zero hits.
-- **OSV `querybatch`:** `commander@14.0.3`, `zod@3.25.76`, `@modelcontextprotocol/sdk@1.31.0` → **0 vulnerabilities** each.
+- **OSV `querybatch` (2026-09-28):** `commander@14.0.3`, `zod@3.25.76`, `@modelcontextprotocol/sdk@1.31.0` → **0 vulnerabilities** each. Current check: `npm audit --omit=dev` (CI).
 - **Redaction honesty:** `planVectorRedaction` returns `null` for pages with image XObjects (`src/lib/textRewrite.ts:919`); `edit.ts` surfaces those as `skipped` with reasons; `rebuildClean` copies pages into a fresh `PDFDocument` so orphaned content streams (edited-out bytes) are dropped from the output file.
 - **Tests:** core 17/17 · cli 9/9 · mcp 20/20 (12 pre-existing + 8 new security tests) · per-package `tsc -b` clean.
 - **Note:** root `tsc -b` currently fails on `src/i18n.ts` (`initReactI18n` is not an export of `react-i18next`) — pre-existing, unrelated to this audit; a sibling agent's in-progress translations work. Flagged, not touched.
@@ -96,4 +96,4 @@ No high or critical findings.
 - Symlink tests: `packages/mcp/src/server.test.ts` → "path containment" + "prompt-injection framing" + "read-only mode" describes.
 - Read-only: `node packages/mcp/dist/index.js --root DIR --read-only` then list tools — only the 3 read tools appear.
 - Containment: `resolveWithin` is exported from `packages/mcp/src/index.ts` for direct unit testing.
-- Re-run OSV before each release: `commander`, `zod`, `@modelcontextprotocol/sdk` are the new long-lived deps.
+- Re-run `npm audit` before each release: `commander`, `zod`, `@modelcontextprotocol/sdk` are the new long-lived deps.

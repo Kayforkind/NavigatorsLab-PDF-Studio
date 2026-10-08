@@ -27,7 +27,7 @@ in the repo.
 
 The audit was a defensive, owner-authorized static analysis of every network
 call, DOM sink, storage write, and runtime dependency in the source tree, plus
-a CSP review and an OSV vulnerability scan of pinned dependencies. Every claim
+a CSP review and an `npm audit` check of pinned dependencies. Every claim
 was verified against the source code, not asserted.
 
 | Category | Grade | Verdict |

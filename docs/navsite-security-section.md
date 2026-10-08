@@ -17,7 +17,7 @@
       <tr><td>Data exfiltration</td><td><strong>A</strong></td><td>No code path sends document bytes anywhere — verified by auditing every network call in the source.</td></tr>
       <tr><td>XSS / injection</td><td><strong>A</strong></td><td>Zero <code>innerHTML</code>-class sinks; pages render to canvas; hostile PDFs are inert.</td></tr>
       <tr><td>Supply chain</td><td><strong>A−</strong></td><td>All runtime code self-hosted; CDN fallbacks overridden and blocked by policy.</td></tr>
-      <tr><td>Dependencies</td><td><strong>A</strong></td><td>Zero known vulnerabilities in shipped dependencies (OSV scan).</td></tr>
+      <tr><td>Dependencies</td><td><strong>A</strong></td><td>Zero known vulnerabilities in shipped dependencies (<code>npm audit --omit=dev</code>, run in CI).</td></tr>
       <tr><td>Local data</td><td><strong>A−</strong></td><td>Autosave stays in your browser; one-click wipe deletes all of it.</td></tr>
       <tr><td>Security headers</td><td><strong>A</strong></td><td>Strict Content-Security-Policy, HSTS, no framing, no referrer leakage.</td></tr>
     </tbody>
