@@ -13,7 +13,7 @@ in the repo.
 | Where do my files go? | **Nowhere.** There is no upload endpoint. Open devtools while you edit: your document bytes never leave the machine. |
 | Is any of my data collected? | **No.** No accounts, no analytics on your documents. Sessions autosave **locally in your browser**. |
 | What *does* download? | The app itself, plus optional public AI/OCR model weights (cached after first fetch). Your documents never transit the network. |
-| Can I air-gap it? | **Yes.** Serve `dist/` on an internal network and point the model loaders at internal mirrors. |
+| Can I air-gap it? | **Mostly.** The app and OCR engine are bundled and work offline. Only the optional AI assistant downloads model weights (from Hugging Face, on first use). Skip the AI assistant on an offline network; the model source cannot be changed to an internal mirror yet. |
 
 - **No server.** The app is a static build; there is no backend to upload to.
 - **No tracking, no analytics.** Nothing about your documents is collected.
@@ -35,7 +35,7 @@ was verified against the source code, not asserted.
 | Data exfiltration | **A** | Zero network calls carry document bytes — verified by exhaustive audit of `src/`. |
 | XSS / injection | **A** | No `innerHTML`-class sinks anywhere; pages render to canvas; hostile PDFs are inert pixels and escaped text. |
 | Supply chain | **A−** | Every runtime byte is self-hosted; CDN fallbacks are overridden and CSP-blocked. |
-| Dependencies | **A** | 0 known vulnerabilities in shipped dependencies (OSV scan of pinned versions). |
+| Dependencies | **A** | `npm audit --omit=dev` reports 0 vulnerabilities in shipped dependencies (checked 2026-10-07). |
 | Local data | **A−** | Autosave lives only in your browser's localStorage; the one-click wipe deletes all of it (tested). |
 | Security headers | **A** | Strict Content-Security-Policy, HSTS, no-framing, no referrer leakage — stamped on every response. |
 

@@ -53,9 +53,10 @@ The container serves the static `dist/` build behind nginx — your documents
 still never leave the machine running it.
 
 ::: tip Air-gapped use
-Serve `dist/` on an internal network and point the AI/OCR model loaders at
-internal mirrors. The app makes no network calls for document data, so it works
-fully offline after the first load.
+Serve `dist/` on an internal network. The app and OCR engine are bundled and
+work offline. Only the optional AI assistant downloads model weights from
+Hugging Face on first use; leave it unused on an offline network. Document data
+never leaves the browser.
 :::
 
 ## Option 4 — Build from source

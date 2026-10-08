@@ -128,7 +128,7 @@ Full detail: [How it works — docs](https://navigatorslab.com/pdf-studio/docs/g
 
 ## How it compares
 
-PDF Studio is the zero-setup option that keeps a full editor and never uploads your files. Checked against public pricing and feature pages on 2026-09-27. Full breakdown: [COMPARISONS.md](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
+PDF Studio is the zero-setup option that keeps a full editor and never uploads your files. Full breakdown: [COMPARISONS.md](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
 
 ---
 
@@ -151,7 +151,7 @@ What PDF Studio does not do yet:
 | Where do my files go? | **Nowhere.** There is no upload endpoint. Open devtools while you edit: your document bytes never leave the machine. |
 | Is any of my data collected? | **No.** No accounts, no analytics on your documents. Sessions autosave **locally in your browser**. |
 | What *does* download? | The app itself, plus optional public AI/OCR model weights (cached after first fetch). Your documents never transit the network. |
-| Can I air-gap it? | **Yes.** Serve `dist/` on an internal network and point the model loaders at internal mirrors. |
+| Can I air-gap it? | **Mostly.** The app and OCR engine are bundled and work offline. Only the optional AI assistant downloads model weights (from Hugging Face, on first use). Skip the AI assistant on an offline network; the model source cannot be changed to an internal mirror yet. |
 
 ---
 

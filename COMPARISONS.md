@@ -1,23 +1,23 @@
 # PDF Studio vs Adobe Acrobat vs Stirling-PDF — Open-Source Adobe Acrobat Alternative
 
-Looking for a free, open-source Adobe Acrobat alternative that keeps your documents private? This page compares **PDF Studio** against **Adobe Acrobat** and **Stirling-PDF** across price, privacy, text editing, redaction, OCR, and self hosting. Every claim below was verified against public pricing and feature pages on 2026-09-27.
+Looking for a free, open-source Adobe Acrobat alternative that keeps your documents private? This page compares **PDF Studio** against **Adobe Acrobat** and **Stirling-PDF** across price, privacy, text editing, redaction, OCR, and self hosting. Competitor details come from our own reading and were not re-checked against vendor pages in the latest review, so confirm current pricing and features with each vendor before deciding.
 
 ## The one table version
 
 | | **PDF Studio** | **Adobe Acrobat** | **Stirling-PDF** |
 |---|---|---|---|
-| Price | **Free, MIT open source** | ~$19.99/user/mo (Acrobat Pro) | Free, Apache 2.0, self hosted |
+| Price | **Free, MIT open source** | Paid subscription | Free, self hosted |
 | Your document leaves your device | **Never** | Uploads to Adobe | Never (your server) |
-| True in-place text editing | **Yes** | Yes (paid) | Partial |
-| Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Yes |
-| OCR | **Yes, on device** | Paid | Yes |
+| True in-place text editing | **Yes** | Yes (paid) | Check its docs |
+| Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Check its docs |
+| OCR | **Yes, on device** | Paid tier | Check its docs |
 | Zero setup (no install, no server) | **Yes** | No | No (Docker) |
 | Works offline | **Yes (PWA)** | Desktop yes | Your server |
-| Open source | **MIT** | No | Apache 2.0 |
+| Open source | **MIT** | No | Yes |
 
 ## Price
 
-Adobe Acrobat Pro costs around $19.99 per user per month, and the features that matter (real text editing, redaction, OCR) sit behind the paid tier. Stirling-PDF is free and open source under Apache 2.0, and PDF Studio is free and open source under MIT. Neither charges per user, per page, or per task.
+PDF Studio is free and open source under MIT. Adobe Acrobat is a paid subscription, with plans listed on Adobe's site. Stirling-PDF is free to self host. Check each vendor's current pricing before deciding.
 
 ## Privacy: where your document goes
 
@@ -25,15 +25,15 @@ This is the sharpest difference. Adobe Acrobat uploads your files to Adobe serve
 
 ## Text editing
 
-Adobe Acrobat edits existing PDF text well, once you pay. Stirling-PDF covers a huge range of PDF operations (50+ tools) but in-place text editing is only partial. PDF Studio rewrites the page content stream itself: the original text operators are deleted from the file and your replacement is written in as real vector text. Not an overlay, not a text box on top. The old bytes are gone.
+Adobe Acrobat edits existing PDF text well, once you pay. Stirling-PDF is a broad PDF toolkit; check its docs for how far in-place text editing goes. PDF Studio rewrites the page content stream itself: the original text operators are deleted from the file and your replacement is written in as real vector text. Not an overlay, not a text box on top. The old bytes are gone.
 
 ## Redaction honesty
 
-This one deserves plain language. A lot of "free" tools offer redaction that is really just a black rectangle drawn over your text. Anyone can select the text underneath, copy it, or remove the rectangle. PDF Studio's redaction deletes the covered text from the file at export. So does Adobe's (paid) and Stirling-PDF's. If a tool cannot show you the text is gone from the file bytes, it is whiteout, not redaction.
+This one deserves plain language. A lot of "free" tools offer redaction that is really just a black rectangle drawn over your text. Anyone can select the text underneath, copy it, or remove the rectangle. PDF Studio's redaction deletes the covered text from the file at export. If a tool cannot show you the text is gone from the file bytes, it is whiteout, not redaction.
 
 ## OCR
 
-Scanned pages need optical character recognition before the text becomes editable. Adobe charges for it. Stirling-PDF includes it. PDF Studio runs Tesseract on your device (English, Spanish, French, German), so scanned pages become editable text with no upload, ever.
+Scanned pages need optical character recognition before the text becomes editable. Acrobat Pro includes OCR in its paid tier. PDF Studio runs Tesseract on your device (English, Spanish, French, German), so scanned pages become editable text with no upload, ever.
 
 ## Setup and self hosting
 
@@ -42,21 +42,6 @@ Adobe Acrobat is a desktop install plus cloud services. Stirling-PDF needs Docke
 ```bash
 docker run -p 8080:80 ghcr.io/kayforkind/navigatorslab-pdf-studio:latest
 ```
-
-## The wider field
-
-| | **PDF Studio** | Adobe Acrobat | Smallpdf | Sejda | Stirling-PDF |
-|---|---|---|---|---|---|
-| Price | **Free, MIT** | ~$19.99/user/mo | $10–15/mo | ~$7.50/mo | Free, self hosted |
-| True in-place text editing | **Yes** | Yes (paid) | Yes (paid) | Yes | Partial |
-| Your document leaves your device | **Never** | Uploads to Adobe | Uploads to Smallpdf | Uploads (web) | Never (your server) |
-| Daily / task caps | **None** | Paid tier | ~2 tasks/day | 3 tasks/day | None |
-| Watermark on free output | **None** | — | Reported on some tools | None reported | None |
-| Burned in redaction | **Yes** | Yes (paid) | Paid | Whiteout style | Yes |
-| OCR | **Yes, on device** | Paid | Paid | Capped | Yes |
-| Revision diff | **Yes** | Yes (paid) | Paid | No | — |
-| On-device AI Q&A | **Yes** | Paid add-on | Limited | No | No |
-| Zero setup (no install, no server) | **Yes** | — | Yes | Yes | No (Docker) |
 
 ## Which should you choose?
 
@@ -70,6 +55,6 @@ PDF Studio does not do everything yet. Text editing needs a real text layer (sca
 
 ## Sources and verification
 
-* Pricing and feature claims verified against public pages on 2026-09-27.
+* Competitor pricing and features change often and were not re-verified in the latest review.
 * Privacy and security claims verified by an internal source code audit: [docs/SECURITY_ASSESSMENT.md](./docs/SECURITY_ASSESSMENT.md) (overall grade A−, 2026-09-28), plus the [agentic CLI/MCP audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md).
 * Try it live: [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/)
