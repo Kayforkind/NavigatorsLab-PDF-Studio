@@ -24,6 +24,8 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Package tests (core, cli, mcp)
+        run: npm run test:packages
       - name: Build
         run: npm run build:pages
       - name: Install Playwright

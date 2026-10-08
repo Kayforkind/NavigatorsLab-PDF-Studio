@@ -15,11 +15,15 @@ import { fileURLToPath } from 'node:url';
 import { PDFDocument, PDFName, PDFDict, StandardFonts } from 'pdf-lib';
 import { extractText } from 'pdfstudio-core';
 
-const SRC_DIR = new URL('.', import.meta.url).pathname;
+// fileURLToPath: URL.pathname gives "/D:/..." on Windows, which breaks resolve().
+const SRC_DIR = fileURLToPath(new URL('.', import.meta.url));
 const CLI_DIR = resolve(SRC_DIR, '..');
 const CORE_DIR = resolve(CLI_DIR, '../core');
 const CLI_BIN = join(CLI_DIR, 'dist', 'cli.js');
 const SCRATCH = resolve(fileURLToPath(new URL('../../../../.tmp', import.meta.url)));
+// Run the hoisted TypeScript compiler through node: `npx` is npx.cmd on Windows,
+// which execFileSync cannot spawn directly.
+const TSC_BIN = resolve(CLI_DIR, '../../node_modules/typescript/bin/tsc');
 
 async function makePdf(lines: string[]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -62,7 +66,7 @@ beforeAll(
   () => {
     // The spawned binary runs from dist: rebuild both packages first.
     for (const d of [CORE_DIR, CLI_DIR]) {
-      execFileSync('npx', ['tsc', '-p', 'tsconfig.json'], {
+      execFileSync(process.execPath, [TSC_BIN, '-p', 'tsconfig.json'], {
         cwd: d,
         env: { ...process.env, TMPDIR: SCRATCH },
         timeout: 240000,

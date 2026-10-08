@@ -1,6 +1,6 @@
 /** MCP server tests — handlers + path containment, no network, temp root. */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, symlinkSync, existsSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, symlinkSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PDFDocument, PDFName, PDFDict, StandardFonts } from 'pdf-lib';
@@ -19,6 +19,21 @@ async function makePdf(pages: string[][]): Promise<Uint8Array> {
   }
   return doc.save();
 }
+
+// Creating symlinks needs privilege on Windows (EPERM without Developer Mode).
+// The symlink-escape tests run wherever symlinks are allowed, including CI on Linux.
+function canCreateSymlinks(): boolean {
+  const probe = mkdtempSync(join(tmpdir(), 'pdfstudio-symlink-probe-'));
+  try {
+    symlinkSync(probe, join(probe, 'link'));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    rmSync(probe, { recursive: true, force: true });
+  }
+}
+const HAS_SYMLINKS = canCreateSymlinks();
 
 let root: string;
 let ctx: Ctx;
@@ -48,13 +63,13 @@ describe('path containment', () => {
     expect(() => resolveWithin(root, '.')).toThrow();
     expect(() => resolveWithin(root, 'a\0b.pdf')).toThrow();
   });
-  it('rejects symlinks that escape the root (file)', () => {
+  it.skipIf(!HAS_SYMLINKS)('rejects symlinks that escape the root (file)', () => {
     const outside = mkdtempSync(join(tmpdir(), 'mcp-outside-'));
     writeFileSync(join(outside, 'secret.txt'), 'TOP-SECRET');
     symlinkSync(join(outside, 'secret.txt'), join(root, 'link.txt'));
     expect(() => resolveWithin(root, 'link.txt')).toThrow(/escapes/);
   });
-  it('rejects symlinks that escape the root (directory)', () => {
+  it.skipIf(!HAS_SYMLINKS)('rejects symlinks that escape the root (directory)', () => {
     const outside = mkdtempSync(join(tmpdir(), 'mcp-outside-'));
     writeFileSync(join(outside, 'secret.txt'), 'TOP-SECRET');
     symlinkSync(outside, join(root, 'linkdir'));
@@ -64,7 +79,7 @@ describe('path containment', () => {
     mkdirSync(join(root, 'notafile'));
     await expect(handlers.pdf_info(ctx, { path: 'notafile' })).rejects.toThrow(/not a regular file/);
   });
-  it('refuses mutating writes through an escaping symlink', async () => {
+  it.skipIf(!HAS_SYMLINKS)('refuses mutating writes through an escaping symlink', async () => {
     const outside = mkdtempSync(join(tmpdir(), 'mcp-outside-'));
     symlinkSync(outside, join(root, 'wlink'));
     put('a.pdf', await makePdf([['Alpha']]));
