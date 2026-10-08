@@ -6,14 +6,14 @@ Looking for an open-source Adobe Acrobat alternative that does not upload your d
 
 | | **PDF Studio** | **Adobe Acrobat** | **Stirling-PDF** |
 |---|---|---|---|
-| Price | **Free, MIT open source** | Paid subscription | Free, self hosted |
+| Price | **Free, MIT open source** | Paid subscription (Pro: US$19.99/mo, annual billed monthly) | Open core, free to self host |
 | Your document leaves your device | **Never** | Uploads to Adobe | Never (your server) |
 | True in-place text editing | **Yes** | Yes (paid) | Check its docs |
 | Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Check its docs |
 | OCR | **Yes, on device** | Paid tier | Check its docs |
 | Zero setup (no install, no server) | **Yes** | No | No (Docker) |
 | Works offline | **Yes (PWA)** | Desktop app | Self hosted |
-| Open source | **MIT** | No | Yes |
+| Open source | **MIT** | No | Yes (open core) |
 
 ## Why privacy is the deciding factor
 

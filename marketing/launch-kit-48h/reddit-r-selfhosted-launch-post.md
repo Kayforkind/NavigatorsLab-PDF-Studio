@@ -33,7 +33,7 @@ What else is in v1.2.0:
 Honest limitations:
 - First OCR run downloads ~8MB of model weights from Hugging Face (one time, disclosed in the UI). Everything after that is offline.
 - It's a young project — v1.2.0, so expect rough edges. Issues and PRs get same-day responses through October.
-- If you're comparing with Stirling-PDF: they're the powerhouse (50+ tools, huge community). PDF Studio's bet is different — a full editor UI plus a privacy story you can verify in DevTools' network tab.
+- If you're comparing with Stirling-PDF: they're the powerhouse (a much broader toolset). PDF Studio's bet is different — a full editor UI plus a privacy story you can verify in DevTools' network tab.
 
 Repo: https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 

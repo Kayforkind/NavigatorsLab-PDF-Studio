@@ -51,7 +51,7 @@ The MCP server part matters more than it looks.
 Agents are about to touch everyone's documents. Ours runs with a --read-only mode and every path is realpath-resolved inside its root. We found and fixed a symlink escape before shipping.
 
 **9/12**
-Honest state of the project: it's young (v1.2.0), Stirling-PDF has 50+ tools and we don't.
+Honest state of the project: it's young (v1.2.0), Stirling-PDF has a much broader toolset and we don't.
 
 Our bet: a real editor UI plus a privacy story you can verify yourself in 10 seconds.
 

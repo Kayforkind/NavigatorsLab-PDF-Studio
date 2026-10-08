@@ -1,23 +1,23 @@
 # PDF Studio vs Adobe Acrobat vs Stirling-PDF — Open-Source Adobe Acrobat Alternative
 
-Looking for a free, open-source Adobe Acrobat alternative that keeps your documents private? This page compares **PDF Studio** against **Adobe Acrobat** and **Stirling-PDF** across price, privacy, text editing, redaction, OCR, and self hosting. Competitor details come from our own reading and were not re-checked against vendor pages in the latest review, so confirm current pricing and features with each vendor before deciding.
+Looking for a free, open-source Adobe Acrobat alternative that keeps your documents private? This page compares **PDF Studio** against **Adobe Acrobat** and **Stirling-PDF** across price, privacy, text editing, redaction, OCR, and self hosting. Prices and licenses were checked against vendor pages on 2026-10-08; feature claims for competitors are still unverified, so confirm them with each vendor before deciding.
 
 ## The one table version
 
 | | **PDF Studio** | **Adobe Acrobat** | **Stirling-PDF** |
 |---|---|---|---|
-| Price | **Free, MIT open source** | Paid subscription | Free, self hosted |
+| Price | **Free, MIT open source** | Paid subscription (Pro: US$19.99/mo, annual billed monthly) | Open core, free to self host |
 | Your document leaves your device | **Never** | Uploads to Adobe | Never (your server) |
 | True in-place text editing | **Yes** | Yes (paid) | Check its docs |
 | Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Check its docs |
 | OCR | **Yes, on device** | Paid tier | Check its docs |
 | Zero setup (no install, no server) | **Yes** | No | No (Docker) |
 | Works offline | **Yes (PWA)** | Desktop yes | Your server |
-| Open source | **MIT** | No | Yes |
+| Open source | **MIT** | No | Yes (open core) |
 
 ## Price
 
-PDF Studio is free and open source under MIT. Adobe Acrobat is a paid subscription, with plans listed on Adobe's site. Stirling-PDF is free to self host. Check each vendor's current pricing before deciding.
+PDF Studio is free and open source under MIT. Adobe Acrobat is a paid subscription: Acrobat Pro is listed at US$19.99/month on an annual, billed-monthly plan on Adobe's free-trial page (other plans and regions differ). Stirling-PDF is open core: its core is MIT-licensed and free to self host, while separately licensed proprietary directories and paid Team and Enterprise tiers exist.
 
 ## Privacy: where your document goes
 
@@ -55,6 +55,6 @@ PDF Studio does not do everything yet. Text editing needs a real text layer (sca
 
 ## Sources and verification
 
-* Competitor pricing and features change often and were not re-verified in the latest review.
+* Adobe pricing: [adobe.com/acrobat/free-trial-download.html](https://www.adobe.com/acrobat/free-trial-download.html), checked 2026-10-08. Stirling-PDF license: its [LICENSE file](https://github.com/Stirling-Tools/Stirling-PDF/blob/main/LICENSE), checked 2026-10-08. Competitor feature claims and prices change often; confirm them before deciding.
 * Privacy and security claims verified by an internal source code audit: [docs/SECURITY_ASSESSMENT.md](./docs/SECURITY_ASSESSMENT.md) (overall grade A−, 2026-09-28), plus the [agentic CLI/MCP audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md).
 * Try it live: [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/)
