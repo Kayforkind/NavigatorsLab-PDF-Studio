@@ -12,7 +12,7 @@ addendum is the re-audit §8 called for, performed against the real code.
 proof-of-concept exploit for path containment; repo-wide grep for network
 primitives (`fetch(`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, `EventSource`,
 `http.get`), shell-outs (`child_process`, `exec`, `spawn`, `shell: true`),
-`eval`/`new Function`, and `process.env` reads; OSV scan of the three new
+`eval`/`new Function`, and `process.env` reads; OSV scan (2026-09-28) of the three new
 runtime dependencies; adversarial-PDF framing tests; full test suites +
 per-package `tsc -b`.
 
@@ -88,8 +88,8 @@ No high or critical findings.
 - **Eval/env grep:** `eval|new Function|process.env` → zero hits.
 - **OSV `querybatch` (2026-09-28):** `commander@14.0.3`, `zod@3.25.76`, `@modelcontextprotocol/sdk@1.31.0` → **0 vulnerabilities** each. Current check: `npm audit --omit=dev` (CI).
 - **Redaction honesty:** `planVectorRedaction` returns `null` for pages with image XObjects (`src/lib/textRewrite.ts:919`); `edit.ts` surfaces those as `skipped` with reasons; `rebuildClean` copies pages into a fresh `PDFDocument` so orphaned content streams (edited-out bytes) are dropped from the output file.
-- **Tests:** core 17/17 · cli 9/9 · mcp 20/20 (12 pre-existing + 8 new security tests) · per-package `tsc -b` clean.
-- **Note:** root `tsc -b` currently fails on `src/i18n.ts` (`initReactI18n` is not an export of `react-i18next`) — pre-existing, unrelated to this audit; a sibling agent's in-progress translations work. Flagged, not touched.
+- **Tests (2026-09-28 snapshot):** core 17/17 · cli 9/9 · mcp 20/20 (12 pre-existing + 8 new security tests) · per-package `tsc -b` clean. Current counts: core 36, cli 15, mcp 19 (+3 symlink tests skipped on Windows).
+- **Note (2026-09-28):** root `tsc -b` failed on `src/i18n.ts` at audit time (since fixed; `npm run typecheck` passes on 2026-10-08) (`initReactI18n` is not an export of `react-i18next`) — pre-existing, unrelated to this audit; a sibling agent's in-progress translations work. Flagged, not touched.
 
 ## Reproduction / re-audit notes
 
