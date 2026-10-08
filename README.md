@@ -6,7 +6,7 @@
 
 [▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
 
-[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 60 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
+[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 87 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
 
 🎬 **Watch the redaction exposé** (55 sec) — a black-box "redaction" leaves your text selectable underneath. Ours deletes it for real.
 
@@ -174,7 +174,8 @@ git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 87 passing tests
+npm test           # 87 app tests
+npm run test:packages   # core, CLI, and MCP tests (builds packages first)
 npm run build      # → dist/ (relative base: works at domain root, subpath, or CDN)
 ```
 

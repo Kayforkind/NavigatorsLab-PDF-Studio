@@ -13,7 +13,8 @@ Thanks for wanting to make PDF Studio better. This is a 100%-client-side PDF edi
 ```bash
 npm install
 npm run dev      # local dev server
-npm test         # 42 tests, all must pass
+npm test         # app tests, all must pass
+npm run test:packages   # core, CLI, and MCP tests
 npm run build    # production build
 ```
 

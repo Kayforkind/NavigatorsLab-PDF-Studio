@@ -143,7 +143,7 @@ whole session — files, page ops, marks, and form values:
 ```bash
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 24 tests
+npm test           # app tests, all must pass
 npm run typecheck
 npm run build      # → dist/ (PWA service worker included)
 ```
