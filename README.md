@@ -6,9 +6,7 @@
 
 [▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
 
-[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 60 passing](https://img.shields.io/badge/tests-60_passing-brightgreen?style=for-the-badge)](#for-developers)
-
-> ⭐ **Want to say thanks? Click the star at the top of the page.**
+[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 60 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
 
 🎬 **Watch the redaction exposé** (55 sec) — a black-box "redaction" leaves your text selectable underneath. Ours deletes it for real.
 
@@ -130,19 +128,7 @@ Full detail: [How it works — docs](https://navigatorslab.com/pdf-studio/docs/g
 
 ## How it compares
 
-Verified against public pricing and feature pages on 2026-09-27. [Full breakdown with the wider field](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
-
-| | **PDF Studio** | **Adobe Acrobat** | **Stirling-PDF** |
-|---|---|---|---|
-| Price | **Free, MIT open source** | ~$19.99/user/mo | Free, Apache 2.0, self hosted |
-| Your document leaves your device | **Never** | Uploads to Adobe | Never (your server) |
-| True in-place text editing | **Yes** | Yes (paid) | Partial |
-| Burned in redaction | **Yes, bytes deleted** | Yes (paid) | Yes |
-| OCR | **Yes, on device** | Paid | Yes |
-| Zero setup (no install, no server) | **Yes** | No | No (Docker) |
-| Open source | **MIT** | No | Apache 2.0 |
-
-**The short version:** incumbents upload your files and meter your work. Self hosted tools make you run infrastructure. PDF Studio is the zero setup option that keeps the full feature list — free, no caps, no uploads.
+PDF Studio is the zero-setup option that keeps a full editor and never uploads your files. Checked against public pricing and feature pages on 2026-09-27. Full breakdown: [COMPARISONS.md](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
 
 ---
 
@@ -173,23 +159,9 @@ What PDF Studio does not do yet:
 
 [![Security: A-](https://img.shields.io/badge/security-A--brightgreen?style=for-the-badge)](./docs/SECURITY_ASSESSMENT.md)
 
-**Independent security audit — 2026-09-28 — overall grade: A−.** Every claim below
-was verified against the source code, not asserted. [Full assessment with code
-references](./docs/SECURITY_ASSESSMENT.md) · [Agentic (CLI/MCP) audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md) · [Vulnerability reporting policy](./SECURITY.md)
+**Security assessment — 2026-09-28 — overall grade A−.** Each claim was checked against the source code. Full assessment: [SECURITY_ASSESSMENT.md](./docs/SECURITY_ASSESSMENT.md) · [agentic (CLI/MCP) addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md) · [reporting policy](./SECURITY.md).
 
-| Category | Grade | Verdict |
-|---|---|---|
-| Data exfiltration | **A** | Zero network calls carry document bytes — verified by exhaustive audit of `src/`. The only external host the app ever contacts is HuggingFace, for one-time AI model downloads you trigger yourself. |
-| XSS / injection | **A** | No `innerHTML`-class sinks anywhere; pages render to canvas; hostile PDFs are inert pixels and escaped text. |
-| Supply chain | **A−** | Every runtime byte is self-hosted; CDN fallbacks are overridden and CSP-blocked. |
-| Dependencies | **A** | 0 known vulnerabilities in shipped dependencies (OSV scan of pinned versions). |
-| Local data | **A−** | Autosave lives only in your browser's localStorage; the one-click wipe deletes all of it (tested). |
-| Security headers | **A** | Strict Content-Security-Policy, HSTS, no-framing, no referrer leakage — stamped on every response. |
-| Agentic interfaces (CLI/MCP) | **A−** | Zero network calls in the CLI and MCP server; MCP paths are realpath-contained to `--root` (symlink escapes rejected); extracted text is delimited and marked untrusted; redaction deletes bytes, never covers them. [Agentic audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md) |
-
-**Residual risks (stated plainly):** autosave is plaintext on your disk, so wipe
-after use on a shared machine; AI model weights come from HuggingFace over TLS
-without hash verification. Neither lets data leave your device.
+**Residual risks (stated plainly):** autosave is plaintext on your disk, so wipe after use on a shared machine; AI model weights come from HuggingFace over TLS without hash verification. Neither lets data leave your device.
 
 Found something? Please report it privately — see [SECURITY.md](./SECURITY.md).
 
@@ -202,7 +174,7 @@ git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 60 passing tests
+npm test           # 87 passing tests
 npm run build      # → dist/ (relative base: works at domain root, subpath, or CDN)
 ```
 
@@ -210,7 +182,7 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 **The interesting engineering:** every mark lives in the page's PDF user space — the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport`, including offset MediaBox/CropBox origins that break most home-grown editors. Text edits go through a content-stream tokenizer: the original glyphs' show-text operators are deleted and replacements are written back with TJ kerning reproducing the original spacing. Tesseract, pdf.js workers, and WASM all run under a strict Content Security Policy with zero network calls for document data.
 
-**Test suite (60):** i18n (language detection, switching, persistence, wipe, catalog completeness) · document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
+**Test suite (87):** i18n (language detection, switching, persistence, wipe, catalog completeness) · document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
@@ -234,57 +206,13 @@ npm run build:packages
 
 Run the CLI from the repo root with `npx pdfstudio …`, or make it global with `npm link -w packages/cli` and then call `pdfstudio` anywhere. The MCP server lives at `packages/mcp/dist/index.js` after the build.
 
-#### CLI — `pdfstudio`
+#### CLI and MCP reference
 
-**Inspect**
+Every command and tool is documented on the docs site: [CLI reference](https://navigatorslab.com/pdf-studio/docs/guide/cli.html) · [MCP reference](https://navigatorslab.com/pdf-studio/docs/guide/mcp.html).
 
-| Command | What it does |
-|---|---|
-| `pdfstudio info contract.pdf` | Show document properties |
-| `pdfstudio extract-text contract.pdf -p 1-3` | Extract text from pages 1–3 |
-| `pdfstudio search contract.pdf "termination clause"` | Search document text |
+Main CLI commands: `pdfstudio info`, `extract-text`, `search`, `edit-text`, `redact`, `merge`, `split`, `rotate`, `pages`. The MCP server exposes matching `pdf_*` tools. For least privilege, `--read-only` registers only the three read tools. Paths are realpath-resolved inside `--root`, and symlink escapes are rejected.
 
-**Edit text** (original bytes deleted, not overlaid)
-
-| Command | What it does |
-|---|---|
-| `pdfstudio edit-text in.pdf --find "Acme Corp" --replace "Globex Inc" --all -o out.pdf` | Replace every match |
-| `cat in.pdf \| pdfstudio edit-text - --find "draft" --replace "FINAL" -o - > out.pdf` | Pipe in, pipe out |
-
-**Redact** (bytes deleted, unrecoverable)
-
-| Command | What it does |
-|---|---|
-| `pdfstudio redact in.pdf --find "123-45-6789" -o clean.pdf` | Redact matching text |
-| `pdfstudio redact in.pdf --rect "2:72,500,200,24" -o clean.pdf` | Redact a rectangle (page:x,y,w,h in points) |
-
-**Page ops**
-
-| Command | What it does |
-|---|---|
-| `pdfstudio merge a.pdf b.pdf -o combined.pdf` | Merge files |
-| `pdfstudio split in.pdf --ranges 1-3 --ranges 4-6 -o "part-%d.pdf"` | Split into parts |
-| `pdfstudio rotate in.pdf --angle 90 -p 1-2 -o rotated.pdf` | Rotate pages |
-| `pdfstudio pages in.pdf --delete 5 --order 3,1,2 -o reordered.pdf` | Delete and reorder pages |
-
-Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exit codes: 0 ok, 1 error, 2 no matches / nothing changed. `--json` on read commands for scripting.
-
-#### MCP server — `pdfstudio-mcp`
-
-| Tool | What it does |
-|---|---|
-| `pdf_info` | Document properties |
-| `pdf_extract_text` | Extract text |
-| `pdf_search_text` | Search document text |
-| `pdf_edit_text` | In-place text edit |
-| `pdf_redact_text` | Redact matching text |
-| `pdf_redact_rect` | Redact a rectangle |
-| `pdf_merge` | Merge files |
-| `pdf_split` | Split into parts |
-| `pdf_rotate` | Rotate pages |
-| `pdf_pages` | Delete and reorder pages |
-
-All paths are realpath-resolved inside `--root` and symlink escapes are rejected. Extracted text is wrapped in explicit delimiters and marked untrusted. For least privilege, `--read-only` registers only the three read tools.
+Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exit codes: 0 ok, 1 error, 2 no matches or nothing changed. `--json` on read commands for scripting.
 
 Claude Code:
 

@@ -281,7 +281,13 @@
     "whiteoutBlurb": "El color de cobertura se toma de la página bajo tu arrastre, para que los retoques se mezclen en páginas con tinta o escaneadas."
   },
   "landing": {
-    "byNav": "por NavigatorsLab",
+        "eyebrow": "Gratis · Código abierto · Privado por diseño",
+    "showcaseCaption": "El texto original se reemplaza en el propio archivo, no se tapa con una capa encima.",
+    "proofUploads": "Sin subidas",
+    "proofAccounts": "Sin cuentas",
+    "proofWatermarks": "Sin marcas de agua",
+    "proofLimits": "Sin límite de páginas",
+"byNav": "por NavigatorsLab",
     "chooseFile": "Elige un archivo PDF",
     "demo": "¿No tienes un archivo a mano? Abre el documento de demostración →",
     "dropTitle": "Suelta un PDF aquí",

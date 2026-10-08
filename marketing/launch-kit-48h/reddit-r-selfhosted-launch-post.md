@@ -27,7 +27,7 @@ Or just use the live demo (same code, static hosting): https://navigatorslab.com
 What else is in v1.2.0:
 - Full UI in English, Spanish, German, French
 - Local OCR (Tesseract WASM), form filling, signatures, merge/split
-- A CLI and an MCP server, so AI agents can work with PDFs without exfiltrating them — the MCP server just passed an independent security audit (sandbox escape fixed, read-only mode added)
+- A CLI and an MCP server, so AI agents can work with PDFs without exfiltrating them — the MCP server just got a security review (sandbox escape fixed, read-only mode added)
 - Docs site with the full CLI/MCP reference
 
 Honest limitations:

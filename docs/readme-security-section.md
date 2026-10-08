@@ -11,7 +11,7 @@ Paste the block below into README.md at the spot the repo coordinator chooses
 [![Audit: 2026-09-28](https://img.shields.io/badge/audit-2026--09--28-blue?style=for-the-badge)](./docs/SECURITY_ASSESSMENT.md)
 [![Vuln policy](https://img.shields.io/badge/vulnerability_policy-SECURITY.md-lightgrey?style=for-the-badge)](./SECURITY.md)
 
-**Independent security audit — 2026-09-28 — overall grade: A−.** Every claim below
+**Internal security audit — 2026-09-28 — overall grade: A−.** Every claim below
 was verified against the source code, not asserted. [Full assessment with code
 references](./docs/SECURITY_ASSESSMENT.md) · [Vulnerability reporting policy](./SECURITY.md)
 

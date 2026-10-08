@@ -1,7 +1,7 @@
 # Security & privacy
 
 PDF Studio is private **by architecture, not by policy**. This page summarizes
-the privacy design and the independent security audit. For the full assessment
+the privacy design and the internal security audit. For the full assessment
 with code references, see
 [`docs/SECURITY_ASSESSMENT.md`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/blob/main/docs/SECURITY_ASSESSMENT.md)
 in the repo.
@@ -23,7 +23,7 @@ in the repo.
 - **Autosave is local-only** (`localStorage`), with a one-click wipe that
   deletes all of it.
 
-## Independent audit — 2026-09-28 — overall grade: A−
+## Internal audit — 2026-09-28 — overall grade: A−
 
 The audit was a defensive, owner-authorized static analysis of every network
 call, DOM sink, storage write, and runtime dependency in the source tree, plus

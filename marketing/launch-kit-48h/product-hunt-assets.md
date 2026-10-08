@@ -20,7 +20,7 @@ The short version: every mainstream PDF tool uploads your document to their serv
 
 The feature I'm proudest of: honest redaction. Most PDF redactors paint a white box over text that stays selectable underneath. Ours actually deletes the content from the file.
 
-v1.2.0 adds Spanish/German/French UI, a full docs site, and an independently audited CLI + MCP server (we found and fixed a real sandbox escape before shipping).
+v1.2.0 adds Spanish/German/French UI, a full docs site, and an internally audited CLI + MCP server (we found and fixed a real sandbox escape before shipping).
 
 It's MIT licensed and self-hosts in one line: `docker run -d -p 8080:80 --name pdf-studio ghcr.io/kayforkind/navigatorslab-pdf-studio:latest`
 

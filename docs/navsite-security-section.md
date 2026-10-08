@@ -5,7 +5,7 @@
 <section class="security" id="security">
   <h2>Security, verified — not promised</h2>
   <p class="security-grade">
-    Independent security audit · 2026-09-28 ·
+    Internal security audit · 2026-09-28 ·
     <strong>Overall grade: A−</strong>
   </p>
 

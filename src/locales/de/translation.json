@@ -72,7 +72,13 @@
     }
   },
   "landing": {
-    "title1": "PDF Studio.",
+        "eyebrow": "Kostenlos · Open Source · Privat by design",
+    "showcaseCaption": "Der Originaltext wird in der Datei selbst ersetzt – nicht mit einer Ebene überdeckt.",
+    "proofUploads": "Keine Uploads",
+    "proofAccounts": "Keine Konten",
+    "proofWatermarks": "Keine Wasserzeichen",
+    "proofLimits": "Keine Seitenlimits",
+"title1": "PDF Studio.",
     "title2": "Privat, kostenlos, Open Source.",
     "sub": "Den Text, der bereits in Ihrem PDF steht, bearbeiten, kommentieren, unterschreiben, Seiten ordnen, zusammenführen und teilen — alles in Ihrem Browser. Kein Konto, kein Wasserzeichen, keine Uploads, keine Seitenlimits.",
     "featEdit": "Vorhandenen Text bearbeiten",

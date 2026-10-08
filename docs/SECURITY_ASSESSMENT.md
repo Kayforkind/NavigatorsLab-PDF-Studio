@@ -1,6 +1,6 @@
 # PDF Studio — Security Assessment
 
-**Date:** 2026-09-28 · **Auditor:** independent internal audit (defensive, owner-authorized)
+**Date:** 2026-09-28 · **Auditor:** internal audit (defensive, owner-authorized)
 **Scope:** web app at `https://navigatorslab.com/pdf-studio/` — `src/`, `index.html`,
 `worker.js` (edge headers), `vite.config.ts` (PWA/service worker), dependencies,
 plus a forward-looking threat model for the planned MCP server and CLI

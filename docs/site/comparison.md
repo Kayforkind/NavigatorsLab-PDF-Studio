@@ -19,7 +19,7 @@ Looking for an open-source Adobe Acrobat alternative that does not upload your d
 
 Adobe Acrobat uploads your files to Adobe servers when you use the web app or cloud features. Stirling-PDF never sends your documents anywhere, because you run it on your own server. PDF Studio goes one step further: it runs entirely in your browser, so there is no server at all. Open your browser devtools while you edit and watch — your document bytes never leave the machine. No accounts, no analytics on your documents, no tracking.
 
-The full evidence is in the [security assessment](/guide/security): an independent source-code audit graded PDF Studio **A−** overall, with zero network calls carrying document bytes.
+The full evidence is in the [security assessment](/guide/security): an internal source-code audit graded PDF Studio **A−** overall, with zero network calls carrying document bytes.
 
 ## Redaction that is actually redaction
 

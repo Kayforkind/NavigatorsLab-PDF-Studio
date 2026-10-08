@@ -72,7 +72,13 @@
     }
   },
   "landing": {
-    "title1": "PDF Studio.",
+        "eyebrow": "Free · Open source · Private by design",
+    "showcaseCaption": "The original text is replaced in the file itself — not covered by an overlay.",
+    "proofUploads": "No uploads",
+    "proofAccounts": "No accounts",
+    "proofWatermarks": "No watermarks",
+    "proofLimits": "No page limits",
+"title1": "PDF Studio.",
     "title2": "Private, free, open source.",
     "sub": "Edit the text that is already in your PDF, mark it up, sign it, organize the pages, merge and split — all inside your browser. No account, no watermark, no uploads, no page limits.",
     "featEdit": "Edit existing text",

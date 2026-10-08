@@ -8,7 +8,7 @@ Hi,
 
 Following up on my note from last week — PDF Studio (the open-source, 100%-client-side PDF editor) just shipped v1.2.0, and there's a new angle since we last spoke:
 
-- **Audited for agents:** we put the CLI and MCP server through an independent security re-audit against the project's threat model. Found and fixed a real sandbox escape (symlink breakout from `--root`), added a `--read-only` MCP mode, and hardened untrusted-text delimiters. Full report: docs/SECURITY_ASSESSMENT_AGENTS.md in the repo.
+- **Audited for agents:** we put the CLI and MCP server through an internal security re-audit against the project's threat model. Found and fixed a real sandbox escape (symlink breakout from `--root`), added a `--read-only` MCP mode, and hardened untrusted-text delimiters. Full report: docs/SECURITY_ASSESSMENT_AGENTS.md in the repo.
 - **Four languages:** full UI localization in Spanish, German, French (+English).
 - **Docs site:** complete CLI/MCP references, security model, FAQ.
 - **Still zero backend:** every byte stays on-device — verifiable in DevTools.

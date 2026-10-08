@@ -43,7 +43,7 @@ PDF Studio runs **100% in your browser**. Your files are opened, edited, and sav
 on your own machine — there is no server to upload to. Open devtools while you
 edit: your document bytes never leave the machine.
 
-- **Zero network calls carry document bytes** — verified by an independent security audit ([Security](/guide/security))
+- **Zero network calls carry document bytes** — verified by an internal security audit ([Security](/guide/security))
 - The only external host the app ever contacts is HuggingFace, for **one-time, user-triggered AI model downloads**
 - Autosaves stay in your browser's localStorage; a one-click wipe deletes them
 
@@ -55,7 +55,7 @@ edit: your document bytes never leave the machine.
 | [Installation](/guide/installation) | Use it in the browser, install the PWA, Docker self-hosting, build from source |
 | [CLI reference](/guide/cli) | `pdfstudio info`, `edit-text`, `redact`, `merge`, `split`, `rotate`, `pages`… |
 | [MCP server](/guide/mcp) | Give Claude Code / Cursor / Cline 10 PDF tools over stdio — no network, path-contained |
-| [Security](/guide/security) | Privacy architecture and the independent A− security audit |
+| [Security](/guide/security) | Privacy architecture and the internal A− security audit |
 | [FAQ](/faq) | Pricing, limits, offline use, redaction vs. whiteout, and more |
 
 ## Try it in 30 seconds

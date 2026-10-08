@@ -2544,3 +2544,302 @@ a.mini-btn.suite-link:hover {
     width: 120px;
   }
 }
+
+/* ============ Cinematic landing (first-run hero) ============
+   Layered backdrop (drifting light orbs + film grain + vignette), a staggered
+   entrance, a live-edit showcase card, and a proof strip. Motion is transform/
+   opacity only and is fully disabled under prefers-reduced-motion below. */
+.landing > .cine-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cine-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.6) 100%);
+}
+.cine-bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.6;
+  will-change: transform;
+  animation: orb-drift 20s ease-in-out infinite alternate;
+}
+.cine-bg .o1 {
+  width: 52vw;
+  height: 52vw;
+  left: -14vw;
+  top: -18vw;
+  background: radial-gradient(circle, rgba(208, 188, 255, 0.5), transparent 65%);
+}
+.cine-bg .o2 {
+  width: 44vw;
+  height: 44vw;
+  right: -12vw;
+  bottom: -16vw;
+  background: radial-gradient(circle, rgba(239, 184, 200, 0.42), transparent 65%);
+  animation-duration: 24s;
+  animation-delay: -7s;
+}
+.cine-bg .o3 {
+  width: 30vw;
+  height: 30vw;
+  left: 42%;
+  top: 46%;
+  background: radial-gradient(circle, rgba(103, 80, 164, 0.5), transparent 65%);
+  animation-duration: 28s;
+  animation-delay: -13s;
+}
+.cine-bg .grain {
+  position: absolute;
+  inset: -50%;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@keyframes orb-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4vw, 3vh, 0) scale(1.1);
+  }
+}
+
+.landing-hero {
+  position: relative;
+  z-index: 1;
+}
+
+.reveal {
+  /* backwards (not both): the end state must not pin transform/filter,
+     which would override the showcase tilt and dropzone hover scale */
+  animation: rise 720ms var(--md-spatial) backwards;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 6px 12px;
+  border: 1px solid var(--md-outlineVariant);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-surfaceContainerHigh) 70%, transparent);
+  color: var(--md-onSurfaceVariant);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.eyebrow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: live-ping 2.4s ease-out infinite;
+}
+@keyframes live-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+  }
+  80%,
+  100% {
+    box-shadow: 0 0 0 9px rgba(52, 211, 153, 0);
+  }
+}
+
+/* shimmering brand gradient across the second headline line */
+.landing-hero h1 span {
+  background-size: 200% 100%;
+  animation: shimmer 9s linear infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+/* ---- showcase: a page whose original text is rewritten live ---- */
+.showcase {
+  position: relative;
+  margin: 26px 0 0;
+  max-width: 460px;
+  transform: perspective(900px) rotateY(-7deg) rotateX(3deg);
+  transition: transform 500ms var(--md-spatial);
+}
+.showcase:hover {
+  transform: perspective(900px) rotateY(0deg) rotateX(0deg);
+}
+.showcase-page {
+  background: #fbfaf7;
+  color: #1b1a1f;
+  border-radius: 10px;
+  padding: 20px 24px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  font: 500 14px/24px Georgia, 'Times New Roman', serif;
+}
+.sp-title {
+  font: 700 16px/24px Georgia, 'Times New Roman', serif;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #1b1a1f;
+}
+.sp-line {
+  white-space: nowrap;
+  border-bottom: 1px dashed #e4dfd6;
+}
+.sp-muted {
+  color: #6b6770;
+}
+.sw-pair {
+  position: relative;
+  display: inline-block;
+}
+.sw-old {
+  display: inline-block;
+  animation: sw-old 8s ease-in-out infinite;
+}
+.sw-new {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  color: #5b21b6;
+  background: linear-gradient(90deg, rgba(208, 188, 255, 0.55), rgba(208, 188, 255, 0));
+  animation: sw-new 8s ease-in-out infinite;
+}
+@keyframes sw-old {
+  0%,
+  6% {
+    opacity: 1;
+    text-decoration: none;
+  }
+  16%,
+  90% {
+    opacity: 0.25;
+    text-decoration: line-through;
+  }
+  100% {
+    opacity: 1;
+    text-decoration: none;
+  }
+}
+@keyframes sw-new {
+  0%,
+  22% {
+    clip-path: inset(0 100% 0 0);
+  }
+  40%,
+  90% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+.showcase figcaption {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--md-outline);
+}
+
+/* ---- proof strip ---- */
+.proof {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 20px 0 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--md-onSurfaceVariant);
+}
+.proof li::before {
+  content: '✓';
+  margin-right: 6px;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.landing-hero .landing-sub,
+.landing-hero .landing-features {
+  position: relative;
+}
+
+.dropzone {
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--md-surfaceContainerLow) 82%, transparent);
+}
+.landing-shortcuts {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .showcase {
+    transform: none;
+    max-width: 100%;
+  }
+  .showcase:hover {
+    transform: none;
+  }
+}
+
+/* ---- reduced motion: freeze every cinematic loop, keep the final state ---- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .cine-bg .orb,
+  .eyebrow::before,
+  .landing-hero h1 span,
+  .sw-old,
+  .sw-new {
+    animation: none !important;
+  }
+  .reveal {
+    opacity: 1;
+  }
+  .sw-old {
+    opacity: 0.25;
+    text-decoration: line-through;
+  }
+  .sw-new {
+    clip-path: inset(0 0 0 0);
+  }
+  .showcase,
+  .showcase:hover {
+    transform: none;
+    transition: none;
+  }
+  .dropzone {
+    backdrop-filter: none;
+  }
+}
+
+/* breathing room between the showcase caption and the feature chips */
+.landing-hero .landing-features {
+  margin-top: 22px;
+}

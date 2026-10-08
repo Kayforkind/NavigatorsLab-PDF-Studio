@@ -71,5 +71,5 @@ PDF Studio does not do everything yet. Text editing needs a real text layer (sca
 ## Sources and verification
 
 * Pricing and feature claims verified against public pages on 2026-09-27.
-* Privacy and security claims verified by an independent source code audit: [docs/SECURITY_ASSESSMENT.md](./docs/SECURITY_ASSESSMENT.md) (overall grade A−, 2026-09-28), plus the [agentic CLI/MCP audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md).
+* Privacy and security claims verified by an internal source code audit: [docs/SECURITY_ASSESSMENT.md](./docs/SECURITY_ASSESSMENT.md) (overall grade A−, 2026-09-28), plus the [agentic CLI/MCP audit addendum](./docs/SECURITY_ASSESSMENT_AGENTS.md).
 * Try it live: [navigatorslab.com/pdf-studio](https://navigatorslab.com/pdf-studio/)
