@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type DragEvent } from 'react';
+import { useState, type CSSProperties, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './icons';
 import { ShortcutCheatsheet } from './Shortcuts';
@@ -49,10 +49,17 @@ export function Landing({
 }) {
   const { t } = useTranslation();
   const [over, setOver] = useState(false);
+  /* Publish the pointer position (0..1) as CSS variables: drives the spotlight and the showcase tilt. */
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mx', ((e.clientX - r.left) / r.width).toFixed(3));
+    e.currentTarget.style.setProperty('--my', ((e.clientY - r.top) / r.height).toFixed(3));
+  };
   const proof = [t('landing.proofUploads'), t('landing.proofAccounts'), t('landing.proofWatermarks'), t('landing.proofLimits')];
   return (
-    <div className="landing">
+    <div className="landing" onPointerMove={onPointerMove}>
       <div className="cine-bg" aria-hidden="true">
+        <span className="spot" />
         <span className="orb o1" />
         <span className="orb o2" />
         <span className="orb o3" />
