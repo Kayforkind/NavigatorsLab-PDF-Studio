@@ -1,3 +1,15 @@
+const fs = require("node:fs");
+const CURSOR_JS = `(() => {
+  const css = "#__pdfcur{position:fixed;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:rgba(124,92,255,.9);box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 18px rgba(124,92,255,.95);pointer-events:none;z-index:2147483647}" +
+    ".__rip{position:fixed;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #a78bfa;pointer-events:none;z-index:2147483646;animation:__rip .6s ease-out forwards}" +
+    "@keyframes __rip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}";
+  const add = () => { if (document.getElementById("__pdfcur")) return; const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st); const c = document.createElement("div"); c.id = "__pdfcur"; document.body.appendChild(c); };
+  const place = (x, y) => { const c = document.getElementById("__pdfcur"); if (c) { c.style.left = x + "px"; c.style.top = y + "px"; } };
+  const ripple = (x, y) => { const r = document.createElement("div"); r.className = "__rip"; r.style.left = x + "px"; r.style.top = y + "px"; document.body.appendChild(r); setTimeout(() => r.remove(), 700); };
+  document.addEventListener("DOMContentLoaded", add); if (document.readyState !== "loading") add();
+  document.addEventListener("mousemove", (e) => place(e.clientX, e.clientY), true);
+  document.addEventListener("mousedown", (e) => { place(e.clientX, e.clientY); ripple(e.clientX, e.clientY); }, true);
+})();`;
 /* End-to-end verification of the six user-reported issues, on the subpath
  * server (mimics GitHub Pages layout). Asserts with real downloads parsed
  * via pdf-lib — not just "no console errors".
@@ -35,8 +47,11 @@ const ok = (name, cond, extra = '') => {
 };
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ slowMo: 160 });
   const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 720 }, recordVideo: { dir: "../expose-rec", size: { width: 1280, height: 720 } } });
+  await ctx.addInitScript(CURSOR_JS);
+  const marks = []; const t0 = Date.now(); const origLog = console.log;
+  console.log = (...a) => { const m = String(a[0]); if (m.startsWith("== ")) marks.push({ label: m, t: (Date.now() - t0) / 1000 }); origLog(...a); };
   const page = await ctx.newPage();
   const consoleErrors = [];
   page.on('console', (m) => {
@@ -310,6 +325,7 @@ const ok = (name, cond, extra = '') => {
   console.log(`== console errors: ${consoleErrors.length} ==`);
   if (consoleErrors.length) console.log(consoleErrors.slice(0, 5).join('\n---\n'));
 
+  fs.writeFileSync("../expose-rec/marks.json", JSON.stringify(marks, null, 1));
   await browser.close();
   console.log(`\nRESULT: ${pass} passed, ${fail} failed`);
   process.exit(fail > 0 ? 1 : 0);
