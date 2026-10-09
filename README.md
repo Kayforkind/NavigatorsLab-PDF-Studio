@@ -8,9 +8,9 @@
 
 [![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 87 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
 
-🎬 **Watch the redaction flow** (23 sec) — edit a line, redact another, export: the redacted text is gone from the file. A black box would leave it selectable underneath.
+🎬 **See it in action** (31 sec) — edit text in place, redact for real, add sticky notes, highlight, compare two PDFs, and print. Recorded from the live app; nothing leaves the browser.
 
-<video src="docs/redaction-expose.mp4" width="100%" controls></video>
+<video src="docs/showcase.mp4" width="100%" controls></video>
 
 ![Demo — open the demo document, press E, click any line of text, retype it](docs/demo.gif)
 
