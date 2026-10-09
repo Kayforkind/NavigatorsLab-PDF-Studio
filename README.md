@@ -8,7 +8,7 @@
 
 [![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 87 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
 
-🎬 **Watch the redaction exposé** (55 sec) — a black-box "redaction" leaves your text selectable underneath. Ours deletes it for real.
+🎬 **Watch the redaction flow** (13 sec) — edit a line, redact another, export: the redacted text is gone from the file. A black box would leave it selectable underneath.
 
 <video src="docs/redaction-expose.mp4" width="100%" controls></video>
 
