@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "test:packages": "npm run build:packages && npm run test --workspaces --if-present",
     "typecheck": "tsc --noEmit -p tsconfig.json --pretty false",
+    "shots": "node scripts/make-shots.cjs",
     "docs:dev": "vitepress dev docs/site",
     "docs:build": "vitepress build docs/site && node scripts/build-docs.cjs"
   },

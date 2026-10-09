@@ -43,6 +43,12 @@ const SEC_HEADERS = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // /pdf-studio (no trailing slash) serves the app shell, but its relative
+    // ./assets/ URLs would resolve to /assets/ and 404. Canonicalise to the
+    // slash form so the app's relative asset paths resolve under /pdf-studio/.
+    if (url.pathname === '/pdf-studio') {
+      return Response.redirect(url.origin + '/pdf-studio/' + url.search, 301);
+    }
     let path = url.pathname.replace(/^\/pdf-studio/, '') || '/';
     // /pdf-studio/doc was the published launch-thread link for the
     // comparison page — redirect it to the docs comparison page.

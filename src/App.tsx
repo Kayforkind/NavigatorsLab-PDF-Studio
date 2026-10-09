@@ -1541,7 +1541,7 @@ export default function App() {
         </div>
       )}
 
-      <div className="toasts">
+      <div className="toasts" role="status" aria-live="polite">
         {toasts.map((t) => (
           <div className="toast" key={t.id}>
             {t.msg}

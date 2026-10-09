@@ -4,6 +4,7 @@ import enJson from '../locales/en/translation.json';
 import esJson from '../locales/es/translation.json';
 import deJson from '../locales/de/translation.json';
 import frJson from '../locales/fr/translation.json';
+import ptJson from '../locales/pt/translation.json';
 
 function leafPaths(o: unknown, prefix = ''): string[] {
   if (o && typeof o === 'object' && !Array.isArray(o)) {
@@ -98,12 +99,13 @@ describe('locale catalog completeness', () => {
     ['es', esJson],
     ['de', deJson],
     ['fr', frJson],
+    ['pt', ptJson],
   ])('%s has exactly the same keys as English', (_lng, json) => {
     expect(leafPaths(json).sort()).toEqual(enPaths);
   });
 
   it('no locale is missing translations (no empty strings)', () => {
-    for (const [lng, json] of [['es', esJson], ['de', deJson], ['fr', frJson]] as const) {
+    for (const [lng, json] of [['es', esJson], ['de', deJson], ['fr', frJson], ['pt', ptJson]] as const) {
       const empties = leafPaths(json).filter((p) => {
         const v = p.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], json);
         return v === '';
@@ -116,7 +118,7 @@ describe('locale catalog completeness', () => {
     const enStr = JSON.stringify(enJson);
     const placeholders = [...enStr.matchAll(/\{\{[a-zA-Z]+\}\}/g)].map((m) => m[0]);
     const unique = [...new Set(placeholders)];
-    for (const [lng, json] of [['es', esJson], ['de', deJson], ['fr', frJson]] as const) {
+    for (const [lng, json] of [['es', esJson], ['de', deJson], ['fr', frJson], ['pt', ptJson]] as const) {
       const str = JSON.stringify(json);
       for (const ph of unique) {
         expect(str, `${lng} is missing placeholder ${ph}`).toContain(ph);

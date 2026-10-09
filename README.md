@@ -6,7 +6,7 @@
 
 [▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
 
-[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 87 passing](https://img.shields.io/badge/tests-87_passing-brightgreen?style=for-the-badge)](#for-developers)
+[![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 88 passing](https://img.shields.io/badge/tests-88_passing-brightgreen?style=for-the-badge)](#for-developers)
 
 🎬 **See it in action** (31 sec) — edit text in place, redact for real, add sticky notes, highlight, compare two PDFs, and print. Recorded from the live app; nothing leaves the browser.
 
@@ -15,6 +15,8 @@
 ![Demo — open the demo document, press E, click any line of text, retype it](docs/demo.gif)
 
 *Real recording: the tagline above is retyped live — the original text operators are rewritten in the file, not overlaid.*
+
+Find this useful? A star at the top of the page helps others find it.
 
 </div>
 
@@ -174,7 +176,7 @@ git clone https://github.com/Kayforkind/NavigatorsLab-PDF-Studio
 cd NavigatorsLab-PDF-Studio
 npm install
 npm run dev        # http://localhost:5199
-npm test           # 87 app tests
+npm test           # 88 app tests
 npm run test:packages   # core, CLI, and MCP tests (builds packages first)
 npm run build      # → dist/ (relative base: works at domain root, subpath, or CDN)
 ```
@@ -183,13 +185,13 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 
 **The interesting engineering:** every mark lives in the page's PDF user space — the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport`, including offset MediaBox/CropBox origins that break most home-grown editors. Text edits go through a content-stream tokenizer: the original glyphs' show-text operators are deleted and replacements are written back with TJ kerning reproducing the original spacing. Tesseract, pdf.js workers, and WASM all run under a strict Content Security Policy with zero network calls for document data.
 
-**Test suite (87):** i18n (language detection, switching, persistence, wipe, catalog completeness) · document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
+**Test suite (88):** i18n (language detection, switching, persistence, wipe, catalog completeness for es/de/fr/pt) · document model ops & undo semantics · viewport parity with pdf.js at 0/90/180/270° · export round-trips re-parsed with pdf.js · LCS diff engine · content-stream tokenizer + deep text-rewrite/vector-redaction round-trips · table-cell hit splitting.
 
 Good first issues are labeled [`good first issue`](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/labels/good%20first%20issue) — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### Help translate
 
-PDF Studio ships in English, Spanish, German, and French, and the whole UI is localizable — the app bundles its translations, so switching languages works fully offline. If you speak another language, you can help:
+PDF Studio ships in English, Spanish, German, French, and Portuguese (Portuguese is a machine-drafted first pass awaiting native review), and the whole UI is localizable — the app bundles its translations, so switching languages works fully offline. If you speak another language, you can help:
 
 - **No code needed:** translations are managed in Crowdin (link in the pinned issue) — translate or vote on strings in your browser.
 - **With code:** edit `src/locales/<lang>/translation.json` (copy the English keys from `src/locales/en/translation.json`, keep every `{{placeholder}}` and `<b>`/`<code>` tag intact), then run `npm test -- src/lib/i18n.test.ts` — the catalog-completeness tests verify your file key-for-key against English.
@@ -215,10 +217,12 @@ Main CLI commands: `pdfstudio info`, `extract-text`, `search`, `edit-text`, `red
 
 Conventions: `-` reads stdin, `-o -` writes to stdout, reports go to stderr. Exit codes: 0 ok, 1 error, 2 no matches or nothing changed. `--json` on read commands for scripting.
 
+`--read-only` is the recommended default in the examples below. It registers only the three read tools (`pdf_info`, `pdf_extract_text`, `pdf_search_text`), so an agent cannot modify files. Drop the flag only when the agent needs the edit tools.
+
 Claude Code:
 
 ```bash
-claude mcp add pdfstudio -- node /path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js --root /path/to/your/docs
+claude mcp add pdfstudio -- node /path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js --root /path/to/your/docs --read-only
 ```
 
 Cursor / Cline / any MCP client (`mcp.json`):
@@ -228,7 +232,7 @@ Cursor / Cline / any MCP client (`mcp.json`):
   "mcpServers": {
     "pdfstudio": {
       "command": "node",
-      "args": ["/path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js", "--root", "/path/to/your/docs"]
+      "args": ["/path/to/NavigatorsLab-PDF-Studio/packages/mcp/dist/index.js", "--root", "/path/to/your/docs", "--read-only"]
     }
   }
 }

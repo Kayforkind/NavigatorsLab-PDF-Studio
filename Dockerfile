@@ -1,5 +1,7 @@
+# Node version must match .nvmrc (checked by scripts/check-consistency.cjs).
+ARG NODE_VERSION=22
 # Build stage
-FROM node:22-alpine AS build
+FROM node:${NODE_VERSION}-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

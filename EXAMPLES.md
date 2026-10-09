@@ -148,8 +148,8 @@ npm run typecheck
 npm run build      # → dist/ (PWA service worker included)
 ```
 
-The screenshots in this folder are regenerated with `node scripts/capture.cjs` (expects the app
-serving on `:5198` — used by `scripts/subpath-server.cjs`).
+The screenshots in this folder are regenerated with `npm run shots` (set `SHOTS_BASE` to the app URL with a trailing
+slash; e.g. serve `dist/` on `:5198` with `scripts/subpath-server.cjs` and use `http://localhost:5198/pdf-studio/`).
 
 Geometry invariant: **all marks live in the page's PDF user space**; the overlay and the exporter
 share the same CropBox-aware transform (`src/lib/viewport.ts`), pinned against pdf.js's own
