@@ -50,7 +50,7 @@ jobs:
           REVIEW_BASE: http://localhost:5198/pdf-studio/
           MOBILE_BASE: http://localhost:5198/pdf-studio/
           ROTATE_BASE: http://localhost:5198/pdf-studio/
-      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
           name: pdf-studio-failure-context
