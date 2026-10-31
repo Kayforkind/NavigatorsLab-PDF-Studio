@@ -1,13 +1,17 @@
 name: Release
 
-# Publishes pdfstudio-mcp when a version tag is pushed (v1.0.0, v1.1.0, …).
+# Publishes pdfstudio-mcp when a package tag is pushed (mcp-v1.0.0, mcp-v1.1.0, …).
+#
+# The tag is namespaced on purpose: `v1.x` tags in this repo are app releases,
+# and the MCP package versions independently of the app.
+#
 # Requires a repository secret NPM_TOKEN: a *Classic → Automation* token (or a
 # granular token with "Bypass 2FA" enabled), because the account's publish
 # policy is auth-and-writes and a plain session token cannot publish.
 
 on:
   push:
-    tags: ['v*']
+    tags: ['mcp-v*']
   workflow_dispatch:
 
 permissions:
@@ -31,7 +35,7 @@ jobs:
       # a mismatched tag is the one mistake that cannot be taken back.
       - name: Tag matches package version
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          TAG="${GITHUB_REF_NAME#mcp-v}"
           VERSION=$(node -p "require('./packages/mcp/package.json').version")
           if [ "$TAG" != "$VERSION" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match pdfstudio-mcp@$VERSION"
