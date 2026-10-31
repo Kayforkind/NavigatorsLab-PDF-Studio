@@ -2,9 +2,18 @@
 
 # PDF Studio
 
-**The free PDF editor that edits your files without ever seeing them.**
+**A PDF editor with no backend. It rewrites the file's content stream, in your browser.**
 
 [▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
+
+**Use the engine directly** — from a clone, after `npm install && npm run build:packages`:
+
+```bash
+npx pdfstudio info contract.pdf              # CLI: inspect, extract, edit, redact — 9 commands
+npx pdfstudio-mcp --root ./docs --read-only  # MCP: 10 PDF tools for any agent — stdio, no key
+```
+
+MIT · TypeScript · zero server · the whole pipeline auditable in this repo.
 
 [![▶ Try it live](https://img.shields.io/badge/▶_TRY_IT_LIVE-navigatorslab.com-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/) [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE) [![CI](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/Kayforkind/NavigatorsLab-PDF-Studio?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/releases) [![GHCR](https://img.shields.io/badge/ghcr-latest-blue?style=for-the-badge)](https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/pkgs/container/navigatorslab-pdf-studio) [![Docs](https://img.shields.io/badge/docs-online-7c5cff?style=for-the-badge)](https://navigatorslab.com/pdf-studio/docs/) [![Tests: 88 passing](https://img.shields.io/badge/tests-88_passing-brightgreen?style=for-the-badge)](#for-developers)
 
@@ -130,7 +139,27 @@ Full detail: [How it works — docs](https://navigatorslab.com/pdf-studio/docs/g
 
 ## How it compares
 
-PDF Studio is the zero-setup option that keeps a full editor and never uploads your files. Full breakdown: [COMPARISONS.md](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html)
+PDF Studio is the zero-setup option that keeps a full editor and never uploads your files.
+
+| | **PDF Studio** | **Adobe Acrobat Pro** | **Stirling-PDF** | **Free web editors**¹ |
+|---|---|---|---|---|
+| Price | **Free, MIT** | ~US$19.99/mo (annual, billed monthly)² | Open core, free to self-host | Free tier, caps and ads |
+| Where your document goes | **Nowhere — it never leaves the browser** | Adobe's servers | Your own server | Their servers |
+| True in-place text editing | **Yes** | Yes | Alpha | No — annotate/overlay |
+| Redaction | **Bytes deleted, then verified before export** | Yes (Pro) | Yes | Varies by product — verify it |
+| CLI + MCP for agents | **Yes — same engine, 100% local** | No | No | No |
+| Zero setup | **Yes** | No | No (Docker) | Yes |
+| Works offline | **Yes (PWA)** | Desktop only | Your server | No |
+| Open source | **MIT** | No | Open core | No |
+
+¹ Smallpdf, iLovePDF, PDF24 and similar. They differ from each other; the row reflects the
+category, not one product. ² Adobe's published plan, checked 2026-10-08 — prices and plans change.
+
+Full, sourced breakdown: [COMPARISONS.md](./COMPARISONS.md) · [web version](https://navigatorslab.com/pdf-studio/docs/comparison.html).
+
+**The developer difference:** redaction here is not a promise, it's a gate. The exporter scans its
+own output for every covered string in UTF-8, UTF-16BE/LE and hex, through both the delivered bytes
+and a decompressed re-serialization. If anything is recoverable, no file is produced.
 
 ---
 
@@ -182,6 +211,15 @@ npm run build      # → dist/ (relative base: works at domain root, subpath, or
 ```
 
 **Stack:** TypeScript · React 19 · Vite · pdf.js (render) · pdf-lib (write) · Tesseract.js (OCR) · WebLLM (AI) · vite-plugin-pwa. **Zero backend.**
+
+**Three interfaces, one engine:** the browser app, the `pdfstudio` CLI (9 commands), and
+`pdfstudio-mcp` (10 tools, publishable on its own — see [packages/mcp](./packages/mcp/README.md)).
+All three parse with pdf.js and rewrite content streams the same way; none of them make a network
+call with document bytes.
+
+**Bonus tool:** [packages/redact-check](./packages/redact-check/README.md) — drop a PDF and see the
+text still hiding under its black boxes. A small, self-contained proof of why "redaction" that only
+paints over text is worthless.
 
 **The interesting engineering:** every mark lives in the page's PDF user space — the on-screen overlay and the exporter share the same CropBox-aware transform math (`src/lib/viewport.ts`), pinned in tests against pdf.js's own `PageViewport`, including offset MediaBox/CropBox origins that break most home-grown editors. Text edits go through a content-stream tokenizer: the original glyphs' show-text operators are deleted and replacements are written back with TJ kerning reproducing the original spacing. Tesseract, pdf.js workers, and WASM all run under a strict Content Security Policy with zero network calls for document data.
 

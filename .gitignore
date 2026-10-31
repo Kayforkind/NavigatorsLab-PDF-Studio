@@ -7,3 +7,4 @@ dev.log
 tsconfig.tsbuildinfo
 subpath.log
 public/form-test.pdf
+.wrangler/

@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "PDF Studio Docs"
-  text: "The free, open-source PDF editor that runs entirely in your browser."
-  tagline: No uploads · No accounts · No watermarks · No page limits · No catch
+  text: "A PDF editor with no backend. It rewrites the file's content stream, in your browser."
+  tagline: MIT · zero server · npm CLI and MCP server · no uploads, accounts, watermarks or page limits
   actions:
     - theme: brand
       text: Get Started
@@ -34,8 +34,28 @@ features:
   - title: 📄 Page ops
     details: Reorder, rotate, merge, split, duplicate, delete. Stamp page numbers, watermarks, headers & footers at export.
   - title: 💻 CLI & MCP
-    details: v1.1.0 added a pdfstudio CLI (9 commands) and an MCP server (10 tools) reusing the same content-stream engine — 100% local, agent-native.
+    details: The same engine as a `pdfstudio` CLI (9 commands) and a standalone `pdfstudio-mcp` server (10 tools). 100% local, agent-native, no API key.
+  - title: 🕵️ Redaction checker
+    details: Drop in a PDF and see the text still hiding under its black boxes. A five-minute way to find out whether a "redaction" was real.
 ---
+
+## For developers
+
+From a clone, after `npm install && npm run build:packages`:
+
+```bash
+npx pdfstudio info contract.pdf                 # CLI: info, extract-text, search, edit-text,
+                                               #      redact, merge, split, rotate, pages
+npx pdfstudio-mcp --root ./docs --read-only    # MCP: 10 PDF tools over stdio for any agent
+```
+
+Everything is local by construction: pdf.js parses, the content stream is rewritten in place, pdf-lib
+writes. No service to run, no key to set, no document bytes on the wire. Redaction is gated — the
+exporter re-scans its own output and refuses to produce a file if a covered string is still
+recoverable.
+
+**[CLI reference](/guide/cli)** · **[MCP reference](/guide/mcp)** ·
+**[Redaction engine](/guide/redaction)** · **[Security audit](/guide/security)**
 
 ## Private by architecture, not by policy
 
@@ -55,6 +75,7 @@ edit: your document bytes never leave the machine.
 | [Installation](/guide/installation) | Use it in the browser, install the PWA, Docker self-hosting, build from source |
 | [CLI reference](/guide/cli) | `pdfstudio info`, `edit-text`, `redact`, `merge`, `split`, `rotate`, `pages`… |
 | [MCP server](/guide/mcp) | Give Claude Code / Cursor / Cline 10 PDF tools over stdio — no network, path-contained |
+| [Redaction checker](https://navigatorslab.com/pdf-studio/redact-check/) | Drop in a PDF and see the text still hiding under its black boxes |
 | [Security](/guide/security) | Privacy architecture and the internal A− security audit |
 | [FAQ](/faq) | Pricing, limits, offline use, redaction vs. whiteout, and more |
 

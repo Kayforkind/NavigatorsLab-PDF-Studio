@@ -1,1 +1,63 @@
-{"bin":{"pdfstudio-mcp":"./dist/index.js"},"dependencies":{"@modelcontextprotocol/sdk":"^1.17.0","pdfstudio-core":"*","zod":"^4.6.7"},"description":"pdfstudio-mcp — Model Context Protocol server for PDF Studio: true text editing, burned-in redaction, page ops as agent tools. 100% local, no network.","devDependencies":{"@types/node":"^22.0.0","typescript":"~5.7.2","vitest":"^5.0.0"},"license":"MIT","name":"pdfstudio-mcp","private":true,"scripts":{"build":"tsc -p tsconfig.json","test":"vitest run --config vitest.config.ts","typecheck":"tsc --noEmit -p tsconfig.json"},"type":"module","version":"1.0.0"}
+{
+  "name": "pdfstudio-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for PDFs: true text editing, burned-in redaction, OCR-free page ops as agent tools. 100% local, no network.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "pdfstudio-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist/index.js",
+    "README.md",
+    "server.json"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "pdf",
+    "redaction",
+    "pdf-editing",
+    "local-first",
+    "claude",
+    "cursor",
+    "ai-agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kayforkind/NavigatorsLab-PDF-Studio.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://navigatorslab.com/pdf-studio/docs/guide/mcp.html",
+  "bugs": {
+    "url": "https://github.com/Kayforkind/NavigatorsLab-PDF-Studio/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run bundle",
+    "bundle": "node scripts/bundle.mjs",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run build && node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.12",
+    "pdf-lib": "^1.17.1",
+    "pdfstudio-core": "*",
+    "typescript": "~5.7.2",
+    "vitest": "^5.0.0",
+    "zod": "^4.6.7"
+  }
+}

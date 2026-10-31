@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redaction Check — is your black box real?</title>
+    <meta
+      name="description"
+      content="Drop a PDF and find out whether the black boxes actually removed the text underneath them. Runs entirely in your browser — nothing is uploaded."
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230b0f17'/><rect x='22' y='38' width='56' height='24' fill='%23000'/><rect x='22' y='36' width='56' height='3' fill='%237c5cff'/></svg>" />
+  </head>
+  <body>
+    <header class="hero">
+      <p class="eyebrow">pdfstudio · redact-check</p>
+      <h1>Your black boxes probably didn't work.</h1>
+      <p class="lede">
+        Covering text with a rectangle hides it on screen. It does not remove it from the file —
+        anyone can select it, copy it, or strip the box off. Drop a PDF and this page will find
+        every solid black box and show you the text still sitting underneath.
+      </p>
+      <p class="privacy">
+        <span class="dot"></span> Runs entirely in your browser. No upload, no account, no network calls with your document.
+      </p>
+    </header>
+
+    <main>
+      <section id="drop" class="drop" tabindex="0" role="button" aria-label="Choose a PDF to check">
+        <input id="file" type="file" accept="application/pdf,.pdf" hidden />
+        <p class="drop-title">Drop a PDF here</p>
+        <p class="drop-sub">or <span class="link">choose a file</span> · nothing leaves this device</p>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <section id="result" class="result" hidden>
+        <div id="verdict" class="verdict" data-kind="clean">
+          <span id="verdict-label" class="verdict-label"></span>
+          <span id="verdict-detail" class="verdict-detail"></span>
+        </div>
+
+        <dl class="stats">
+          <div><dt>Solid boxes</dt><dd id="stat-boxes">0</dd></div>
+          <div><dt>Recoverable strings</dt><dd id="stat-leaks">0</dd></div>
+          <div><dt>Pages affected</dt><dd id="stat-pages">—</dd></div>
+        </dl>
+
+        <div class="actions">
+          <button id="again" type="button">Check another file</button>
+          <button id="download" type="button" class="ghost">Download JSON report</button>
+        </div>
+
+        <div id="pages" class="pages"></div>
+
+        <details class="limits">
+          <summary>What this check does and does not prove</summary>
+          <ul>
+            <li>
+              It finds <b>solid dark rectangles</b> in the rendered page and reports text whose glyphs sit
+              beneath one and are fully painted over. That is the failure mode where a redaction was
+              drawn on top instead of applied.
+            </li>
+            <li>
+              A <b>clean result</b> means no text was recovered from under the boxes it found. It does not
+              prove an image, a scanned page, or a dark photograph beneath a box is gone — those are
+              pixels, and pixels cannot be checked this way.
+            </li>
+            <li>
+              It cannot see boxes drawn in a light colour, as a translucent overlay, or outside the
+              visible page area. It also only reports text that is still <i>rendered</i>; text removed
+              from the content stream but left in metadata or attachments is a different check.
+            </li>
+            <li>
+              Character boundaries in a recovered string are approximate: proportional fonts mean the
+              slice can be a character or two wide of the mark. The point is that the text is there.
+            </li>
+          </ul>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built on <a href="https://github.com/Kayforkind/NavigatorsLab-PDF-Studio">PDF Studio</a>'s
+        rendering pipeline. If a box turns out to be fake, PDF Studio redacts for real — the bytes are
+        deleted and the export refuses to hand you a file that still leaks.
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
