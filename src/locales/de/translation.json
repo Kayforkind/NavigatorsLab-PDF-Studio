@@ -242,6 +242,7 @@
     "colorAria": "Farbe {{color}}",
     "closePanel": "Stilbereich schließen",
     "redactWarn": "Schwärzungen entfernen Inhalte: Abgedeckte Textoperatoren werden aus der Datei gelöscht und der Bereich als Sicherheitsnetz in die Seitenpixel eingebrannt. Wählen Sie unten die Füllfarbe — Schwarz ist Standard, jede Farbe funktioniert.",
+    "checkRedaction": "Eine fremde Schwärzung prüfen? →",
     "whiteoutBlurb": "Die Abdeckfarbe wird von der Seite unter Ihrer Ziehung erfasst, sodass Abdeckungen auf getönten oder gescannten Seiten unauffällig wirken.",
     "markerColor": "Markierungsfarbe:",
     "ocrLang": "OCR-Sprache",

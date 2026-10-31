@@ -857,6 +857,22 @@ button {
   color: var(--amber);
 }
 
+/* Outbound link from the redact tool to the standalone checker. */
+.insp-link {
+  display: inline-block;
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 18px;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.insp-link:hover,
+.insp-link:focus-visible {
+  border-bottom-color: currentColor;
+}
+
 .swatches {
   display: flex;
   flex-wrap: wrap;

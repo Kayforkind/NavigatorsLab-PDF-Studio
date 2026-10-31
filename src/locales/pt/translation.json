@@ -242,6 +242,7 @@
     "colorAria": "cor {{color}}",
     "closePanel": "Fechar painel de estilo",
     "redactWarn": "As tarjas removem conteúdo: os operadores de texto cobertos são excluídos do arquivo e a área é queimada nos pixels da página como rede de segurança. Escolha a cor de preenchimento abaixo — preto é o padrão, qualquer cor funciona.",
+    "checkRedaction": "Verificar uma tarja que enviaram para você? →",
     "whiteoutBlurb": "A cor de cobertura é amostrada da página sob o seu arrasto, então os apagamentos se misturam em páginas coloridas ou digitalizadas.",
     "markerColor": "Cor do marcador:",
     "ocrLang": "Idioma do OCR",

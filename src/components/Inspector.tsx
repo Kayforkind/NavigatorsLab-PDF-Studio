@@ -184,7 +184,19 @@ export function Inspector({
             <b>{settings.fontSize.toFixed(0)}pt</b>
           </div>
         )}
-        {tool === 'redact' && <p className="tool-blurb warn">{t('insp.redactWarn')}</p>}
+        {tool === 'redact' && (
+          <>
+            <p className="tool-blurb warn">{t('insp.redactWarn')}</p>
+            <a
+              className="insp-link"
+              href="https://navigatorslab.com/pdf-studio/redact-check/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('insp.checkRedaction')}
+            </a>
+          </>
+        )}
         {tool === 'whiteout' && <p className="tool-blurb">{t('insp.whiteoutBlurb')}</p>}
         {tool === 'note' && <p className="tool-blurb">{t('insp.markerColor')}</p>}
         {tool === 'edit' && (

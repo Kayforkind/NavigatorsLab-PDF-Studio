@@ -242,6 +242,7 @@
     "colorAria": "color {{color}}",
     "closePanel": "Close style panel",
     "redactWarn": "Redactions remove content: covered text operators are deleted from the file and the area is burned into page pixels as a safety net. Pick the fill color below — black is standard, any color works.",
+    "checkRedaction": "Checking a redaction someone sent you? →",
     "whiteoutBlurb": "The cover color is sampled from the page under your drag, so whiteouts blend in on tinted or scanned pages.",
     "markerColor": "Marker color:",
     "ocrLang": "OCR language",

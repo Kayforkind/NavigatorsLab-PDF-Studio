@@ -275,6 +275,7 @@
     "privacy": "Privacidad",
     "privacyNote": "Todo el procesamiento ocurre en esta pestaña del navegador. Los archivos nunca se suben; la exportación se genera localmente.",
     "redactWarn": "Las tachaduras eliminan contenido: los operadores de texto cubiertos se eliminan del archivo y la zona se integra en los píxeles de la página como red de seguridad. Elige el color de relleno abajo — el negro es lo estándar, cualquier color sirve.",
+    "checkRedaction": "¿Revisas una redacción que te enviaron? →",
     "selection": "Selección",
     "size": "Tamaño",
     "tool": "Herramienta",
