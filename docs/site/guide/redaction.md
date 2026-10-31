@@ -67,6 +67,21 @@ Use whiteout for cosmetic fixes. Use redaction for sensitive data.
   image.
 - When in doubt, re-open the exported file and inspect it before sharing.
 
+## Check a file you were sent
+
+You cannot tell from looking whether someone else's redaction worked: a real
+redaction and a black rectangle render identically on screen. The difference
+is in the bytes.
+
+Drop the file into the **[redaction checker](https://navigatorslab.com/pdf-studio/redact-check/)**.
+It runs entirely in your browser, finds the solid boxes on each page, and prints
+any text still recoverable from underneath them. "Nothing recoverable" means no
+text survived under the boxes it found — it is not a guarantee about images or
+scans, which the page states plainly.
+
+If the file fails the check, do not trust it. Re-redact the original with the
+Redact tool above, or with the CLI, so the content is actually deleted.
+
 ## Automate it
 
 ```bash
