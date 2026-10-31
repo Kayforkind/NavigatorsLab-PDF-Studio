@@ -1,7 +1,7 @@
 {
   "tools": {
     "arrow": {
-      "hint": "Arraste para apontar para algo — a ponta da seta fica na extremidade final",
+      "hint": "Arraste para apontar para algo — a ponta da seta fica na outra extremidade",
       "label": "Seta / ponteiro"
     },
     "edit": {
@@ -44,7 +44,7 @@
     },
     "redact": {
       "hint": "Marque o conteúdo para remoção permanente na exportação",
-      "label": "Redigir"
+      "label": "Tarjar"
     },
     "select": {
       "hint": "Clique para selecionar, arraste para mover, canto para redimensionar",
@@ -84,7 +84,7 @@
     "featEdit": "Editar texto existente",
     "featAnnotate": "Destacar e comentar",
     "featSign": "Assinar e carimbar",
-    "featRedact": "Redigir",
+    "featRedact": "Tarjar",
     "featPages": "Organizar páginas",
     "featMerge": "Unir e dividir",
     "ossNote": "Gratuito e código aberto (MIT)",
@@ -129,7 +129,7 @@
     "toolImage": "imagem",
     "toolField": "campo de texto",
     "toolCheckbox": "caixa de seleção",
-    "toolRedact": "redigir",
+    "toolRedact": "tarjar",
     "toolWhiteout": "apagar (branco)"
   },
   "ai": {
@@ -195,8 +195,8 @@
     "typePlaceholder": "Digite…",
     "export": "Exportar preenchido (achatar campos)",
     "kindText": "Texto",
-    "kindCheck": "Marcação",
-    "kindRadio": "Opção",
+    "kindCheck": "Caixa",
+    "kindRadio": "Botão de opção",
     "kindChoice": "Escolha",
     "summary_plural": "{{total}} campos · {{filled}} preenchido(s). Os valores são gravados nos campos reais do formulário na exportação — ou achatados para não poderem mais ser alterados."
   },
@@ -213,7 +213,7 @@
   },
   "insp": {
     "blurb": {
-      "select": "Clique em um item para selecioná-lo. Arraste para mover; arraste o canto azul para redimensionar. Excluir remove o item.",
+      "select": "Clique em um item para selecioná-lo. Arraste para mover; arraste o canto azul para redimensionar. Excluir apaga o item.",
       "edit": "Clique em uma linha (ou em uma célula de tabela) do texto original e digite novamente. Na exportação, o texto original é reescrito no próprio PDF — as tabelas mantêm a posição das colunas, e a substituição se torna texto selecionável de verdade.",
       "text": "Clique em qualquer lugar e digite. Pressione Enter para posicionar, Esc para cancelar.",
       "highlight": "Arraste sobre o texto para destacá-lo. Ajuste a cor e a opacidade abaixo.",
@@ -221,9 +221,9 @@
       "strike": "Arraste sobre o texto para riscá-lo.",
       "note": "Clique para soltar um marcador de nota adesiva. Clique duas vezes nele ou selecione-o para editar o texto da nota.",
       "ink": "Desenhe à mão livre com o ponteiro (mouse, caneta ou dedo).",
-      "sign": "Desenhe uma assinatura uma vez; ela fica lembrada nesta sessão e é carimbada onde você clicar.",
-      "image": "Escolha um arquivo de imagem; ele é carimbado no ponto de clique. Arraste para posicionar, canto para escalar.",
-      "redact": "Arraste uma caixa sobre conteúdo sensível — na exportação, o texto coberto é EXCLUÍDO do próprio documento (remoção vetorial), com uma queima em nível de pixel como rede de segurança para imagens e fontes incomuns. A cor de preenchimento da redação é você quem escolhe abaixo.",
+      "sign": "Desenhe uma assinatura uma vez; ela é mantida para esta sessão e é carimbada onde você clicar.",
+      "image": "Escolha um arquivo de imagem; ele é carimbado no ponto de clique. Arraste para posicionar, canto para redimensionar.",
+      "redact": "Arraste uma caixa sobre conteúdo sensível — na exportação, o texto coberto é EXCLUÍDO do próprio documento (remoção vetorial), com uma queima em nível de pixel como rede de segurança para imagens e fontes incomuns. A cor de preenchimento da tarja é você quem escolhe abaixo.",
       "whiteout": "Arraste uma caixa para cobrir o conteúdo com a cor de fundo amostrada da página — ideal para limpar uma digitalização.",
       "arrow": "Arraste da cauda até a ponta para apontar para algo — a ponta da seta fica onde você soltar.",
       "rect": "Arraste um retângulo com contorno. Cor e espessura da linha seguem os controles de estilo.",
@@ -241,7 +241,7 @@
     "customColor": "Cor personalizada",
     "colorAria": "cor {{color}}",
     "closePanel": "Fechar painel de estilo",
-    "redactWarn": "As redações removem conteúdo: os operadores de texto cobertos são excluídos do arquivo e a área é queimada nos pixels da página como rede de segurança. Escolha a cor de preenchimento abaixo — preto é o padrão, qualquer cor funciona.",
+    "redactWarn": "As tarjas removem conteúdo: os operadores de texto cobertos são excluídos do arquivo e a área é queimada nos pixels da página como rede de segurança. Escolha a cor de preenchimento abaixo — preto é o padrão, qualquer cor funciona.",
     "whiteoutBlurb": "A cor de cobertura é amostrada da página sob o seu arrasto, então os apagamentos se misturam em páginas coloridas ou digitalizadas.",
     "markerColor": "Cor do marcador:",
     "ocrLang": "Idioma do OCR",
@@ -253,9 +253,9 @@
     "notePlaceholder": "Escreva a nota…",
     "contentPlaceholder": "Conteúdo…",
     "flipH": "Espelhar o carimbo horizontalmente",
-    "flipHLabel": "⇋ Inverter H",
+    "flipHLabel": "⇋ Espelhar H",
     "flipV": "Espelhar o carimbo verticalmente",
-    "flipVLabel": "⇵ Inverter V",
+    "flipVLabel": "⇵ Espelhar V",
     "editHint": "Clique duas vezes em um texto ou em um marcador de nota para editar o conteúdo no lugar.",
     "nothingSelected": "Nada selecionado. Use a ferramenta Selecionar e clique em uma marca, ou arraste com uma ferramenta para criar uma.",
     "privacy": "Privacidade",
@@ -301,9 +301,9 @@
     "previewCaption": "prévia · página 1 de {{count}}",
     "reduceSize": "Reduzir tamanho do arquivo",
     "compress": "Compactar o PDF exportado",
-    "compressNote": "As páginas são convertidas em imagens — o arquivo fica bem menor, mas o texto deixa de ser selecionável e pesquisável. Anotações e carimbos são gravados antes.",
+    "compressNote": "As páginas são convertidas em imagens — o arquivo fica bem menor, mas o texto deixa de ser selecionável e pesquisável. Anotações e carimbos são incorporados antes.",
     "docProps": "Propriedades do documento",
-    "redactScrubNote": "Exportações com redação também removem metadados, anexos, JavaScript e miniaturas do documento, e são verificadas quanto a vazamentos antes do download.",
+    "redactScrubNote": "Exportações com tarja também removem metadados, anexos, JavaScript e miniaturas do documento, e são verificadas quanto a vazamentos antes do download.",
     "metaTitle": "Título",
     "metaAuthor": "Autor",
     "metaSubject": "Assunto",
@@ -315,7 +315,7 @@
     "editing": "Edição",
     "editingEdit": "<b>Editar texto</b> — mude para a ferramenta de edição e clique em uma linha (ou em uma célula de tabela) do PDF original. Na exportação, o texto original é reescrito no lugar, dentro do fluxo de conteúdo do PDF — as tabelas mantêm a posição das colunas, e a substituição se torna texto selecionável de verdade. Imagens digitalizadas precisam da ferramenta OCR (na mesma barra).",
     "editingLayers": "<b>Adicionar texto</b>, <b>destacar</b>, <b>sublinhar</b>, <b>tachar</b>, <b>notas</b>, <b>caneta à mão livre</b>, <b>setas e ponteiros</b>, <b>retângulos</b> e <b>elipses</b> ficam por cima e são achatados no arquivo exportado.",
-    "editingRedact": "<b>Redigir</b> apenas <i>marca</i> regiões para remoção — as caixas hachuradas são marcadores, não o resultado final. O texto por baixo é excluído de forma permanente ao <b>exportar</b>; caixas pretas sólidas aparecem apenas no arquivo exportado. <b>Apagar (branco)</b> amostra o fundo da página para se misturar.",
+    "editingRedact": "<b>Tarjar</b> apenas <i>marca</i> regiões para remoção — as caixas hachuradas são marcadores, não o resultado final. O texto por baixo é excluído de forma permanente ao <b>exportar</b>; caixas pretas sólidas aparecem apenas no arquivo exportado. <b>Apagar (branco)</b> amostra o fundo da página para se misturar.",
     "editingSearch": "<b>Pesquisar</b> — a caixa na barra superior encontra texto em todo o documento; Enter / Shift+Enter pulam entre as ocorrências.",
     "pagesFiles": "Páginas e arquivos",
     "pagesReorder": "Arraste as miniaturas para reordenar; use os botões ao passar o mouse para girar / duplicar / excluir / inserir páginas em branco.",
@@ -326,7 +326,7 @@
     "pagesAutosave": "<b>Salvamento automático</b>: sua sessão de trabalho (incluindo anotações e valores de formulário) fica guardada neste dispositivo e é oferecida na tela inicial após uma atualização ou falha.",
     "privacy": "Privacidade",
     "privacyNoUploads": "<b>Sem envios</b> — os documentos são abertos, editados e salvos inteiramente neste dispositivo.",
-    "privacyNoTracking": "<b>Sem anexos guardados, sem informações do usuário retidas</b> — não há conta, nenhum rastreamento dos seus arquivos, e nada é armazenado em nenhum servidor. Sua sessão é salva automaticamente no seu navegador e só você pode lê-la.",
+    "privacyNoTracking": "<b>Sem anexos guardados, sem informações do usuário retidas</b> — não há conta, nenhum rastreamento dos seus arquivos e nada é armazenado em nenhum servidor. Sua sessão é salva automaticamente no seu navegador e só você pode lê-la.",
     "privacyModels": "Os modelos opcionais de IA/OCR baixam pesos públicos uma vez; seus <i>documentos</i> nunca tocam a rede.",
     "shortcuts": "Atalhos",
     "translateCta": "Quer usar outro idioma? <a>Ajude a traduzir o PDF Studio</a> — sem precisar de código.",
@@ -360,9 +360,9 @@
     "pngFailed": "Não foi possível renderizar o PNG.",
     "wipeDone": "Todos os dados do PDF Studio foram excluídos deste dispositivo.",
     "wipeEmpty": "Nenhum dado salvo do PDF Studio neste dispositivo.",
-    "redactFailed": "A redação falhou: a página {{page}} não pôde ser redigida com segurança — a exportação foi interrompida.",
-    "redactVerified": "{{regions}} regiões redigidas · {{strings}} textos verificados · 0 recuperáveis",
-    "verifyFailed": "A verificação falhou: o conteúdo redigido ainda era recuperável no arquivo exportado — a exportação foi interrompida.",
+    "redactFailed": "A tarja falhou: a página {{page}} não pôde ser tarjada com segurança — a exportação foi interrompida.",
+    "redactVerified": "{{regions}} regiões tarjadas · {{strings}} textos verificados · 0 recuperáveis",
+    "verifyFailed": "A verificação falhou: o conteúdo tarjado ainda era recuperável no arquivo exportado — a exportação foi interrompida.",
     "exportFailed": "A exportação falhou: {{message}}",
     "printFailed": "A impressão falhou: {{message}}",
     "sessionRestored": "“{{name}}” restaurado deste dispositivo.",
@@ -383,7 +383,7 @@
     "upright_other": "{{count}} páginas giradas voltaram ao normal (desfaça a qualquer momento).",
     "blankInserted": "Página em branco inserida.",
     "pickPageContent": "Escolha uma página primeiro (ela precisa ter conteúdo renderizado).",
-    "ocrRotate": "Gire a página para ficar reta primeiro — o OCR lê texto horizontal.",
+    "ocrRotate": "Endireite a página primeiro — o OCR lê texto horizontal.",
     "ocrNoText": "O OCR não encontrou texto confiável — tente novamente com um zoom maior.",
     "ocrDone_one": "O OCR reescreveu {{count}} linha como texto editável (totalmente local — desfaça a qualquer momento).",
     "ocrDone_other": "O OCR reescreveu {{count}} linhas como texto editável (totalmente local — desfaça a qualquer momento).",
@@ -391,7 +391,7 @@
     "pageDuplicated": "Página duplicada.",
     "pagesReordered": "Páginas reordenadas.",
     "signStamped": "Assinatura carimbada. Arraste para posicionar.",
-    "imagePlaced": "Imagem colocada — arraste para posicionar, alça do canto para escalar.",
+    "imagePlaced": "Imagem colocada — arraste para posicionar, alça do canto para redimensionar.",
     "dropPdfOnly": "Solte um arquivo PDF, por favor.",
     "openTitle": "Abrir PDF (Ctrl+O)",
     "open": "Abrir",
@@ -437,7 +437,7 @@
     "rasterize": "Não foi possível converter a página em imagem para compactação.",
     "ocrLoad": "Não foi possível carregar o mecanismo OCR: {{msg}}",
     "ocrStart": "O mecanismo OCR falhou ao iniciar: {{msg}}",
-    "aiDownload": "Não foi possível baixar o modelo — na primeira vez é preciso de conexão com a internet. Depois, o modelo fica em cache no seu dispositivo; seu documento nunca sai desta máquina."
+    "aiDownload": "Não foi possível baixar o modelo — na primeira vez é necessária uma conexão com a internet. Depois, o modelo fica em cache no seu dispositivo; seu documento nunca sai desta máquina."
   },
   "sheet": {
     "typeEnter": "Digite e pressione Enter…",
