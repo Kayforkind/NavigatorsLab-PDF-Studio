@@ -1,0 +1,52 @@
+name: Release
+
+# Publishes pdfstudio-mcp when a version tag is pushed (v1.0.0, v1.1.0, …).
+# Requires a repository secret NPM_TOKEN: a *Classic → Automation* token (or a
+# granular token with "Bypass 2FA" enabled), because the account's publish
+# policy is auth-and-writes and a plain session token cannot publish.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # provenance: lets npm sign the attestation with the workflow's OIDC identity
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+
+      # Refuse to publish when the tag and the package version disagree —
+      # a mismatched tag is the one mistake that cannot be taken back.
+      - name: Tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION=$(node -p "require('./packages/mcp/package.json').version")
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match pdfstudio-mcp@$VERSION"
+            exit 1
+          fi
+          echo "publishing pdfstudio-mcp@$VERSION"
+
+      - name: Build packages
+        run: npm run build:packages
+
+      # Exercise the artifact that actually ships, not the TypeScript source.
+      - name: Smoke-test the bundled server
+        run: node packages/mcp/scripts/smoke.mjs
+
+      - name: Publish to npm
+        run: npm publish -w pdfstudio-mcp --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
