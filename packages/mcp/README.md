@@ -29,6 +29,9 @@ reported as a success.
 npx pdfstudio-mcp --help
 ```
 
+Also listed in the official MCP registry as `io.github.Kayforkind/pdfstudio`, so registry-aware
+clients can find it by name.
+
 For a pinned install:
 
 ```bash
