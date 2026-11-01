@@ -1,0 +1,40 @@
+name: Publish to MCP Registry
+
+# Registers packages/mcp/server.json with the official MCP registry
+# (registry.modelcontextprotocol.io) as io.github.Kayforkind/pdfstudio.
+#
+# Runs after an npm release, because the registry validates that the referenced
+# npm package and version actually exist. Manual dispatch on purpose: the npm
+# publish must land first, and npm's ingestion can take a minute.
+#
+# Authentication is GitHub OIDC — no long-lived token, so it cannot expire the
+# way an interactive `mcp-publisher login github` session does. The namespace
+# (io.github.Kayforkind) is derived from this repository's owner.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sSL -o /tmp/mcp-publisher.tgz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.7/mcp-publisher_linux_amd64.tar.gz"
+          tar xzf /tmp/mcp-publisher.tgz -C /tmp mcp-publisher
+          sudo install -m 0755 /tmp/mcp-publisher /usr/local/bin/mcp-publisher
+          mcp-publisher --help > /dev/null
+
+      - name: Validate and publish
+        working-directory: packages/mcp
+        run: |
+          mcp-publisher login github-oidc
+          mcp-publisher validate
+          mcp-publisher publish
