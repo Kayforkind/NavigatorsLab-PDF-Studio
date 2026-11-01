@@ -34,7 +34,7 @@ import {
   arrangePages,
 } from 'pdfstudio-core';
 
-export const SERVER_VERSION = '1.0.0';
+export const SERVER_VERSION = '1.0.2';
 /** Cap on text returned to the agent per tool call (prompt-injection + context hygiene). */
 export const MAX_TEXT_CHARS = 50_000;
 

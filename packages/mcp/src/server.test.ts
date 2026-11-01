@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, symlinkSync, exist
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PDFDocument, PDFName, PDFDict, StandardFonts } from 'pdf-lib';
-import { handlers, resolveWithin, createServer, READ_TOOLS, type Ctx } from './index.js';
+import { handlers, resolveWithin, createServer, READ_TOOLS, SERVER_VERSION, type Ctx } from './index.js';
 
 async function makePdf(pages: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -47,6 +47,24 @@ function put(name: string, bytes: Uint8Array): void {
   mkdirSync(join(root, 'docs'), { recursive: true });
   writeFileSync(join(root, name), Buffer.from(bytes));
 }
+
+describe('version', () => {
+  it('SERVER_VERSION matches package.json', () => {
+    const pkg = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { version: string; mcpName?: string };
+    // Clients display serverInfo.version; a stale constant makes every release
+    // look like the first one.
+    expect(SERVER_VERSION).toBe(pkg.version);
+  });
+
+  it('package.json declares the registry identity', () => {
+    const pkg = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { mcpName?: string };
+    expect(pkg.mcpName).toBe('io.github.Kayforkind/pdfstudio');
+  });
+});
 
 describe('path containment', () => {
   it('allows paths inside the root', () => {
