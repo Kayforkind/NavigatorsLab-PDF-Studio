@@ -1,6 +1,7 @@
 {
   "name": "pdfstudio-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "mcpName": "io.github.Kayforkind/pdfstudio",
   "description": "MCP server for PDFs: true text editing, burned-in redaction, OCR-free page ops as agent tools. 100% local, no network.",
   "license": "MIT",
   "type": "module",
