@@ -6,11 +6,11 @@
 
 [▶ Try it live](https://navigatorslab.com/pdf-studio/) — *no install, no upload, no account*
 
-**Use the engine directly** — from a clone, after `npm install && npm run build:packages`:
+**Use the engine directly.** The MCP server installs from npm; the CLI builds from the repo.
 
 ```bash
-npx pdfstudio info contract.pdf              # CLI: inspect, extract, edit, redact — 9 commands
-npx pdfstudio-mcp --root ./docs --read-only  # MCP: 10 PDF tools for any agent — stdio, no key
+npx pdfstudio-mcp --root ./docs --read-only  # MCP: 10 PDF tools over stdio, no API key
+npx pdfstudio info contract.pdf              # CLI — from a clone, after `npm run build:packages`
 ```
 
 MIT · TypeScript · zero server · the whole pipeline auditable in this repo.

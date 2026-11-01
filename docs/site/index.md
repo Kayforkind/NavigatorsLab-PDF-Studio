@@ -41,12 +41,11 @@ features:
 
 ## For developers
 
-From a clone, after `npm install && npm run build:packages`:
+The MCP server is published on npm; the CLI builds from the repo.
 
 ```bash
-npx pdfstudio info contract.pdf                 # CLI: info, extract-text, search, edit-text,
-                                               #      redact, merge, split, rotate, pages
 npx pdfstudio-mcp --root ./docs --read-only    # MCP: 10 PDF tools over stdio for any agent
+npx pdfstudio info contract.pdf                # CLI — from a clone, after `npm run build:packages`
 ```
 
 Everything is local by construction: pdf.js parses, the content stream is rewritten in place, pdf-lib
